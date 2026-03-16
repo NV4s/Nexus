@@ -27,8 +27,18 @@ export default function Study({ onPlayMedia }: StudyProps) {
         const parsedCards = htmlStrings.map(html => {
           const doc = parser.parseFromString(html, 'text/html');
           const card = doc.querySelector('.media-card');
+          
+          const tooltip = card?.querySelector('.card-tooltip');
+          const url = card?.getAttribute('data-url');
+          if (tooltip && url) {
+            const btn = document.createElement('button');
+            btn.className = 'fullscreen-btn';
+            btn.textContent = 'Fullscreen';
+            tooltip.appendChild(btn);
+          }
+
           return {
-            html,
+            html: card?.outerHTML || html,
             title: card?.getAttribute('data-title') || '',
             category: card?.getAttribute('data-category') || '',
             url: card?.getAttribute('data-url') || ''
@@ -39,10 +49,37 @@ export default function Study({ onPlayMedia }: StudyProps) {
   }, []);
 
   const handleGridClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = (e.target as HTMLElement).closest('.media-card');
+    const target = e.target as HTMLElement;
+    const card = target.closest('.media-card');
     if (card) {
       const title = card.getAttribute('data-title') || '';
       const url = card.getAttribute('data-url') || '';
+      
+      if (target.closest('.fullscreen-btn')) {
+        e.stopPropagation();
+        const absoluteUrl = new URL(url, window.location.origin).href;
+        const win = window.open('about:blank');
+        if (win) {
+          win.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>${title}</title>
+              <style>
+                body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+                iframe { width: 100%; height: 100%; border: none; }
+              </style>
+            </head>
+            <body>
+              <iframe src="${absoluteUrl}"></iframe>
+            </body>
+            </html>
+          `);
+          win.document.close();
+        }
+        return;
+      }
+
       onPlayMedia(title, url);
     }
   };

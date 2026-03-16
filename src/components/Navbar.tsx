@@ -16,13 +16,14 @@ export default function Navbar({ activeTab, setActiveTab, searchQuery, setSearch
         NEXUS
       </div>
 
-      <div className="search-container">
+      <div className="search-container" style={{ flexGrow: 1, maxWidth: '1200px', margin: '0 2rem' }}>
         <input
           type="text"
           className="search-bar"
           placeholder="Search games & movies..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ width: '100%', padding: '0.8rem 1.5rem', fontSize: '1.1rem' }}
         />
       </div>
 

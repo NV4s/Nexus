@@ -1,5 +1,5 @@
 {
   "name": "Nexus Portal",
-  "description": "An all-in-one entertainment and study portal with games, movies, and tools.",
+  "description": "An all-in-one entertainment and study portal with games, movies, and tools, now featuring Flash games via Ruffle.",
   "requestFramePermissions": []
 }

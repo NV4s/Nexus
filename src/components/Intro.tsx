@@ -48,7 +48,7 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
       // A dark sphere expands from the center
       if (elapsed < 3000) {
         const progress = elapsed / 3000;
-        const radius = progress * Math.max(width, height) * 1.5;
+        const radius = Math.max(0, progress * Math.max(width, height) * 1.5);
         
         ctx.save();
         ctx.beginPath();
@@ -86,7 +86,7 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
           const perspective = 800 / star.z;
           const px = cx + star.x * perspective;
           const py = cy + star.y * perspective;
-          const pSize = star.size * perspective;
+          const pSize = Math.max(0, star.size * perspective);
 
           if (px >= 0 && px <= width && py >= 0 && py <= height) {
             ctx.beginPath();
@@ -100,7 +100,7 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
       // Phase 3: Supernova Climax (5s - 6.5s)
       if (elapsed >= 5000 && elapsed < 6500) {
         const progress = (elapsed - 5000) / 1500;
-        const radius = progress * Math.max(width, height) * 2;
+        const radius = Math.max(0, progress * Math.max(width, height) * 2);
         
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
         gradient.addColorStop(0, `rgba(255, 255, 255, ${progress * 2})`);

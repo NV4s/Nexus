@@ -17,10 +17,11 @@ export default function App() {
   const [isLightMode, setIsLightMode] = useState(false);
   const audioRef = React.useRef<HTMLAudioElement>(null);
   
-  const [playerState, setPlayerState] = useState<{ isOpen: boolean; title: string; url: string; sourceTab: string }>({
+  const [playerState, setPlayerState] = useState<{ isOpen: boolean; title: string; url: string; description: string; sourceTab: string }>({
     isOpen: false,
     title: '',
     url: '',
+    description: '',
     sourceTab: 'Home'
   });
 
@@ -34,23 +35,21 @@ export default function App() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (query.length > 0 && activeTab !== 'Arcade' && activeTab !== 'Movies') {
-      setActiveTab('Arcade');
-    }
   };
 
-  const handlePlayMedia = (title: string, url: string) => {
+  const handlePlayMedia = (title: string, url: string, description: string = '') => {
     setPlayerState({
       isOpen: true,
       title,
       url,
+      description,
       sourceTab: activeTab
     });
   };
 
   const handleClosePlayer = () => {
     setActiveTab(playerState.sourceTab);
-    setPlayerState({ ...playerState, isOpen: false, url: '' });
+    setPlayerState({ ...playerState, isOpen: false, url: '', description: '' });
   };
 
   const handleTabChange = (tab: string) => {
@@ -83,6 +82,7 @@ export default function App() {
           <Player 
             title={playerState.title} 
             url={playerState.url} 
+            description={playerState.description}
             onClose={handleClosePlayer} 
           />
         ) : (

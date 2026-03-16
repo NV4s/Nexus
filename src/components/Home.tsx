@@ -22,8 +22,6 @@ export default function Home({ setActiveTab }: HomeProps) {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let particles: Particle[] = [];
-    const numParticles = 100;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -32,148 +30,153 @@ export default function Home({ setActiveTab }: HomeProps) {
     window.addEventListener('resize', resize);
     resize();
 
-    const mouse = { x: -1000, y: -1000, radius: 150 };
-
-    let isDragging = false;
+    const mouse = { x: canvas.width / 2, y: canvas.height / 2, vx: 0, vy: 0 };
+    let lastMouse = { x: canvas.width / 2, y: canvas.height / 2 };
+    let isClicking = false;
 
     const handleMouseMove = (e: MouseEvent) => {
+      lastMouse.x = mouse.x;
+      lastMouse.y = mouse.y;
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-    };
-
-    const handleMouseLeave = () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-      isDragging = false;
-      mouse.radius = 150;
+      mouse.vx = mouse.x - lastMouse.x;
+      mouse.vy = mouse.y - lastMouse.y;
     };
 
     const handleMouseDown = () => {
-      isDragging = true;
-      mouse.radius = 300;
+      isClicking = true;
     };
 
     const handleMouseUp = () => {
-      isDragging = false;
-      mouse.radius = 150;
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      // Add a burst of particles on click
-      for (let i = 0; i < 10; i++) {
-        particles.push(new Particle(e.clientX, e.clientY, true));
-      }
+      isClicking = false;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('click', handleClick);
 
     class Particle {
       x: number;
       y: number;
       vx: number;
       vy: number;
-      radius: number;
-      alpha: number;
-      isBurst: boolean;
-      life: number;
+      size: number;
 
-      constructor(x?: number, y?: number, isBurst = false) {
-        this.x = x ?? Math.random() * canvas!.width;
-        this.y = y ?? Math.random() * canvas!.height;
-        this.vx = (Math.random() - 0.5) * 1.5;
-        this.vy = (Math.random() - 0.5) * 1.5;
-        this.radius = Math.random() * 2 + 1;
-        this.alpha = Math.random() * 0.5 + 0.2;
-        this.isBurst = isBurst;
-        this.life = isBurst ? 100 : Infinity;
-        
-        if (isBurst) {
-            this.vx = (Math.random() - 0.5) * 10;
-            this.vy = (Math.random() - 0.5) * 10;
-        }
+      constructor() {
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
+        this.vx = (Math.random() - 0.5) * 2;
+        this.vy = (Math.random() - 0.5) * 2;
+        this.size = Math.random() * 2 + 1;
       }
 
       update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (!this.isBurst) {
-            if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
-            if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
-        } else {
-            this.life--;
-        }
-
         // Mouse interaction
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance < mouse.radius) {
-          const forceDirectionX = dx / distance;
-          const forceDirectionY = dy / distance;
-          const maxDistance = mouse.radius;
-          const force = (maxDistance - distance) / maxDistance;
-          const directionX = forceDirectionX * force * 5;
-          const directionY = forceDirectionY * force * 5;
-
-          this.x -= directionX;
-          this.y -= directionY;
+        if (isClicking && dist < 300) {
+          // Attract to mouse when clicking and dragging
+          this.vx += (dx / dist) * 0.5;
+          this.vy += (dy / dist) * 0.5;
+        } else if (dist < 150) {
+          // Repel slightly on hover
+          this.vx -= (dx / dist) * 0.05;
+          this.vy -= (dy / dist) * 0.05;
         }
+
+        // Apply friction
+        this.vx *= 0.98;
+        this.vy *= 0.98;
+
+        // Minimum speed to keep them moving
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed < 0.5) {
+          this.vx += (Math.random() - 0.5) * 0.1;
+          this.vy += (Math.random() - 0.5) * 0.1;
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        // Bounce off edges
+        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
+        
+        // Keep within bounds
+        if (this.x < 0) this.x = 0;
+        if (this.x > canvas!.width) this.x = canvas!.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y > canvas!.height) this.y = canvas!.height;
       }
 
-      draw(currentHue: number) {
-        ctx!.beginPath();
-        ctx!.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx!.fillStyle = `hsla(${currentHue}, 100%, 50%, ${this.alpha})`;
-        ctx!.fill();
+      draw(ctx: CanvasRenderingContext2D, hue: number) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${hue}, 100%, 60%, 0.8)`;
+        ctx.fill();
       }
     }
 
-    for (let i = 0; i < numParticles; i++) {
+    const particles: Particle[] = [];
+    const particleCount = Math.min(Math.floor((window.innerWidth * window.innerHeight) / 10000), 150);
+    for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
     }
 
-    let hue = 0;
-
-    const connect = (currentHue: number) => {
-      let opacityValue = 1;
-      for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
-          const dx = particles[a].x - particles[b].x;
-          const dy = particles[a].y - particles[b].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 120) {
-            opacityValue = 1 - distance / 120;
-            ctx!.strokeStyle = `hsla(${currentHue}, 100%, 50%, ${opacityValue * 0.5})`;
-            ctx!.lineWidth = 1;
-            ctx!.beginPath();
-            ctx!.moveTo(particles[a].x, particles[a].y);
-            ctx!.lineTo(particles[b].x, particles[b].y);
-            ctx!.stroke();
-          }
-        }
-      }
-    };
+    let baseHue = 0;
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      hue += 0.5;
-      if (hue >= 360) hue = 0;
+      baseHue = (baseHue + 0.5) % 360;
 
-      particles = particles.filter(p => p.life > 0);
+      // Clear canvas (supports both light and dark mode)
+      const isLightMode = document.body.classList.contains('light-mode');
+      ctx.fillStyle = isLightMode ? 'rgba(240, 242, 245, 0.3)' : 'rgba(11, 12, 16, 0.3)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+      // Update and draw particles
+      particles.forEach(p => {
+        p.update();
+        p.draw(ctx, baseHue);
+      });
+
+      // Draw RGB strings between particles
       for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw(hue);
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            const stringHue = (baseHue + dist) % 360;
+            ctx.strokeStyle = `hsla(${stringHue}, 100%, 60%, ${1 - dist / 150})`;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          }
+        }
+
+        // Draw strings to mouse
+        const dxMouse = mouse.x - particles[i].x;
+        const dyMouse = mouse.y - particles[i].y;
+        const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+
+        if (distMouse < 200) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `hsla(${baseHue}, 100%, 60%, ${1 - distMouse / 200})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
       }
-      connect(hue);
+
+      mouse.vx *= 0.9;
+      mouse.vy *= 0.9;
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -182,10 +185,8 @@ export default function Home({ setActiveTab }: HomeProps) {
     return () => {
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('click', handleClick);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
