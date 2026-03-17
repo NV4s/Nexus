@@ -2,6 +2,21 @@ import React from 'react';
 
 const VERSIONS = [
   {
+    version: 'v1.1.0',
+    date: '2026-03-16',
+    changes: [
+      'Added "Alien Hominid" to Arcade'
+    ]
+  },
+  {
+    version: 'v1.0.9',
+    date: '2026-03-16',
+    changes: [
+      'Added a Fullscreen button on the player page for each application',
+      'Added descriptions to the player page for each application'
+    ]
+  },
+  {
     version: 'v1.0.8',
     date: '2026-03-09',
     changes: [

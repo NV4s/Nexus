@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 
 interface ArcadeProps {
   searchQuery: string;
-  onPlayMedia: (title: string, url: string) => void;
+  onPlayMedia: (title: string, url: string, description?: string) => void;
 }
 
 const ARCADE_FILES = [
   '/cards/arcade/cyber-drift.html',
   '/cards/arcade/gba-emulator.html',
   '/cards/arcade/run-3.html',
-  '/cards/arcade/adrenaline.html'
+  '/cards/arcade/adrenaline_challenge.html',
+  '/cards/arcade/alien_hominid.html'
 ];
 
 interface CardData {
@@ -66,6 +67,17 @@ export default function Arcade({ searchQuery, onPlayMedia }: ArcadeProps) {
       const title = card.getAttribute('data-title') || '';
       const url = card.getAttribute('data-url') || '';
       
+      let description = '<p>Placeholder description for this application.</p>';
+      const richDesc = card.querySelector('.description-content');
+      if (richDesc) {
+        description = richDesc.innerHTML;
+      } else {
+        const descElement = Array.from(card.querySelectorAll('.card-tooltip p')).find(p => p.textContent?.startsWith('Description:'));
+        if (descElement) {
+          description = `<p>${descElement.textContent?.replace('Description:', '').trim()}</p>`;
+        }
+      }
+      
       if (target.closest('.fullscreen-btn')) {
         e.stopPropagation();
         const absoluteUrl = new URL(url, window.location.origin).href;
@@ -91,7 +103,7 @@ export default function Arcade({ searchQuery, onPlayMedia }: ArcadeProps) {
         return;
       }
 
-      onPlayMedia(title, url);
+      onPlayMedia(title, url, description);
     }
   };
 

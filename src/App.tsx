@@ -6,7 +6,6 @@ import Arcade from './components/Arcade';
 import Movies from './components/Movies';
 import Leaderboard from './components/Leaderboard';
 import Settings from './components/Settings';
-import Player from './components/Player';
 import VersionHistory from './components/VersionHistory';
 import Intro from './components/Intro';
 
@@ -79,12 +78,68 @@ export default function App() {
 
       <main className="content">
         {playerState.isOpen ? (
-          <Player 
-            title={playerState.title} 
-            url={playerState.url} 
-            description={playerState.description}
-            onClose={handleClosePlayer} 
-          />
+          <div id="Player" style={{ display: 'flex' }}>
+            <div className="player-header">
+              <h2 id="player-title">{playerState.title}</h2>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  className="btn-back" 
+                  onClick={() => {
+                    const absoluteUrl = new URL(playerState.url, window.location.origin).href;
+                    const win = window.open('about:blank');
+                    if (win) {
+                      win.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                          <title>${playerState.title}</title>
+                          <style>
+                            body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+                            iframe { width: 100%; height: 100%; border: none; }
+                          </style>
+                        </head>
+                        <body>
+                          <iframe src="${absoluteUrl}"></iframe>
+                        </body>
+                        </html>
+                      `);
+                      win.document.close();
+                    }
+                  }}
+                >
+                  Fullscreen
+                </button>
+                <button id="close-player" className="btn-back" onClick={handleClosePlayer}>
+                  Back to {playerState.sourceTab}
+                </button>
+              </div>
+            </div>
+            <div className="iframe-container" id="iframe-container">
+              <iframe 
+                id="media-iframe" 
+                src={playerState.url || null} 
+                title={playerState.title}
+                allowFullScreen
+              ></iframe>
+            </div>
+            {playerState.description && (
+              <div 
+                className="player-description"
+                style={{ 
+                  marginTop: '2rem', 
+                  color: 'var(--text-dim)', 
+                  textAlign: 'left', 
+                  maxWidth: '900px', 
+                  margin: '2rem auto', 
+                  padding: '2rem', 
+                  background: 'rgba(0,0,0,0.3)', 
+                  borderRadius: '12px',
+                  lineHeight: '1.6'
+                }}
+                dangerouslySetInnerHTML={{ __html: playerState.description }}
+              />
+            )}
+          </div>
         ) : (
           <>
             <div className={`tab-content ${activeTab === 'Home' ? 'active' : ''}`}>

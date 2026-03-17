@@ -17,7 +17,7 @@ export default function MediaCard({ category, title, thumbnailUrl, onClick, isHi
       onClick={onClick}
     >
       <div className="thumbnail-placeholder">
-        <img src={thumbnailUrl} alt={title} referrerPolicy="no-referrer" />
+        <img src={thumbnailUrl || null} alt={title} referrerPolicy="no-referrer" />
       </div>
       <span className="category-tag">{category}</span>
       <h3>{title}</h3>

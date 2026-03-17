@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Hominid</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
+        #ruffle-container { width: 100%; height: 100%; }
+        ruffle-player { width: 100%; height: 100%; }
+        .media-card { display: none; }
+    </style>
+</head>
+<body>
+    <div id="ruffle-container"></div>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <script>
+        window.RufflePlayer = window.RufflePlayer || {};
+        window.addEventListener("load", (event) => {
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            const container = document.getElementById("ruffle-container");
+            container.appendChild(player);
+            player.load("/cards/arcade/Alien_Hominid.swf");
+        });
+    </script>
+
+    <div class="media-card" data-category="Flash" data-title="Alien Hominid" data-url="/cards/arcade/alien_hominid.html">
+      <div class="thumbnail-placeholder">
+        <img src="/cards/arcade/alien_hominid.png" alt="Alien Hominid" referrerpolicy="no-referrer" />
+      </div>
+      <span class="category-tag">Flash</span>
+      <h3>Alien Hominid</h3>
+      <div class="card-tooltip">
+        <h4>Alien Hominid</h4>
+        <p><strong>Developer:</strong> The Behemoth</p>
+        <p><strong>Release Date:</strong> August 2002</p>
+        <div class="description-content" style="display: none;">
+          <p>The original Flash game that started it all! Blast your way through FBI agents as a crash-landed alien.</p>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
