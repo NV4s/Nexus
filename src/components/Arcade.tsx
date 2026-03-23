@@ -10,7 +10,8 @@ const ARCADE_FILES = [
   '/cards/arcade/gba-emulator.html',
   '/cards/arcade/run-3.html',
   '/cards/arcade/adrenaline_challenge.html',
-  '/cards/arcade/alien_hominid.html'
+  '/cards/arcade/alien_hominid.html',
+  '/cards/arcade/gun_mayhem_2.html'
 ];
 
 interface CardData {

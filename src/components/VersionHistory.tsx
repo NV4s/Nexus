@@ -2,6 +2,13 @@ import React from 'react';
 
 const VERSIONS = [
   {
+    version: 'v1.1.1',
+    date: '2026-03-22',
+    changes: [
+      'Added "Gun Mayhem 2" to Arcade'
+    ]
+  },
+  {
     version: 'v1.1.0',
     date: '2026-03-16',
     changes: [
