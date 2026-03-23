@@ -35,7 +35,7 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
     }
 
     const animate = () => {
-      const elapsed = (Date.now() - startTime) * 3.5;
+      const elapsed = Date.now() - startTime;
       const width = canvas.width;
       const height = canvas.height;
       const cx = width / 2;
@@ -147,9 +147,9 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
         width: '100vw',
         height: '100vh',
         zIndex: 99999,
-        pointerEvents: isFading ? 'none' : 'auto',
+        pointerEvents: 'auto',
         opacity: isFading ? 0 : 1,
-        transition: 'opacity 0.3s ease-out',
+        transition: 'opacity 1s ease-out',
         backgroundColor: 'black',
         display: 'flex',
         alignItems: 'center',
