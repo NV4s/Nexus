@@ -2,17 +2,51 @@ import React from 'react';
 
 const VERSIONS = [
   {
-    version: 'v1.1.1',
-    date: '2026-03-22',
+    version: 'v1.1.5',
+    date: '2026-03-23',
     changes: [
-      'Added "Gun Mayhem 2" to Arcade'
+      'Added "Bowman" to Arcade'
+    ]
+  },
+  {
+    version: 'v1.1.4',
+    date: '2026-03-23',
+    changes: [
+      'Added "Bloxorz" to Arcade'
+    ]
+  },
+  {
+    version: 'v1.1.3',
+    date: '2026-03-23',
+    changes: [
+      'Added "Battleships" to Arcade'
+    ]
+  },
+  {
+    version: 'v1.1.2',
+    date: '2026-03-23',
+    changes: [
+      'Added "Battle Pong" to Arcade'
+    ]
+  },
+  {
+    version: 'v1.1.1',
+    date: '2026-03-23',
+    changes: [
+      'Organized SWF files into a dedicated "SWF Files" folder',
+      'Organized thumbnail images into a dedicated "Card Thumbnails" folder',
+      'Fixed Avalanche Ruffle embed to properly fill the screen'
     ]
   },
   {
     version: 'v1.1.0',
-    date: '2026-03-16',
+    date: '2026-03-23',
     changes: [
-      'Added "Alien Hominid" to Arcade'
+      'Added "Alien Hominid" to Arcade',
+      'Added "Gun Mayhem 2" to Arcade',
+      'Added "Asteroids" to Arcade',
+      'Added "Astroflash" to Arcade',
+      'Added "Avalanche" to Arcade'
     ]
   },
   {

@@ -11,7 +11,14 @@ const ARCADE_FILES = [
   '/cards/arcade/run-3.html',
   '/cards/arcade/adrenaline_challenge.html',
   '/cards/arcade/alien_hominid.html',
-  '/cards/arcade/gun_mayhem_2.html'
+  '/cards/arcade/gun_mayhem_2.html',
+  '/cards/arcade/asteroids.html',
+  '/cards/arcade/astroflash.html',
+  '/cards/arcade/avalanche.html',
+  '/cards/arcade/battle_pong.html',
+  '/cards/arcade/battleships.html',
+  '/cards/arcade/bloxorz.html',
+  '/cards/arcade/bowman.html'
 ];
 
 interface CardData {

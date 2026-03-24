@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alien Hominid</title>
+    <title>Battleships</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #000; }
         #ruffle-container { width: 100%; height: 100%; }
@@ -21,21 +21,29 @@
             const player = ruffle.createPlayer();
             const container = document.getElementById("ruffle-container");
             container.appendChild(player);
-            player.load("/SWF Files/Alien_Hominid.swf");
+            player.load("/SWF Files/Battleships.swf");
         });
     </script>
 
-    <div class="media-card" data-category="Flash" data-title="Alien Hominid" data-url="/cards/arcade/alien_hominid.html">
+    <div class="media-card" data-category="Flash" data-title="Battleships" data-url="/cards/arcade/battleships.html">
       <div class="thumbnail-placeholder">
-        <img src="/Card Thumbnails/alien_hominid.png" alt="Alien Hominid" referrerpolicy="no-referrer" />
+        <div class="code-placeholder">
+          <code>
+            &lt;iframe src="/SWF Files/Battleships.swf"&gt;&lt;/iframe&gt;
+          </code>
+        </div>
       </div>
-      <span class="category-tag">Flash</span>
-      <h3>Alien Hominid</h3>
+      <div class="card-content">
+        <h3 class="card-title">Battleships</h3>
+        <span class="card-category">Flash</span>
+      </div>
       <div class="card-tooltip">
-        <h4>Alien Hominid</h4>
-        <p><strong>Developer:</strong> The Behemoth</p>
-        <p><strong>Release Date:</strong> August 7, 2002</p>
-        <p><strong>Description:</strong> A side-scrolling run-and-gun shooter where you play as an alien fending off secret agents with a blaster, grenades, and advanced moves.</p>
+        <h4>Battleships</h4>
+        <div class="description-content">
+          <p><strong>Developer:</strong> Unknown</p>
+          <p><strong>Release Date:</strong> Unknown</p>
+          <p><strong>Description:</strong> A classic game of Battleships.</p>
+        </div>
       </div>
     </div>
 </body>
