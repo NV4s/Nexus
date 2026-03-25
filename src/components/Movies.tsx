@@ -46,6 +46,7 @@ export default function Movies({ searchQuery, onPlayMedia }: MoviesProps) {
             url: card?.getAttribute('data-url') || ''
           };
         });
+        parsedCards.sort((a, b) => a.title.localeCompare(b.title));
         setCards(parsedCards);
       });
   }, []);

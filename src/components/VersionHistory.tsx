@@ -2,31 +2,11 @@ import React from 'react';
 
 const VERSIONS = [
   {
-    version: 'v1.1.5',
-    date: '2026-03-23',
-    changes: [
-      'Added "Bowman" to Arcade'
-    ]
-  },
-  {
-    version: 'v1.1.4',
-    date: '2026-03-23',
-    changes: [
-      'Added "Bloxorz" to Arcade'
-    ]
-  },
-  {
-    version: 'v1.1.3',
-    date: '2026-03-23',
-    changes: [
-      'Added "Battleships" to Arcade'
-    ]
-  },
-  {
     version: 'v1.1.2',
-    date: '2026-03-23',
+    date: '2026-03-24',
     changes: [
-      'Added "Battle Pong" to Arcade'
+      'Added "Battle Pong", "Battleships", "Bloxorz", and "Bowman" to Arcade',
+      'Made QOL changes'
     ]
   },
   {

@@ -179,6 +179,38 @@ export default function Intro({ onComplete, onStart }: { onComplete: () => void,
           Enter Nexus
         </button>
       )}
+      {hasStarted && !isFading && (
+        <button
+          onClick={onComplete}
+          style={{
+            position: 'absolute',
+            bottom: '2rem',
+            right: '2rem',
+            padding: '0.5rem 1rem',
+            fontSize: '1rem',
+            color: 'white',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            zIndex: 100000,
+            fontFamily: 'monospace',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            e.currentTarget.style.borderColor = 'white';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+          }}
+        >
+          Skip Intro
+        </button>
+      )}
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }} />
     </div>
   );

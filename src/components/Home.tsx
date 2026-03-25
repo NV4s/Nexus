@@ -24,8 +24,11 @@ export default function Home({ setActiveTab }: HomeProps) {
     let animationFrameId: number;
 
     const resize = () => {
+      const nav = document.querySelector('.navbar');
+      const navHeight = nav ? nav.getBoundingClientRect().height : 0;
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.height = window.innerHeight - navHeight;
+      canvas.style.top = `${navHeight}px`;
     };
     window.addEventListener('resize', resize);
     resize();
@@ -240,7 +243,7 @@ export default function Home({ setActiveTab }: HomeProps) {
   }, []);
 
   return (
-    <div className="select-none" style={{ width: '100%', height: '100%' }}>
+    <div className="select-none" style={{ width: '100%', height: '100%', userSelect: 'none', WebkitUserSelect: 'none' }}>
       <canvas id="nexus-canvas" ref={canvasRef}></canvas>
       <div style={{ textAlign: 'center', marginTop: '5rem', position: 'relative', zIndex: 10 }}>
         <h1 className="rgb-text" style={{ fontSize: '4rem', marginBottom: '1rem' }}>

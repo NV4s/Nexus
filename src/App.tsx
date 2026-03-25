@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Study from './components/Study';
@@ -32,6 +33,30 @@ export default function App() {
     }
   }, [isLightMode]);
 
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      // Don't trigger if we are currently recording a new keybind
+      if (localStorage.getItem('recordingPanicKey') === 'true') {
+        return;
+      }
+
+      const currentPanicKey = localStorage.getItem('panicKey') || '`';
+      const currentPanicLink = localStorage.getItem('panicLink') || 'https://classroom.google.com';
+
+      if (e.key === currentPanicKey) {
+        window.location.replace(currentPanicLink);
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
@@ -53,6 +78,7 @@ export default function App() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (playerState.isOpen) {
       setPlayerState({ ...playerState, isOpen: false, url: '' });
     }
@@ -67,6 +93,7 @@ export default function App() {
 
   return (
     <>
+      <Analytics />
       <audio ref={audioRef} src="/cards/[FULL] Jujutsu Shenanigans GOJO domain expansion Music.mp3" />
       {showIntro && <Intro onStart={handleIntroStart} onComplete={() => setShowIntro(false)} />}
       <Navbar 

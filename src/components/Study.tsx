@@ -44,6 +44,7 @@ export default function Study({ onPlayMedia }: StudyProps) {
             url: card?.getAttribute('data-url') || ''
           };
         });
+        parsedCards.sort((a, b) => a.title.localeCompare(b.title));
         setCards(parsedCards);
       });
   }, []);
