@@ -137,24 +137,31 @@ export default function Home({ setActiveTab }: HomeProps) {
       particles.push(new Particle());
     }
 
+    const getNavHeight = () => {
+      const nav = document.querySelector('.navbar');
+      return nav ? nav.getBoundingClientRect().height : 0;
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
+      const navHeight = getNavHeight();
       lastMouse.x = mouse.x;
       lastMouse.y = mouse.y;
       mouse.x = e.clientX;
-      mouse.y = e.clientY;
+      mouse.y = e.clientY - navHeight;
       mouse.vx = mouse.x - lastMouse.x;
       mouse.vy = mouse.y - lastMouse.y;
       
       if (isClicking) {
-        particles.push(new Particle(e.clientX, e.clientY, true));
+        particles.push(new Particle(e.clientX, e.clientY - navHeight, true));
         if (particles.length > 400) particles.shift();
       }
     };
 
     const handleMouseDown = (e: MouseEvent) => {
+      const navHeight = getNavHeight();
       isClicking = true;
       for (let i = 0; i < 15; i++) {
-        particles.push(new Particle(e.clientX, e.clientY, true));
+        particles.push(new Particle(e.clientX, e.clientY - navHeight, true));
         if (particles.length > 400) particles.shift();
       }
     };
