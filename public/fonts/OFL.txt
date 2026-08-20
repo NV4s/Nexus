@@ -1,0 +1,8 @@
+Inter and Space Grotesk are both licensed under the SIL Open Font License 1.1.
+
+Inter — Copyright (c) 2016 The Inter Project Authors
+  https://github.com/rsms/inter
+Space Grotesk — Copyright (c) 2020 The Space Grotesk Project Authors
+  https://github.com/floriankarsten/space-grotesk
+
+Full licence text: https://openfontlicense.org/open-font-license-official-text/

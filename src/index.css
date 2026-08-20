@@ -1,5 +1,23 @@
 @import 'tailwindcss';
 
+/* Self-hosted so the site keeps its type behind school network filters that
+   block fonts.googleapis.com. Both faces are variable and SIL OFL licensed. */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #05060a;
   --surface: #0c0f16;
@@ -11,6 +29,8 @@
   --accent: #7cc4ff;
   --accent-ink: #04121f;
   --radius: 14px;
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow: 0 18px 40px rgb(0 0 0 / 0.45);
   color-scheme: dark;
@@ -38,7 +58,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -48,7 +68,8 @@ h1,
 h2,
 h3 {
   margin: 0;
-  letter-spacing: -0.022em;
+  font-family: var(--font-display);
+  letter-spacing: -0.026em;
   font-weight: 600;
   color: var(--text);
 }
@@ -81,12 +102,13 @@ button {
 }
 
 .nav-logo {
+  font-family: var(--font-display);
   background: none;
   border: 0;
   cursor: pointer;
   font-size: 1.05rem;
-  font-weight: 650;
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
@@ -157,9 +179,10 @@ button {
 }
 
 .hero-copy h1 {
-  font-size: clamp(3rem, 11vw, 7rem);
-  letter-spacing: -0.045em;
-  line-height: 0.95;
+  font-size: clamp(3.25rem, 12vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.9;
 }
 
 .hero-copy p {
@@ -201,6 +224,7 @@ button {
 }
 
 .button {
+  font-family: var(--font-display);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -305,6 +329,7 @@ button {
 }
 
 .chip {
+  font-family: var(--font-display);
   padding: 0.4rem 0.85rem;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -390,6 +415,7 @@ button {
 }
 
 .card-fallback {
+  font-family: var(--font-display);
   display: grid;
   place-items: center;
   width: 100%;
@@ -642,6 +668,7 @@ button {
 }
 
 .intro-enter {
+  font-family: var(--font-display);
   position: relative;
   padding: 0.9rem 2.6rem;
   border-radius: 999px;
