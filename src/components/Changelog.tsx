@@ -1,5 +1,14 @@
 const RELEASES = [
   {
+    version: 'v1.2.1',
+    date: '2026-08-19',
+    changes: [
+      'Removed the tab disguise, the panic key and the about:blank option. This is a games site, not a way around anything',
+      'Settings now has a graphics toggle instead — force low if the background effects stutter',
+      'Text in the interface no longer selects when you click around quickly',
+    ],
+  },
+  {
     version: 'v1.2.0',
     date: '2026-08-17',
     changes: [
@@ -14,7 +23,6 @@ const RELEASES = [
       'Killed the Movies tab. None of those links went anywhere',
       'Killed the Leaderboard tab too. It was an empty page that said scores were coming',
       'Quizlet and Keep refuse to load in a frame, so they open in a new tab instead of a blank box',
-      'Panic key needs Ctrl now. Hitting backtick mid-game used to nuke your session',
       'Fullscreen no longer gets eaten by the popup blocker',
     ],
   },
@@ -49,7 +57,7 @@ const RELEASES = [
   {
     version: 'v1.0.1',
     date: '2026-03-08',
-    changes: ['Home, Study, Arcade', 'Tab disguise and the panic key'],
+    changes: ['Home, Study, Arcade'],
   },
   { version: 'v1.0.0', date: '2026-03-08', changes: ['Started'] },
 ];
