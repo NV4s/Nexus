@@ -81,9 +81,9 @@ export default function GameGrid({
             <div
               key={game.slug}
               className="grid-item"
-              // Stagger the first row only; browsers with scroll-driven timelines
-              // replace this outright with a per-card reveal.
-              style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+              // Deliberate, Apple-paced stagger across the first couple of rows;
+              // browsers with scroll-driven timelines replace this per-card.
+              style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
             >
               <GameCard game={game} onOpen={() => open(game)} />
             </div>

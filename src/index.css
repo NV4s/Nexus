@@ -3,9 +3,9 @@
 /* Self-hosted so the site keeps its type behind school network filters that
    block fonts.googleapis.com. Both faces are variable and SIL OFL licensed. */
 @font-face {
-  font-family: 'Space Grotesk';
-  src: url('/fonts/space-grotesk-latin.woff2') format('woff2');
-  font-weight: 300 700;
+  font-family: 'Unbounded';
+  src: url('/fonts/unbounded-latin.woff2') format('woff2');
+  font-weight: 200 900;
   font-style: normal;
   font-display: swap;
 }
@@ -34,7 +34,7 @@
   --glass-edge: rgb(255 255 255 / 0.16);
   --glass-sheen: rgb(255 255 255 / 0.28);
   --glass-shadow: 0 16px 40px rgb(0 0 0 / 0.42);
-  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Unbounded', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow: 0 18px 40px rgb(0 0 0 / 0.45);
@@ -77,10 +77,16 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.026em;
+  letter-spacing: -0.018em;
   font-weight: 600;
   color: var(--text);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
 }
 
 p {
@@ -117,9 +123,9 @@ button {
   background: none;
   border: 0;
   cursor: pointer;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
@@ -235,7 +241,6 @@ button {
 }
 
 .button {
-  font-family: var(--font-display);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -340,7 +345,6 @@ button {
 }
 
 .chip {
-  font-family: var(--font-display);
   padding: 0.4rem 0.85rem;
   border-radius: 999px;
   border: 1px solid var(--line);
@@ -372,7 +376,7 @@ button {
 
 .grid-item {
   opacity: 0;
-  animation: rise 0.45s var(--ease) forwards;
+  animation: rise 0.9s var(--ease-soft) forwards;
 }
 
 /* The card art needs to sit above the specular wash. */
@@ -386,7 +390,7 @@ button {
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(26px) scale(0.965);
   }
   to {
     opacity: 1;
@@ -406,7 +410,7 @@ button {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.24s var(--ease), border-color 0.24s var(--ease), box-shadow 0.24s var(--ease);
+  transition: transform 0.5s var(--ease-soft), border-color 0.5s var(--ease-soft), box-shadow 0.5s var(--ease-soft);
 }
 
 .card:hover,
@@ -427,7 +431,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s var(--ease);
+  transition: transform 0.8s var(--ease-soft);
 }
 
 .card:hover .card-art img {
@@ -435,7 +439,7 @@ button {
 }
 
 .card-fallback {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   display: grid;
   place-items: center;
   width: 100%;
@@ -694,7 +698,6 @@ button {
 }
 
 .intro-enter {
-  font-family: var(--font-display);
   position: relative;
   padding: 0.9rem 2.6rem;
   border-radius: 999px;
@@ -808,13 +811,13 @@ button {
   .reveal {
     animation: reveal-in linear both;
     animation-timeline: view();
-    animation-range: entry 5% cover 32%;
+    animation-range: entry 5% cover 48%;
   }
 
   .grid-item {
     animation: reveal-in linear both;
     animation-timeline: view();
-    animation-range: entry 0% cover 22%;
+    animation-range: entry 0% cover 45%;
   }
 
   .parallax-slow {
@@ -827,7 +830,7 @@ button {
 @keyframes reveal-in {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.985);
+    transform: translateY(34px) scale(0.97);
   }
   to {
     opacity: 1;

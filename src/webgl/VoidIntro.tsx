@@ -5,7 +5,7 @@ import { Vector2, type ShaderMaterial } from 'three';
 import { dprFor, prefersReducedMotion, useAdaptiveTier } from '../lib/quality';
 import { playIntroAudio, preloadIntroAudio } from '../lib/introAudio';
 
-const DURATION = 7.0;
+const DURATION = 8.0;
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -27,19 +27,45 @@ const fragment = /* glsl */ `
   uniform vec2  uResolution;
   uniform float uLayers;    // detail depth, dialled down on weak hardware
 
+  const float TAU = 6.28318530718;
+
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+  }
+
   float easeOut(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
 
-  // An ink blot: a disc whose radius wobbles with angle, so the edge reads as
-  // spattered paint rather than a circle.
-  float blot(vec2 p, vec2 centre, float radius, float seed) {
+  // A soft irregular blob, used for the drifting wisps of light.
+  float wisp(vec2 p, vec2 centre, float radius, float seed) {
     vec2 d = p - centre;
     float ang = atan(d.y, d.x);
-    float wobble = 1.0
-      + 0.22 * sin(ang * 3.0 + seed)
-      + 0.09 * sin(ang * 5.0 - seed * 2.0)
-      + 0.05 * sin(ang * 9.0 + seed * 3.0);
-    float edge = radius * max(wobble, 0.25);
-    return 1.0 - smoothstep(edge * 0.82, edge, length(d));
+    float wobble = 1.0 + 0.28 * sin(ang * 3.0 + seed) + 0.16 * sin(ang * 5.0 - seed * 2.0);
+    float edge = radius * max(wobble, 0.3);
+    return 1.0 - smoothstep(edge * 0.05, edge, length(d));
+  }
+
+  // One band of warp streaks. Each angular slot gets its own speed, length and
+  // colour, so the rush reads as thousands of separate trails rather than a fan.
+  vec3 warpBand(float ang, float r, float count, float seed, float speed, float t) {
+    float slot = floor(ang / TAU * count + 0.5) + seed * 37.0;
+    float rnd = hash(vec2(slot, 3.7));
+    float rnd2 = hash(vec2(slot, 9.1));
+
+    float across = abs(fract(ang / TAU * count + 0.5) - 0.5) * 2.0;
+    float line = 1.0 - smoothstep(0.0, 0.30 + rnd2 * 0.30, across);
+
+    float head = fract(rnd2 + t * speed * (0.35 + rnd * 1.25)) * 2.9;
+    float tail = head - (0.30 + rnd * 0.75);
+    float segment = smoothstep(tail, tail + 0.06, r) * (1.0 - smoothstep(head - 0.04, head, r));
+    float along = smoothstep(tail, head, r);
+
+    vec3 violet = vec3(0.42, 0.16, 0.95);
+    vec3 magenta = vec3(0.88, 0.14, 0.70);
+    vec3 hot = vec3(1.0, 0.86, 1.0);
+    vec3 tint = mix(violet, magenta, rnd);
+    tint = mix(tint, hot, pow(along, 3.0) * (0.3 + rnd2 * 0.6));
+
+    return tint * line * segment * along;
   }
 
   void main() {
@@ -48,71 +74,50 @@ const fragment = /* glsl */ `
     float ang = atan(p.y, p.x);
     float t = uTime;
 
-    float open = easeOut((t - 0.40) / 2.40);   // the domain opens outward
-    float spin = (t - 0.40) * 0.28;            // the shell turns, slowly
-    float surge = exp(-pow((t - 5.25) * 2.6, 2.0));
+    // The rush builds, holds, then gives way to the void it was carrying you into.
+    float rush = smoothstep(0.25, 1.20, t) * (1.0 - smoothstep(4.40, 5.90, t));
+    float settle = smoothstep(4.60, 6.40, t);
+    float accel = 0.55 + easeOut((t - 0.3) / 4.0) * 1.35;
 
-    // Deep navy, a shade lighter toward the middle.
-    vec3 color = mix(vec3(0.020, 0.036, 0.055), vec3(0.005, 0.009, 0.018), smoothstep(0.0, 1.7, r));
+    vec3 color = vec3(0.004, 0.003, 0.012);
 
-    // Logarithmic spiral: the arms wind inward instead of radiating straight out.
-    float spiral = ang + log(r + 0.08) * 5.2 - spin * 2.2;
+    // --- the rush -------------------------------------------------------
+    vec3 streaks = warpBand(ang, r, 64.0, 1.0, 0.55 * accel, t);
+    if (uLayers >= 3.0) streaks += warpBand(ang, r, 118.0, 2.0, 0.78 * accel, t) * 0.75;
+    if (uLayers >= 4.0) streaks += warpBand(ang, r, 182.0, 3.0, 0.98 * accel, t) * 0.55;
+    color += streaks * rush * 1.35;
 
-    float arms = 0.0;
-    for (float i = 0.0; i < 4.0; i += 1.0) {
-      if (i >= uLayers) break;
-      arms += (sin(spiral * (2.0 + i) + i * 1.7) * 0.5 + 0.5) * (0.45 - i * 0.09);
+    // The vanishing point everything is pouring out of.
+    color += vec3(1.0, 0.82, 1.0) * (1.0 - smoothstep(0.0, 0.30, r)) * rush * 0.55;
+
+    // Wisps of light tumbling past.
+    float drift = t * 0.35;
+    float wisps = 0.0;
+    wisps += wisp(p, vec2(-1.05 + sin(drift) * 0.15, 0.52), 0.34, 3.4);
+    wisps += wisp(p, vec2(1.12, 0.44 + cos(drift * 1.2) * 0.12), 0.28, 5.9);
+    if (uLayers >= 3.0) {
+      wisps += wisp(p, vec2(0.72, -0.62 + sin(drift * 0.8) * 0.10), 0.24, 8.2);
+      wisps += wisp(p, vec2(-0.88, -0.48), 0.22, 1.1);
     }
+    color += vec3(0.95, 0.88, 1.0) * clamp(wisps, 0.0, 1.0) * rush * 0.16;
 
-    // Fine concentric banding riding on the arms.
-    float rings = sin(spiral * 7.0 - spin * 3.0) * 0.5 + 0.5;
+    // --- the void it resolves into --------------------------------------
+    float core = 0.27;
+    float ring = 1.0 - smoothstep(0.0, 0.045, abs(r - core * 1.20));
+    float halo = 1.0 - smoothstep(0.0, 0.28, abs(r - core * 1.30));
 
-    float core = 0.30;
-    float shell = smoothstep(core * 0.98, core * 1.35, r) * (1.0 - smoothstep(0.55, 1.9, r));
-    color += vec3(0.42, 0.68, 1.0) * (arms * 0.75 + rings * arms * 0.35) * shell * 0.42;
-
-    // Hard lip of light right where the black begins.
-    color += vec3(0.75, 0.90, 1.0)
-      * (1.0 - smoothstep(core, core * 1.18, r))
-      * smoothstep(core * 0.96, core, r) * 0.55;
-
+    vec3 field = vec3(0.005, 0.007, 0.014);
+    field += vec3(0.90, 0.94, 1.0) * ring * 1.15;
+    field += vec3(0.26, 0.34, 0.56) * halo * 0.30;
+    // Wispy cloud lying across the field, the way it does once the rush stops.
+    float cloud = wisp(p, vec2(-1.25, -0.14), 0.70, 2.2) + wisp(p, vec2(1.22, 0.20), 0.62, 6.6);
+    field += vec3(0.24, 0.30, 0.44) * clamp(cloud, 0.0, 1.0) * 0.055;
     // Nothing escapes the core.
-    color *= smoothstep(core * 0.92, core, r);
+    field *= smoothstep(core * 0.94, core, r);
 
-    // Dark spatter clinging to the core.
-    float dark = 0.0;
-    dark += blot(p, vec2(-0.30, 0.17), 0.17, 1.3);
-    dark += blot(p, vec2(0.24, -0.22), 0.14, 4.1);
-    dark += blot(p, vec2(-0.12, -0.33), 0.11, 7.7);
-    dark += blot(p, vec2(0.33, 0.30), 0.12, 2.6);
-    color *= 1.0 - clamp(dark, 0.0, 1.0) * 0.96;
+    color = mix(color, field, settle);
 
-    // White spatter thrown out across the field.
-    float white = 0.0;
-    white += blot(p, vec2(-1.32, 0.60), 0.20, 3.4);
-    white += blot(p, vec2(1.18, 0.70), 0.17, 5.9);
-    white += blot(p, vec2(1.44, -0.18), 0.15, 8.2);
-    white += blot(p, vec2(0.98, -0.74), 0.14, 1.1);
-    white += blot(p, vec2(-1.22, -0.58), 0.16, 6.5);
-    color = mix(color, vec3(0.93, 0.96, 1.0), clamp(white, 0.0, 1.0) * 0.88);
-
-    // Light flicking outward past the shell.
-    float streak = pow(max(sin(ang * 6.0 + spin * 4.0), 0.0), 90.0)
-      * (0.4 + 0.6 * sin(ang * 3.0 - spin))
-      * smoothstep(0.55, 1.0, r) * (1.0 - smoothstep(1.4, 2.1, r));
-    color += vec3(0.80, 0.90, 1.0) * streak * 0.22;
-
-    // Reveal, sweeping out from the seed of light.
-    float radius = open * 2.4;
-    float inside = 1.0 - smoothstep(radius - 0.06, radius, r);
-    color = mix(vec3(0.004, 0.005, 0.010), color, inside);
-    color += vec3(0.70, 0.85, 1.0) * (1.0 - smoothstep(0.0, 0.035, abs(r - radius))) * step(open, 0.999);
-    color += vec3(0.70, 0.85, 1.0) * (1.0 - smoothstep(0.0, 0.18, r)) * pow(1.0 - open, 2.0);
-
-    // Late surge, then hand over to the site.
-    color += vec3(0.55, 0.75, 1.0) * surge * 0.45;
-
-    gl_FragColor = vec4(color, 1.0 - smoothstep(6.1, 7.0, t));
+    gl_FragColor = vec4(color, 1.0 - smoothstep(7.1, 8.0, t));
   }
 `;
 
@@ -204,7 +209,7 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
           <VoidSurface layers={layers} onDone={finish} />
           {tier !== 'low' && (
             <EffectComposer>
-              <Bloom intensity={0.35} luminanceThreshold={0.75} mipmapBlur />
+              <Bloom intensity={0.65} luminanceThreshold={0.55} mipmapBlur />
               <ChromaticAberration offset={new Vector2(0.0005, 0.0005)} />
             </EffectComposer>
           )}
