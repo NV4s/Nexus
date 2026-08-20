@@ -1,145 +1,133 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { DEFAULT_LINK, comboFrom, label, readCombo, readLink } from '../lib/panic';
 
-interface SettingsProps {
-  toggleTheme: () => void;
-}
+const setFavicon = (href: string) => {
+  const icon = document.getElementById('favicon') as HTMLLinkElement | null;
+  if (icon) icon.href = href;
+};
 
-export default function Settings({ toggleTheme }: SettingsProps) {
+export default function Settings() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') ?? 'dark');
   const [tabTitle, setTabTitle] = useState('');
   const [tabIcon, setTabIcon] = useState('');
-  
-  const [panicKey, setPanicKey] = useState(localStorage.getItem('panicKey') || '`');
-  const [panicLink, setPanicLink] = useState(localStorage.getItem('panicLink') || 'https://classroom.google.com');
-  const [isRecordingKey, setIsRecordingKey] = useState(false);
+  const [combo, setCombo] = useState(readCombo);
+  const [link, setLink] = useState(readLink);
+  const [recording, setRecording] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('panicKey', panicKey);
-  }, [panicKey]);
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => localStorage.setItem('panicCombo', combo), [combo]);
+  useEffect(() => localStorage.setItem('panicLink', link), [link]);
 
   useEffect(() => {
-    localStorage.setItem('panicLink', panicLink);
-  }, [panicLink]);
+    localStorage.setItem('recordingPanicCombo', String(recording));
+    if (!recording) return;
 
-  useEffect(() => {
-    if (isRecordingKey) {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        e.preventDefault();
-        setPanicKey(e.key);
-        setIsRecordingKey(false);
-        localStorage.setItem('recordingPanicKey', 'false');
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isRecordingKey]);
+    const onKeyDown = (event: KeyboardEvent) => {
+      event.preventDefault();
+      const next = comboFrom(event);
+      if (!next) return; // modifier-only or bare key — keep listening
+      setCombo(next);
+      setRecording(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [recording]);
 
-  const startRecordingKey = () => {
-    setIsRecordingKey(true);
-    localStorage.setItem('recordingPanicKey', 'true');
-  };
-
-  const setDisguise = () => {
-    if (tabTitle) document.title = tabTitle;
-    const favicon = document.getElementById('favicon') as HTMLLinkElement;
-    if (favicon) {
-      if (tabIcon) {
-        favicon.href = tabIcon;
-      } else {
-        favicon.href = "https://www.google.com/favicon.ico";
-        document.title = tabTitle || "Google";
-      }
-    }
+  const applyDisguise = () => {
+    document.title = tabTitle || 'Google';
+    setFavicon(tabIcon || 'https://www.google.com/favicon.ico');
   };
 
   const resetDisguise = () => {
-    document.title = "NEXUS | Portal";
-    const favicon = document.getElementById('favicon') as HTMLLinkElement;
-    if (favicon) {
-      favicon.href = "";
-    }
+    document.title = 'Nexus';
+    setFavicon('/favicon.svg');
     setTabTitle('');
     setTabIcon('');
   };
 
-  const cloakPage = () => {
-    let win = window.open('about:blank', '_blank');
+  const cloak = () => {
+    const win = window.open('about:blank', '_blank');
     if (!win) {
-      alert("Popup blocker prevented the cloak! Please allow popups for this site.");
+      alert('Your browser blocked the popup. Allow popups for this site and try again.');
       return;
     }
-
-    let iframe = win.document.createElement('iframe');
-    iframe.src = window.location.href;
-    iframe.style.width = '100vw';
-    iframe.style.height = '100vh';
-    iframe.style.border = 'none';
-    iframe.style.margin = '0';
-    iframe.style.padding = '0';
-
+    const frame = win.document.createElement('iframe');
+    frame.src = window.location.href;
+    frame.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none';
     win.document.body.style.margin = '0';
-    win.document.body.style.overflow = 'hidden';
-    win.document.body.appendChild(iframe);
-
-    window.location.replace("https://classroom.google.com");
+    win.document.body.append(frame);
+    window.location.replace(link);
   };
 
   return (
-    <div id="Settings">
-      <h2 className="section-title">System Settings</h2>
+    <section className="section">
+      <header className="section-head">
+        <div>
+          <h2>Settings</h2>
+          <p>Saved in this browser only.</p>
+        </div>
+      </header>
 
-      <div className="settings-panel">
-        <div className="settings-group">
+      <div className="panels">
+        <div className="panel">
           <h3>Appearance</h3>
-          <button className="action-btn" onClick={toggleTheme}>Toggle Light/Dark Mode</button>
+          <button className="button ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            Switch to {theme === 'dark' ? 'light' : 'dark'}
+          </button>
         </div>
 
-        <div className="settings-group">
-          <h3>Tab Disguise (Google Cloak)</h3>
-          <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>Change the tab name and icon to hide what you are doing.</p>
+        <div className="panel">
+          <h3>Tab disguise</h3>
+          <p>Change the tab title and icon.</p>
           <input
-            type="text"
-            className="input-box"
-            placeholder="New Tab Title (e.g., Google)"
+            className="field"
+            placeholder="Tab title"
             value={tabTitle}
-            onChange={(e) => setTabTitle(e.target.value)}
+            onChange={(event) => setTabTitle(event.target.value)}
           />
           <input
-            type="text"
-            className="input-box"
-            placeholder="Icon Image URL (e.g., https://google.com/favicon.ico)"
+            className="field"
+            placeholder="Icon URL"
             value={tabIcon}
-            onChange={(e) => setTabIcon(e.target.value)}
+            onChange={(event) => setTabIcon(event.target.value)}
           />
-          <button className="action-btn" onClick={setDisguise} style={{ marginRight: '0.5rem' }}>Apply Disguise</button>
-          <button className="action-btn" onClick={resetDisguise}>Reset</button>
-        </div>
-
-        <div className="settings-group">
-          <h3>Panic Button</h3>
-          <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Set a keybind that will instantly redirect this page to a safe link.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <input
-              type="text"
-              className="input-box"
-              placeholder="Safe Link (e.g., https://classroom.google.com)"
-              value={panicLink}
-              onChange={(e) => setPanicLink(e.target.value)}
-              style={{ flex: 1, minWidth: '200px' }}
-            />
-            <button
-              className="action-btn"
-              onClick={startRecordingKey}
-              style={{ minWidth: '150px' }}
-            >
-              {isRecordingKey ? 'Press any key...' : `Keybind: ${panicKey === ' ' ? 'Space' : panicKey}`}
+          <div className="row">
+            <button className="button" onClick={applyDisguise}>
+              Apply
+            </button>
+            <button className="button ghost" onClick={resetDisguise}>
+              Reset
             </button>
           </div>
-          <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>Opens this entire website inside an undetectable 'about:blank' page, shielding it from browser history and extensions.</p>
-          <button className="action-btn danger-btn" onClick={cloakPage}>Launch About:Blank Cloak</button>
+        </div>
+
+        <div className="panel">
+          <h3>Panic key</h3>
+          <p>Leaves this page immediately. A modifier is required so it cannot fire mid-game.</p>
+          <div className="row">
+            <button className="button ghost" onClick={() => setRecording(true)}>
+              {recording ? 'Press a combination…' : label(combo)}
+            </button>
+          </div>
+          <input
+            className="field"
+            value={link}
+            onChange={(event) => setLink(event.target.value || DEFAULT_LINK)}
+          />
+        </div>
+
+        <div className="panel">
+          <h3>about:blank</h3>
+          <p>Reopens Nexus inside a blank tab and sends this one to your panic link.</p>
+          <button className="button" onClick={cloak}>
+            Open cloaked
+          </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

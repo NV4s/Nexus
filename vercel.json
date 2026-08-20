@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    { "source": "/swf/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" }
+  ],
+  "headers": [
+    {
+      "source": "/ruffle/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/audio/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}
