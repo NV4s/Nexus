@@ -4,6 +4,17 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Mirrors the rewrites in vercel.json so proxied games work in dev too.
+  server: {
+    proxy: {
+      '/n-gon': { target: 'https://landgreen.github.io', changeOrigin: true },
+      '/swf/run-3.swf': {
+        target: 'https://player03.com',
+        changeOrigin: true,
+        rewrite: () => '/run/3/Run3.swf',
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {
