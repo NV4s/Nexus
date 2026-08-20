@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -7,6 +7,7 @@ import GamePage from './components/GamePage';
 import Settings from './components/Settings';
 import Changelog from './components/Changelog';
 import { segments, useRoute } from './lib/router';
+import { comboFrom, readCombo, readLink } from './lib/panic';
 
 // three.js is ~300 kB gzipped. Only the intro and the home page need it, so the
 // arcade grid and the player never pay for it.
@@ -22,6 +23,19 @@ export default function App() {
   const dismissIntro = useCallback(() => {
     sessionStorage.setItem('introSeen', '1');
     setShowIntro(false);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (localStorage.getItem('recordingPanicCombo') === 'true') return;
+      if (comboFrom(event) === readCombo()) {
+        event.preventDefault();
+        window.location.replace(readLink());
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   const [head, param] = segments(route);
