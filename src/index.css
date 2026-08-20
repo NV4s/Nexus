@@ -100,6 +100,23 @@ button {
   color: inherit;
 }
 
+/* Controls and card chrome are things you click, not things you read — stopping
+   them selecting avoids the blue smear when you click a card twice quickly.
+   Prose keeps its selection so it can still be copied. */
+.nav,
+.button,
+.chip,
+.card-meta,
+.card-chip,
+.card-fallback,
+.scroll-cue,
+.release-head,
+.intro-enter,
+.intro-skip {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ---------- navigation ---------- */
 
 .nav {
