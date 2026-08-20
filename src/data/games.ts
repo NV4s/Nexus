@@ -247,6 +247,19 @@ const EXTRA: Game[] = [
     blurb: 'Endless runner through broken space tunnels. Falling off is a mechanic, not a failure.',
   },
   {
+    slug: 'n-gon',
+    title: 'n-gon',
+    section: 'arcade',
+    runtime: 'html5',
+    // Proxied through this origin by vercel.json. github.io is filtered on school
+    // networks, and proxying means the game is whatever landgreen shipped today
+    // rather than a copy that goes stale.
+    src: '/n-gon/',
+    category: 'Action',
+    developer: 'Ross Landgreen',
+    blurb: 'Physics-driven side-scrolling shooter. Hundreds of tech upgrades, no two runs alike.',
+  },
+  {
     slug: 'gba-emulator',
     title: 'GBA Emulator',
     section: 'arcade',

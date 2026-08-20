@@ -7,6 +7,7 @@ const RELEASES = [
       'Games load off a CDN instead of sitting in the repo, so the site itself is tiny',
       'Ruffle is hosted here now. It used to reload the whole emulator every time you opened a game',
       'Every game has its own link. Back button works, and you can send someone a game',
+      'Added n-gon. It runs through this site, so it still works where github.io is blocked',
       'Run 3 was broken. Fixed',
       'New intro and a new home background, both WebGL',
       'Search and filters are faster and no longer wipe when you switch tabs',
