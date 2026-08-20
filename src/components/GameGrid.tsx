@@ -57,18 +57,20 @@ export default function GameGrid({
         </div>
       )}
 
-      <div className="chips" role="tablist" aria-label="Categories">
-        {categories.map((name) => (
-          <button
-            key={name}
-            role="tab"
-            aria-selected={category === name}
-            className={`chip ${category === name ? 'is-active' : ''}`}
-            onClick={() => setCategory(name)}
-          >
-            {name}
-          </button>
-        ))}
+      <div className="toolbar glass">
+        <div className="chips" role="tablist" aria-label="Categories">
+          {categories.map((name) => (
+            <button
+              key={name}
+              role="tab"
+              aria-selected={category === name}
+              className={`chip ${category === name ? 'is-active' : ''}`}
+              onClick={() => setCategory(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {visible.length === 0 ? (
@@ -79,7 +81,8 @@ export default function GameGrid({
             <div
               key={game.slug}
               className="grid-item"
-              // Stagger the first row only — 111 cards times 40ms would be a 4s wait.
+              // Stagger the first row only; browsers with scroll-driven timelines
+              // replace this outright with a per-card reveal.
               style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
             >
               <GameCard game={game} onOpen={() => open(game)} />

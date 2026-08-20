@@ -29,6 +29,11 @@
   --accent: #7cc4ff;
   --accent-ink: #04121f;
   --radius: 14px;
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --glass-tint: rgb(255 255 255 / 0.07);
+  --glass-edge: rgb(255 255 255 / 0.16);
+  --glass-sheen: rgb(255 255 255 / 0.28);
+  --glass-shadow: 0 16px 40px rgb(0 0 0 / 0.42);
   --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -47,6 +52,10 @@
   --accent: #1e6fd9;
   --accent-ink: #ffffff;
   --shadow: 0 18px 40px rgb(20 30 50 / 0.12);
+  --glass-tint: rgb(255 255 255 / 0.55);
+  --glass-edge: rgb(10 20 40 / 0.10);
+  --glass-sheen: rgb(255 255 255 / 0.85);
+  --glass-shadow: 0 16px 40px rgb(20 30 50 / 0.12);
   color-scheme: light;
 }
 
@@ -96,9 +105,11 @@ button {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 58%, transparent);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border-bottom: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-sheen);
 }
 
 .nav-logo {
@@ -364,6 +375,14 @@ button {
   animation: rise 0.45s var(--ease) forwards;
 }
 
+/* The card art needs to sit above the specular wash. */
+.card-art,
+.card-meta,
+.card-blurb {
+  position: relative;
+  z-index: 1;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -376,6 +395,7 @@ button {
 }
 
 .card {
+  position: relative;
   width: 100%;
   text-align: left;
   padding: 0;
@@ -582,9 +602,12 @@ button {
   gap: 0.75rem;
   align-items: flex-start;
   padding: 1.4rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--glass-tint);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-sheen), var(--glass-shadow);
 }
 
 .panel h3 {
@@ -615,9 +638,12 @@ button {
 
 .release {
   padding: 1.25rem 1.4rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-edge);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--glass-tint);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-sheen), var(--glass-shadow);
 }
 
 .release-head {
@@ -711,4 +737,182 @@ button {
   .grid-item {
     opacity: 1;
   }
+}
+
+
+/* ---------- liquid glass ----------
+   Real backdrop-filter is reserved for floating chrome. Putting it on 113 cards
+   would cost a full-screen blur per card, which is exactly what a Chromebook
+   cannot afford; cards get the same optical treatment without the readback. */
+
+.glass {
+  position: relative;
+  background: var(--glass-tint);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-sheen),
+    inset 0 -1px 0 rgb(0 0 0 / 0.22),
+    var(--glass-shadow);
+}
+
+/* The specular band that makes glass read as a curved surface. */
+.glass::after,
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    rgb(255 255 255 / 0.14) 0%,
+    rgb(255 255 255 / 0.03) 22%,
+    transparent 46%,
+    transparent 100%
+  );
+  opacity: 0.9;
+  transition: opacity 0.4s var(--ease-soft), transform 0.6s var(--ease-soft);
+}
+
+.card:hover::after {
+  opacity: 1;
+  transform: translateY(-6%);
+}
+
+/* ---------- page transitions ----------
+   Apple-style cross dissolve: the outgoing frame is already gone, so the new
+   page eases up through a slight scale rather than sliding. */
+
+.page {
+  animation: page-in 520ms var(--ease-soft) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: scale(1.015) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- scroll-driven reveals ----------
+   Runs on the compositor where supported, and simply shows the content where
+   it is not. */
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-in linear both;
+    animation-timeline: view();
+    animation-range: entry 5% cover 32%;
+  }
+
+  .grid-item {
+    animation: reveal-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 22%;
+  }
+
+  .parallax-slow {
+    animation: drift-up linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes drift-up {
+  from {
+    transform: translateY(6vh);
+  }
+  to {
+    transform: translateY(-6vh);
+  }
+}
+
+/* ---------- home, second act ---------- */
+
+.scroll-cue {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.scroll-cue span {
+  width: 1px;
+  height: 3rem;
+  background: linear-gradient(to bottom, var(--line-strong), transparent);
+}
+
+.showcase {
+  position: relative;
+  scroll-margin-top: 5rem;
+  z-index: 1;
+  padding: clamp(4rem, 12vh, 9rem) clamp(1.5rem, 5vw, 4rem) 6rem;
+  max-width: 88rem;
+  margin: 0 auto;
+}
+
+.showcase-head {
+  max-width: 40rem;
+  margin-bottom: 3rem;
+}
+
+.showcase-head h2 {
+  font-size: clamp(2rem, 5.5vw, 3.5rem);
+  line-height: 1.02;
+}
+
+.showcase-head p {
+  margin-top: 1rem;
+  font-size: 1.05rem;
+}
+
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ---------- sticky toolbar ---------- */
+
+.toolbar {
+  position: sticky;
+  top: 4.25rem;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 1.75rem;
+}
+
+.toolbar .chips {
+  margin-bottom: 0;
+  flex: 1 1 auto;
 }
