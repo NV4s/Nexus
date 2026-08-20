@@ -3,8 +3,9 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, ChromaticAberration, EffectComposer } from '@react-three/postprocessing';
 import { Vector2, type ShaderMaterial } from 'three';
 import { dprFor, prefersReducedMotion, useAdaptiveTier } from '../lib/quality';
+import { playIntroAudio, preloadIntroAudio } from '../lib/introAudio';
 
-const DURATION = 7.0;
+const DURATION = 8.0;
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -24,76 +25,99 @@ const fragment = /* glsl */ `
   varying vec2 vUv;
   uniform float uTime;      // seconds since the intro started
   uniform vec2  uResolution;
-  uniform float uLayers;    // starfield depth, dialled down on weak hardware
+  uniform float uLayers;    // detail depth, dialled down on weak hardware
+
+  const float TAU = 6.28318530718;
 
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
-  // Sparse points on a jittered grid — cheap stars with stable positions.
-  float stars(vec2 p, float density) {
-    vec2 cell = floor(p * density);
-    vec2 local = fract(p * density) - 0.5;
-    float seed = hash(cell);
-    if (seed < 0.935) return 0.0;
-    vec2 offset = vec2(hash(cell + 1.7), hash(cell + 4.3)) - 0.5;
-    float d = length(local - offset * 0.7);
-    return (1.0 - smoothstep(0.0, 0.085, d)) * (0.3 + 0.7 * hash(cell + 9.1));
+  float easeOut(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
+
+  // A soft irregular blob, used for the drifting wisps of light.
+  float wisp(vec2 p, vec2 centre, float radius, float seed) {
+    vec2 d = p - centre;
+    float ang = atan(d.y, d.x);
+    float wobble = 1.0 + 0.28 * sin(ang * 3.0 + seed) + 0.16 * sin(ang * 5.0 - seed * 2.0);
+    float edge = radius * max(wobble, 0.3);
+    return 1.0 - smoothstep(edge * 0.05, edge, length(d));
   }
 
-  float easeOut(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
+  // One band of warp streaks. Each angular slot gets its own speed, length and
+  // colour, so the rush reads as thousands of separate trails rather than a fan.
+  vec3 warpBand(float ang, float r, float count, float seed, float speed, float t) {
+    float slot = floor(ang / TAU * count + 0.5) + seed * 37.0;
+    float rnd = hash(vec2(slot, 3.7));
+    float rnd2 = hash(vec2(slot, 9.1));
+
+    float across = abs(fract(ang / TAU * count + 0.5) - 0.5) * 2.0;
+    float line = 1.0 - smoothstep(0.0, 0.30 + rnd2 * 0.30, across);
+
+    float head = fract(rnd2 + t * speed * (0.35 + rnd * 1.25)) * 2.9;
+    float tail = head - (0.30 + rnd * 0.75);
+    float segment = smoothstep(tail, tail + 0.06, r) * (1.0 - smoothstep(head - 0.04, head, r));
+    float along = smoothstep(tail, head, r);
+
+    vec3 violet = vec3(0.42, 0.16, 0.95);
+    vec3 magenta = vec3(0.88, 0.14, 0.70);
+    vec3 hot = vec3(1.0, 0.86, 1.0);
+    vec3 tint = mix(violet, magenta, rnd);
+    tint = mix(tint, hot, pow(along, 3.0) * (0.3 + rnd2 * 0.6));
+
+    return tint * line * segment * along;
+  }
 
   void main() {
     vec2 p = (vUv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0) * 2.0;
     float r = max(length(p), 1e-4);
+    float ang = atan(p.y, p.x);
     float t = uTime;
 
-    // Phase timings, in seconds.
-    float open     = easeOut((t - 0.35) / 1.9);  // boundary expands
-    float depth    = easeOut((t - 1.6) / 3.4);   // travel into the void
-    float collapse = easeOut((t - 5.2) / 1.1);   // whiteout
+    // The rush builds, holds, then gives way to the void it was carrying you into.
+    float rush = smoothstep(0.25, 1.20, t) * (1.0 - smoothstep(4.40, 5.90, t));
+    float settle = smoothstep(4.60, 6.40, t);
+    float accel = 0.55 + easeOut((t - 0.3) / 4.0) * 1.35;
 
-    float radius = open * 2.4;
-    // smoothstep needs edge0 < edge1 — reversed edges are undefined, not inverted.
-    float inside = 1.0 - smoothstep(radius - 0.05, radius, r);
+    vec3 color = vec3(0.004, 0.003, 0.012);
 
-    // Sphere inversion. Points near the boundary stretch toward infinity.
-    vec2 q = p / (r * r);
-    q += vec2(0.0, depth * 2.4);
+    // --- the rush -------------------------------------------------------
+    vec3 streaks = warpBand(ang, r, 64.0, 1.0, 0.55 * accel, t);
+    if (uLayers >= 3.0) streaks += warpBand(ang, r, 118.0, 2.0, 0.78 * accel, t) * 0.75;
+    if (uLayers >= 4.0) streaks += warpBand(ang, r, 182.0, 3.0, 0.98 * accel, t) * 0.55;
+    color += streaks * rush * 1.35;
 
-    // Outside the domain: all but black.
-    vec3 color = vec3(0.004, 0.005, 0.010);
+    // The vanishing point everything is pouring out of.
+    color += vec3(1.0, 0.82, 1.0) * (1.0 - smoothstep(0.0, 0.30, r)) * rush * 0.55;
 
-    // Interior starfield, several parallax layers.
-    float field = 0.0;
-    for (float i = 0.0; i < 5.0; i += 1.0) {
-      if (i >= uLayers) break;
-      float scale = 1.4 + i * 2.0;
-      float drift = depth * (0.5 + i * 0.45);
-      field += stars(q * scale + vec2(drift, -drift * 1.7), 1.8) * (0.9 - i * 0.16);
+    // Wisps of light tumbling past.
+    float drift = t * 0.35;
+    float wisps = 0.0;
+    wisps += wisp(p, vec2(-1.05 + sin(drift) * 0.15, 0.52), 0.34, 3.4);
+    wisps += wisp(p, vec2(1.12, 0.44 + cos(drift * 1.2) * 0.12), 0.28, 5.9);
+    if (uLayers >= 3.0) {
+      wisps += wisp(p, vec2(0.72, -0.62 + sin(drift * 0.8) * 0.10), 0.24, 8.2);
+      wisps += wisp(p, vec2(-0.88, -0.48), 0.22, 1.1);
     }
+    color += vec3(0.95, 0.88, 1.0) * clamp(wisps, 0.0, 1.0) * rush * 0.16;
 
-    // Deep indigo interior so the domain reads as a distinct volume.
-    vec3 voidColor = vec3(0.004, 0.006, 0.016);
-    voidColor += vec3(0.012, 0.030, 0.090) * (1.0 - smoothstep(0.0, 1.3, r));
-    voidColor += vec3(0.60, 0.78, 1.0) * field;
+    // --- the void it resolves into --------------------------------------
+    float core = 0.27;
+    float ring = 1.0 - smoothstep(0.0, 0.045, abs(r - core * 1.20));
+    float halo = 1.0 - smoothstep(0.0, 0.28, abs(r - core * 1.30));
 
-    color = mix(color, voidColor, inside);
+    vec3 field = vec3(0.005, 0.007, 0.014);
+    field += vec3(0.90, 0.94, 1.0) * ring * 1.15;
+    field += vec3(0.26, 0.34, 0.56) * halo * 0.30;
+    // Wispy cloud lying across the field, the way it does once the rush stops.
+    float cloud = wisp(p, vec2(-1.25, -0.14), 0.70, 2.2) + wisp(p, vec2(1.22, 0.20), 0.62, 6.6);
+    field += vec3(0.24, 0.30, 0.44) * clamp(cloud, 0.0, 1.0) * 0.055;
+    // Nothing escapes the core.
+    field *= smoothstep(core * 0.94, core, r);
 
-    // Boundary rim, plus a wider halo bleeding outward.
-    float rim = 1.0 - smoothstep(0.0, 0.04, abs(r - radius));
-    float halo = 1.0 - smoothstep(0.0, 0.45, abs(r - radius));
-    color += vec3(0.62, 0.82, 1.0) * rim * (1.0 - collapse);
-    color += vec3(0.10, 0.22, 0.50) * halo * 0.35 * open * (1.0 - collapse);
+    color = mix(color, field, settle);
 
-    // The seed of light before the domain opens.
-    color += vec3(0.7, 0.85, 1.0) * (1.0 - smoothstep(0.0, 0.18, r)) * pow(1.0 - open, 2.0);
-
-    // Collapse to white, then hand over to the site.
-    color = mix(color, vec3(1.0), collapse);
-    float fade = 1.0 - smoothstep(0.75, 1.0, (t - 5.2) / 1.8);
-
-    gl_FragColor = vec4(color, max(fade, 0.0));
+    gl_FragColor = vec4(color, 1.0 - smoothstep(7.1, 8.0, t));
   }
 `;
 
@@ -151,46 +175,31 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
 
 export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
   const tier = useAdaptiveTier();
-  const audioRef = useRef<HTMLAudioElement>(null);
   const [started, setStarted] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
   // Stable identity: the old intro re-ran its animation effect on every parent render.
   const finish = useCallback(() => setLeaving(true), []);
 
+  useEffect(preloadIntroAudio, []);
+
   useEffect(() => {
     if (!leaving) return;
-
-    // Fade the music out with the overlay instead of cutting it dead.
-    const audio = audioRef.current;
-    const fade = audio
-      ? setInterval(() => {
-          audio.volume = Math.max(0, audio.volume - 0.08);
-          if (audio.volume === 0) audio.pause();
-        }, 30)
-      : undefined;
-
+    // The track keeps playing past this point on purpose — see lib/introAudio.
     const timer = setTimeout(onComplete, 400);
-    return () => {
-      clearTimeout(timer);
-      if (fade) clearInterval(fade);
-    };
+    return () => clearTimeout(timer);
   }, [leaving, onComplete]);
 
   const begin = () => {
     setStarted(true);
-    if (prefersReducedMotion()) return finish();
-    audioRef.current?.play().catch(() => {
-      /* autoplay refused — the visual still runs */
-    });
+    playIntroAudio();
+    if (prefersReducedMotion()) finish();
   };
 
   const layers = tier === 'low' ? 2 : tier === 'medium' ? 3 : 5;
 
   return (
     <div className={`intro ${leaving ? 'is-leaving' : ''}`}>
-      <audio ref={audioRef} src="/audio/void-intro.mp3" preload="auto" />
-
       {started && (
         <Canvas
           flat
@@ -200,7 +209,7 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
           <VoidSurface layers={layers} onDone={finish} />
           {tier !== 'low' && (
             <EffectComposer>
-              <Bloom intensity={0.75} luminanceThreshold={0.6} mipmapBlur />
+              <Bloom intensity={0.65} luminanceThreshold={0.55} mipmapBlur />
               <ChromaticAberration offset={new Vector2(0.0005, 0.0005)} />
             </EffectComposer>
           )}

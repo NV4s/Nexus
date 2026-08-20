@@ -53,6 +53,8 @@ export default function App() {
 
       {/* Not mounted during the intro, so two WebGL contexts never render at once. */}
       <main className="content">
+        {/* Keyed by route: React remounts, so the enter animation replays per page. */}
+        <div className="page" key={showIntro ? 'intro' : `${head ?? 'home'}/${param ?? ''}`}>
         {showIntro ? null : head === 'game' && param ? (
           <GamePage slug={param} />
         ) : head === 'arcade' ? (
@@ -66,6 +68,7 @@ export default function App() {
         ) : (
           <Home />
         )}
+        </div>
       </main>
     </>
   );

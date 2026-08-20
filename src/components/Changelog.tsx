@@ -3,64 +3,54 @@ const RELEASES = [
     version: 'v1.2.0',
     date: '2026-08-17',
     changes: [
-      'Every game in the swfdump library is now on the site — 111 Flash titles, up from 13',
-      'Flash games run on a self-hosted Ruffle build instead of a CDN copy reloaded per game',
-      'SWF files moved to a CDN, so the site itself is small and loads fast',
-      'Games have their own URLs — links are shareable and the back button works',
-      'Rebuilt the intro and the home background in WebGL',
-      'Fixed Run 3, which had been failing to load',
-      'Removed the Movies tab, which never worked',
-      'Removed the empty Leaderboard tab',
-      'Study links that refuse to be embedded now open in a new tab instead of a blank frame',
-      'Panic key now needs a modifier, so it cannot fire while you are playing',
+      'All 111 games from the dump are on the site now. It was 13.',
+      'Games load off a CDN instead of sitting in the repo, so the site itself is tiny',
+      'Ruffle is hosted here now. It used to reload the whole emulator every time you opened a game',
+      'Every game has its own link. Back button works, and you can send someone a game',
+      'Run 3 was broken. Fixed',
+      'New intro and a new home background, both WebGL',
+      'Search and filters are faster and no longer wipe when you switch tabs',
+      'Killed the Movies tab. None of those links went anywhere',
+      'Killed the Leaderboard tab too. It was an empty page that said scores were coming',
+      'Quizlet and Keep refuse to load in a frame, so they open in a new tab instead of a blank box',
+      'Panic key needs Ctrl now. Hitting backtick mid-game used to nuke your session',
+      'Fullscreen no longer gets eaten by the popup blocker',
     ],
   },
   {
     version: 'v1.1.2',
     date: '2026-03-24',
-    changes: ['Added Battle Pong, Battleships, Bloxorz and Bowman'],
+    changes: ['Battle Pong, Battleships, Bloxorz and Bowman'],
   },
   {
     version: 'v1.1.1',
     date: '2026-03-23',
-    changes: ['Sorted SWF files and thumbnails into their own folders', 'Fixed the Avalanche embed size'],
+    changes: ['Tidied up where the game and image files live', 'Avalanche was the wrong size. Fixed'],
   },
   {
     version: 'v1.1.0',
     date: '2026-03-23',
-    changes: ['Added Alien Hominid, Gun Mayhem 2, Asteroids, Astroflash and Avalanche'],
+    changes: ['Alien Hominid, Gun Mayhem 2, Asteroids, Astroflash, Avalanche'],
   },
   {
     version: 'v1.0.9',
     date: '2026-03-16',
-    changes: ['Added a fullscreen button and descriptions to the player'],
+    changes: ['Fullscreen button', 'Descriptions on the player page'],
   },
   {
     version: 'v1.0.8',
     date: '2026-03-09',
-    changes: ['Moved the Instagram link to the footer', 'Added the intro audio'],
+    changes: ['Instagram link moved to the bottom', 'Intro has sound now'],
   },
-  {
-    version: 'v1.0.7',
-    date: '2026-03-09',
-    changes: ['Added the domain expansion intro'],
-  },
-  {
-    version: 'v1.0.5',
-    date: '2026-03-09',
-    changes: ['Evened out card sizes across every section'],
-  },
-  {
-    version: 'v1.0.3',
-    date: '2026-03-09',
-    changes: ['Added this changelog'],
-  },
+  { version: 'v1.0.7', date: '2026-03-09', changes: ['Added the domain expansion intro'] },
+  { version: 'v1.0.5', date: '2026-03-09', changes: ['Made all the cards the same size'] },
+  { version: 'v1.0.3', date: '2026-03-09', changes: ['This page'] },
   {
     version: 'v1.0.1',
     date: '2026-03-08',
-    changes: ['Added Home, Study, Arcade, tab disguise and the panic key'],
+    changes: ['Home, Study, Arcade', 'Tab disguise and the panic key'],
   },
-  { version: 'v1.0.0', date: '2026-03-08', changes: ['First build'] },
+  { version: 'v1.0.0', date: '2026-03-08', changes: ['Started'] },
 ];
 
 export default function Changelog() {
@@ -69,7 +59,7 @@ export default function Changelog() {
       <header className="section-head">
         <div>
           <h2>Changelog</h2>
-          <p>What changed, newest first.</p>
+          <p>Newest first.</p>
         </div>
       </header>
 
