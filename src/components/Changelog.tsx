@@ -5,6 +5,7 @@ const RELEASES = [
     changes: [
       'Text no longer highlights anywhere in the interface. Dragging across the home page or the arcade selects nothing, and double-clicking a card no longer smears blue across its title',
       'Typing fields are unaffected, so search and the settings inputs still select and edit normally',
+      'The site hides what it renders. Everything draws inside a closed shadow root now, so an extension or a filter reading the page finds one empty div instead of the games',
       'Settings has a graphics toggle. Auto scales the background effects to your frame rate; low pins them and skips the measuring, which is the one to use if the intro stutters',
     ],
   },
