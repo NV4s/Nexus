@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 
 export type Tier = 'low' | 'medium' | 'high';
+export type QualityPreference = 'auto' | 'low';
+
+export const readQualityPreference = (): QualityPreference =>
+  localStorage.getItem('quality') === 'low' ? 'low' : 'auto';
+
+export const writeQualityPreference = (value: QualityPreference) =>
+  localStorage.setItem('quality', value);
 
 const lower: Record<Tier, Tier> = { high: 'medium', medium: 'low', low: 'low' };
 
@@ -27,10 +34,13 @@ export const particlesFor = (tier: Tier) => ({ low: 1200, medium: 4000, high: 90
  * Sample real frame times for a second and drop a tier if we are over ~22ms.
  */
 export function useAdaptiveTier(): Tier {
-  const [tier, setTier] = useState<Tier>(detectTier);
+  const [tier, setTier] = useState<Tier>(() =>
+    readQualityPreference() === 'low' ? 'low' : detectTier(),
+  );
 
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    // An explicit low setting is a floor, not a first guess — skip measuring entirely.
+    if (prefersReducedMotion() || readQualityPreference() === 'low') return;
     let frames = 0;
     let raf = 0;
     const start = performance.now();

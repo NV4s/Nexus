@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
 import { DEFAULT_LINK, comboFrom, label, readCombo, readLink } from '../lib/panic';
 
 const setFavicon = (href: string) => {
@@ -13,11 +14,14 @@ export default function Settings() {
   const [combo, setCombo] = useState(readCombo);
   const [link, setLink] = useState(readLink);
   const [recording, setRecording] = useState(false);
+  const [quality, setQuality] = useState<QualityPreference>(readQualityPreference);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  useEffect(() => writeQualityPreference(quality), [quality]);
 
   useEffect(() => localStorage.setItem('panicCombo', combo), [combo]);
   useEffect(() => localStorage.setItem('panicLink', link), [link]);
@@ -78,6 +82,25 @@ export default function Settings() {
           <button className="button ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
             Switch to {theme === 'dark' ? 'light' : 'dark'}
           </button>
+        </div>
+
+        <div className="panel">
+          <h3>Graphics</h3>
+          <p>
+            Auto measures your frame rate and scales the background effects to match. Pick low if
+            the intro or the home page ever stutters.
+          </p>
+          <div className="row">
+            {(['auto', 'low'] as const).map((option) => (
+              <button
+                key={option}
+                className={`button ${quality === option ? '' : 'ghost'}`}
+                onClick={() => setQuality(option)}
+              >
+                {option === 'auto' ? 'Auto' : 'Low'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="panel">
