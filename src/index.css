@@ -100,6 +100,25 @@ button {
   color: inherit;
 }
 
+/* Interface chrome is for clicking, not reading: stops the blue smear when you
+   click a card twice quickly. Prose keeps selection so it stays copyable. */
+.nav,
+.button,
+.chip,
+.card-meta,
+.card-chip,
+.card-fallback,
+.section-head h2,
+.scroll-cue,
+.release-head,
+.game-title,
+.toolbar,
+.intro-enter,
+.intro-skip {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* ---------- navigation ---------- */
 
 .nav {
