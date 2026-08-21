@@ -100,23 +100,20 @@ button {
   color: inherit;
 }
 
-/* Interface chrome is for clicking, not reading: stops the blue smear when you
-   click a card twice quickly. Prose keeps selection so it stays copyable. */
-.nav,
-.button,
-.chip,
-.card-meta,
-.card-chip,
-.card-fallback,
-.section-head h2,
-.scroll-cue,
-.release-head,
-.game-title,
-.toolbar,
-.intro-enter,
-.intro-skip {
+/* Nothing in the interface takes a text selection: dragging across the home page
+   or the arcade grid highlights nothing, and clicking a card twice leaves no blue
+   smear across its title. Form fields are exempted below or they stop working. */
+body {
   user-select: none;
   -webkit-user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* ---------- navigation ---------- */

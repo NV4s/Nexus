@@ -1,5 +1,14 @@
 const RELEASES = [
   {
+    version: 'v1.2.1',
+    date: '2026-08-20',
+    changes: [
+      'Text no longer highlights anywhere in the interface. Dragging across the home page or the arcade selects nothing, and double-clicking a card no longer smears blue across its title',
+      'Typing fields are unaffected, so search and the settings inputs still select and edit normally',
+      'Settings has a graphics toggle. Auto scales the background effects to your frame rate; low pins them and skips the measuring, which is the one to use if the intro stutters',
+    ],
+  },
+  {
     version: 'v1.2.0',
     date: '2026-08-17',
     changes: [
