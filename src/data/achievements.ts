@@ -60,6 +60,47 @@ const boxhead = (): Achievement[] => [
   settled,
 ];
 
+/**
+ * Endless War is one series with a hard split: 1–4 march a single soldier across
+ * a map, 5–7 hand you tanks and self-propelled guns instead.
+ */
+const endlessWarInfantry = (): Achievement[] => [
+  opened('Deployed', 'Start your first mission.'),
+  { id: 'cross-map', name: 'Other side', hint: 'Get your soldier from one end of a map to the other.' },
+  { id: 'swap-weapon', name: 'Field pickup', hint: 'Take a weapon from a fallen enemy and use it.' },
+  { id: 'finish-campaign', name: 'Campaign done', hint: 'Finish an entire campaign.' },
+  settled,
+];
+
+const endlessWarArmour = (): Achievement[] => [
+  opened('Start her up', 'Take a vehicle into battle.'),
+  { id: 'three-vehicles', name: 'Motor pool', hint: 'Fight in three different vehicles.' },
+  { id: 'kill-tank', name: 'Armour piercing', hint: 'Destroy an enemy tank.' },
+  { id: 'survive-mission', name: 'Brought it home', hint: 'Finish a mission without losing your vehicle.' },
+  settled,
+];
+
+/** Pick a weapon, take it out on the stickman, buy the next one with the payout. */
+const chooseWeapon = (): Achievement[] => [
+  opened('Take your pick', 'Use your first weapon.'),
+  { id: 'five-weapons', name: 'Variety', hint: 'Try five different weapons.' },
+  { id: 'buy-weapon', name: 'Reinvested', hint: 'Earn enough to unlock a new weapon.' },
+  { id: 'every-weapon', name: 'Whole arsenal', hint: 'Unlock every weapon in the game.' },
+  settled,
+];
+
+/**
+ * Customerpalooza ran a live bracket: submit a character, then vote through four
+ * divisions. The voting closed years ago, so only the Create section still does
+ * anything — objectives stay on the part that actually works.
+ */
+const customerpalooza = (): Achievement[] => [
+  opened('Open the studio', 'Start the character creator.'),
+  { id: 'make-one', name: 'First customer', hint: 'Create and name a character.' },
+  { id: 'full-custom', name: 'Head to toe', hint: 'Change skin tone, hair, face, height, weight and clothing on one character.' },
+  { id: 'three-entries', name: 'Full slate', hint: 'Fill all three entry slots.' },
+];
+
 /** Each Madness mod is a different build of the same arena and story modes. */
 const madness = (): Achievement[] => [
   opened('Nexus online', 'Boot the mod.'),
@@ -364,6 +405,225 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'secret', name: 'Secret found', hint: 'Find a hidden room.' },
     { id: 'finish-level', name: 'Level cleared', hint: 'Finish a level.' },
     veteran,
+  ],
+
+  /* ---------- Endless War ---------- */
+
+  'endless-war': endlessWarInfantry(),
+  'endless-war-2': endlessWarInfantry(),
+  'endless-war-3': endlessWarInfantry(),
+  'endless-war-4': endlessWarInfantry(),
+  'endless-war-5': endlessWarArmour(),
+  'endless-war-6': endlessWarArmour(),
+  'endless-war-7': endlessWarArmour(),
+  'endless-war-defense': [
+    opened('Dig in', 'Start a defence.'),
+    { id: 'hold-wave', name: 'Line held', hint: 'Survive a wave without losing a position.' },
+    { id: 'upgrade', name: 'Reinforced', hint: 'Buy an upgrade between waves.' },
+    { id: 'wave-10', name: 'Ten deep', hint: 'Reach wave 10.' },
+    settled,
+  ],
+
+  /* ---------- Choose Your Weapon ---------- */
+
+  'choose-your-weapon': chooseWeapon(),
+  'choose-your-weapon-2': chooseWeapon(),
+  'choose-your-weapon-3': chooseWeapon(),
+  'choose-your-weapon-4': chooseWeapon(),
+
+  /* ---------- Kingsley's Customerpalooza ---------- */
+
+  'kingsleys-customerpalooza-2013': customerpalooza(),
+  'kingsleys-customerpalooza-2014': customerpalooza(),
+  'kingsleys-customerpalooza-2015': customerpalooza(),
+  'kingsleys-customerpalooza-2016': customerpalooza(),
+  'kingsleys-customerpalooza-2017': customerpalooza(),
+  'kingsleys-customerpalooza-2018': customerpalooza(),
+  'kingsleys-customerpalooza-2019': customerpalooza(),
+  'kingsleys-customerpalooza-2020': customerpalooza(),
+
+  /* ---------- Flipline oddments ---------- */
+
+  // Steak the cow hauls milk, Jake the bird changes colour; 30 worlds of it.
+  'steak-and-jake': [
+    opened('Milk run', 'Start the first delivery.'),
+    { id: 'colour-change', name: 'Quick change', hint: "Use Jake's colour change to get past an obstacle." },
+    { id: 'bandits', name: 'Milk bandits', hint: 'Protect Steak from a bandit ambush.' },
+    { id: 'boss', name: 'Boss down', hint: 'Win a boss battle.' },
+    { id: 'cocoa-cow', name: 'Beat the Cocoa Cow', hint: 'Out-race the Cocoa Cow to a customer.' },
+    settled,
+  ],
+  'steak-and-jake-midnight-march': [
+    opened('After dark', 'Start the night run.'),
+    { id: 'colour-change', name: 'Quick change', hint: "Use Jake's colour change to clear an obstacle." },
+    { id: 'ten-levels', name: 'Ten down', hint: 'Clear ten levels.' },
+    { id: 'boss', name: 'Boss down', hint: 'Win a boss battle.' },
+    settled,
+  ],
+  'guppy-guard-express': [
+    opened('Into the caves', 'Start guiding the guppy.'),
+    { id: 'no-hit', name: 'Untouched', hint: 'Clear a stage without hitting a rock.' },
+    { id: 'ten-levels', name: 'Deep water', hint: 'Clear ten stages.' },
+    settled,
+  ],
+  'papa-louie-2': [
+    opened('When Burgers Attack', 'Start the platformer.'),
+    { id: 'rescue', name: 'Rescued', hint: 'Free a captured customer.' },
+    { id: 'unlock-character', name: 'New face', hint: 'Unlock a playable character.' },
+    { id: 'finish', name: 'Finished', hint: 'Complete the final level.' },
+    settled,
+  ],
+  'papa-louie-3': [
+    opened('When Sundaes Attack', 'Start the platformer.'),
+    { id: 'rescue', name: 'Rescued', hint: 'Free a captured customer.' },
+    { id: 'unlock-character', name: 'New face', hint: 'Unlock a playable character.' },
+    { id: 'finish', name: 'Finished', hint: 'Complete the final level.' },
+    settled,
+  ],
+
+  /* ---------- one-offs with a documented goal ---------- */
+
+  // Kill every stickman in the room, in an order where none of them sees it happen.
+  causality: [
+    opened('First accident', 'Start the first scene.'),
+    { id: 'no-witness', name: 'No witnesses', hint: 'Clear a scene without a stickman seeing another one die.' },
+    { id: 'chain', name: 'Chain reaction', hint: 'Set off one event that triggers the next by itself.' },
+    { id: 'all-levels', name: 'Case closed', hint: 'Finish every scene.' },
+  ],
+  'adrenaline-challenge': [
+    opened('Kickstart', 'Start the first track.'),
+    { id: 'no-crash', name: 'Clean run', hint: 'Finish a track without crashing.' },
+    { id: 'balance', name: 'Balancing act', hint: 'Ride the length of a see-saw without tipping.' },
+    { id: 'ten-tracks', name: 'Ten tracks', hint: 'Finish ten tracks.' },
+    settled,
+  ],
+  avalanche: [
+    opened('First drop', 'Start falling.'),
+    { id: 'thirty', name: 'Thirty seconds', hint: 'Stay alive for thirty seconds.' },
+    { id: 'minute', name: 'One minute', hint: 'Stay alive for a full minute.' },
+    regular,
+  ],
+  bowman: [
+    opened('Nock an arrow', 'Take your first shot.'),
+    { id: 'headshot', name: 'Headshot', hint: 'Hit your opponent in the head.' },
+    { id: 'win-match', name: 'Match won', hint: 'Win a duel.' },
+    { id: 'long-shot', name: 'Long shot', hint: 'Land a hit at maximum distance.' },
+    regular,
+  ],
+  'champion-archer': [
+    opened('Draw', 'Take your first shot.'),
+    { id: 'bullseye', name: 'Bullseye', hint: 'Hit the centre of the target.' },
+    { id: 'round-win', name: 'Round won', hint: 'Win a round.' },
+    regular,
+  ],
+  'battle-pong': [
+    opened('Serve', 'Start a match.'),
+    { id: 'powerup', name: 'Power up', hint: 'Collect a power-up mid-rally.' },
+    { id: 'win', name: 'Match won', hint: 'Beat your opponent.' },
+    regular,
+  ],
+  battleships: [
+    opened('Fleet ready', 'Place your ships.'),
+    { id: 'first-hit', name: 'Hit', hint: 'Land a shot on an enemy ship.' },
+    { id: 'sink', name: 'Sunk', hint: 'Sink a ship outright.' },
+    { id: 'win', name: 'Fleet destroyed', hint: 'Sink every enemy ship.' },
+  ],
+  'connect-4': [
+    opened('Drop one', 'Play your first disc.'),
+    { id: 'win', name: 'Four in a row', hint: 'Win a game.' },
+    { id: 'diagonal', name: 'On the diagonal', hint: 'Win with a diagonal line.' },
+    regular,
+  ],
+  'castle-wars': [
+    opened('First hand', 'Play your first card.'),
+    { id: 'build-100', name: 'Fortified', hint: 'Build your castle to 100.' },
+    { id: 'win-attack', name: 'Breached', hint: 'Win by destroying the enemy castle.' },
+    settled,
+  ],
+  'conquer-antarctica': [
+    opened('Landfall', 'Start the campaign.'),
+    { id: 'take-territory', name: 'Territory taken', hint: 'Capture an enemy territory.' },
+    { id: 'win', name: 'Continent held', hint: 'Win the campaign.' },
+    settled,
+  ],
+  commando: [
+    opened('Boots on', 'Start the first mission.'),
+    { id: 'upgrade', name: 'Upgraded', hint: 'Spend experience on an upgrade.' },
+    { id: 'finish-mission', name: 'Mission complete', hint: 'Finish a mission.' },
+    veteran,
+  ],
+  'bush-shootout': [
+    opened('Take cover', 'Start the shootout.'),
+    { id: 'clear-wave', name: 'Wave cleared', hint: 'Clear a wave without being hit.' },
+    { id: 'reload', name: 'Under pressure', hint: 'Reload and keep the streak going.' },
+    settled,
+  ],
+  'gun-mayhem-2': [
+    opened('Step up', 'Start a match.'),
+    { id: 'knock-off', name: 'Off the edge', hint: 'Knock an opponent off the platform.' },
+    { id: 'unlock', name: 'New kit', hint: 'Unlock a weapon or perk.' },
+    { id: 'win-match', name: 'Last hat standing', hint: 'Win a match.' },
+    settled,
+  ],
+  'meteor-blastor': [
+    opened('Guns hot', 'Start shooting.'),
+    { id: 'clear-wave', name: 'Sky cleared', hint: 'Destroy every meteor in a wave.' },
+    { id: 'survive', name: 'Still flying', hint: 'Beat your own best score.' },
+    regular,
+  ],
+  'color-switch': [
+    opened('First gate', 'Pass your first colour gate.'),
+    { id: 'ten-gates', name: 'Ten gates', hint: 'Pass ten obstacles in one run.' },
+    { id: 'switch', name: 'Switched', hint: 'Change colour and clear the next obstacle immediately.' },
+    regular,
+  ],
+  'cursor-invisible': [
+    opened('Where is it', 'Start without a cursor.'),
+    { id: 'first-level', name: 'Found by feel', hint: 'Clear a level with the cursor hidden.' },
+    { id: 'five-levels', name: 'Muscle memory', hint: 'Clear five levels.' },
+    settled,
+  ],
+  'dr-carter-and-the-cave-of-despair': [
+    opened('Into the cave', 'Start the adventure.'),
+    { id: 'item', name: 'Useful thing', hint: 'Pick up an item and use it somewhere else.' },
+    { id: 'puzzle', name: 'Solved', hint: 'Solve a puzzle blocking the way.' },
+    { id: 'escape', name: 'Out of the cave', hint: 'Reach the ending.' },
+  ],
+  'unfinished-sarge-game-demo': [
+    opened('Demo', 'Start what there is of it.'),
+    { id: 'reach-end', name: 'End of the road', hint: 'Play until the demo stops.' },
+  ],
+
+  // Stones slide until they hit something; match five of a colour to flip them,
+  // flip the whole garden to clear the level. 100+ levels plus an endless mode.
+  'rock-garden-deluxe': [
+    opened('First stone', 'Start a garden.'),
+    { id: 'match-five', name: 'Five in a row', hint: 'Match five stones of one colour and flip them.' },
+    { id: 'clear-level', name: 'Garden flipped', hint: 'Flip every stone to finish a level.' },
+    { id: 'collect', name: 'Collector', hint: 'Earn a level’s collectible stone.' },
+    { id: 'random-mode', name: 'Endless', hint: 'Play a round of Random Mode.' },
+    settled,
+  ],
+
+  // Astroflash and Hamu are deliberately absent: neither has any documentation I
+  // could verify, and inventing objectives for them would read as authoritative
+  // and be wrong. They fall back to the generic play-based list.
+
+  /* ---------- not Flash ---------- */
+
+  'n-gon': [
+    opened('Spawn in', 'Start a run.'),
+    { id: 'tech', name: 'Teched up', hint: 'Take five tech upgrades in one run.' },
+    { id: 'gun', name: 'New gun', hint: 'Pick up a second weapon.' },
+    { id: 'boss', name: 'Boss down', hint: 'Kill a boss.' },
+    { id: 'level-5', name: 'Deeper', hint: 'Reach the fifth level of a run.' },
+    veteran,
+  ],
+  'gba-emulator': [
+    opened('Booted', 'Open the emulator.'),
+    { id: 'load-rom', name: 'ROM loaded', hint: 'Load a ROM file from your device.' },
+    { id: 'save-state', name: 'Save state', hint: 'Save and reload a state.' },
+    settled,
   ],
 };
 
