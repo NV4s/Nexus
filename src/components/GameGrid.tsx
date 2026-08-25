@@ -1,10 +1,7 @@
 import { useMemo, useState } from 'react';
-import { categoriesIn, featuredGames, gamesIn, type Game, type Section } from '../data/games';
-import { navigate } from '../lib/router';
+import { categoriesIn, featuredGames, gamesIn, type Section } from '../data/games';
+import { openGame as open } from '../lib/launch';
 import GameCard from './GameCard';
-
-const open = (game: Game) =>
-  game.newTab ? window.open(game.src, '_blank', 'noopener') : navigate(`/game/${game.slug}`);
 
 export default function GameGrid({
   section,

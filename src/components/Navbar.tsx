@@ -1,8 +1,12 @@
 import { navigate } from '../lib/router';
 
+// /admin is deliberately absent: it is unlisted, not hidden, but there is no
+// reason to advertise it to every visitor.
 const LINKS = [
   ['/arcade', 'Arcade'],
   ['/study', 'Study'],
+  ['/achievements', 'Achievements'],
+  ['/saves', 'Saves'],
   ['/settings', 'Settings'],
   ['/changelog', 'Changelog'],
 ] as const;

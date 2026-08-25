@@ -935,3 +935,122 @@ select,
   margin-bottom: 0;
   flex: 1 1 auto;
 }
+
+/* ---------- achievements, saves and admin ---------- */
+
+.achievements {
+  grid-column: 1 / -1;
+}
+
+.achievements h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.achievement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.achievement {
+  width: 100%;
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 6px);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.18s var(--ease), background 0.18s var(--ease);
+}
+
+.achievement:disabled {
+  cursor: default;
+}
+
+.achievement:not(:disabled):hover {
+  border-color: var(--line-strong);
+}
+
+.is-done .achievement {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, var(--surface-2));
+}
+
+.achievement-mark {
+  flex: 0 0 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  color: var(--accent);
+}
+
+.is-done .achievement-mark {
+  border-color: var(--accent);
+}
+
+.achievement strong {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.achievement em {
+  display: block;
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.achievement-row {
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+}
+
+.achievement-row .progress {
+  width: 100%;
+}
+
+.stat {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.live-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.live-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: calc(var(--radius) - 8px);
+  background: var(--surface-2);
+}
+
+.live-list .bar {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  flex: 0 0 auto;
+}

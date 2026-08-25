@@ -4,3 +4,5 @@ dist/
 .env.local
 .vercel/
 *.log
+# The Eaglercraft relay jar is exported from the client, not redistributed here.
+*.jar

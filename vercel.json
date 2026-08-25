@@ -1,4 +1,8 @@
 {
+  "regions": ["iad1"],
+  "functions": {
+    "api/**/*.ts": { "maxDuration": 10 }
+  },
   "rewrites": [
     { "source": "/swf/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" },
     { "source": "/n-gon", "destination": "https://landgreen.github.io/n-gon/" },

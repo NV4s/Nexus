@@ -6,12 +6,19 @@ import GameGrid from './components/GameGrid';
 import GamePage from './components/GamePage';
 import Settings from './components/Settings';
 import Changelog from './components/Changelog';
+import Achievements from './components/Achievements';
+import Saves from './components/Saves';
 import { segments, useRoute } from './lib/router';
 import { comboFrom, readCombo, readLink } from './lib/panic';
+import { startTracking } from './lib/track';
 
 // three.js is ~300 kB gzipped. Only the intro and the home page need it, so the
 // arcade grid and the player never pay for it.
 const VoidIntro = lazy(() => import('./webgl/VoidIntro'));
+
+// Unlisted, and nobody but the owner ever opens it — keep it out of everyone
+// else's bundle rather than shipping a dashboard to every visitor.
+const Admin = lazy(() => import('./components/Admin'));
 
 export default function App() {
   const route = useRoute();
@@ -38,6 +45,8 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  useEffect(startTracking, []);
+
   const [head, param] = segments(route);
 
   return (
@@ -63,6 +72,14 @@ export default function App() {
           <GameGrid section="study" title="Study" lede="Calculators and note tools." />
         ) : head === 'settings' ? (
           <Settings />
+        ) : head === 'achievements' ? (
+          <Achievements />
+        ) : head === 'saves' ? (
+          <Saves />
+        ) : head === 'admin' ? (
+          <Suspense fallback={<div className="empty">Loading…</div>}>
+            <Admin />
+          </Suspense>
         ) : head === 'changelog' ? (
           <Changelog />
         ) : (

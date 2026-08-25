@@ -1,0 +1,9 @@
+# Bind to every interface: Fly routes external 443 to this container port.
+address: 0.0.0.0
+port: 8081
+
+# Fly terminates TLS at the edge, so the relay itself speaks plain ws.
+enable_ssl: false
+
+# Raise if more than a handful of people share worlds at once.
+max_connections: 64

@@ -4,9 +4,13 @@ import App from './App.tsx';
 // Imported as a string, not injected: the same sheet is adopted by the document
 // (for :root variables, @font-face and body) and by the shadow root below.
 import css from './index.css?inline';
+import { migrateSaveKeys } from './lib/saves';
 
 // Applied before first paint so the page never flashes the wrong theme.
 document.documentElement.dataset.theme = localStorage.getItem('theme') ?? 'dark';
+
+// Before anything can load a SWF, so a game never opens against a stale save key.
+migrateSaveKeys();
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(css);

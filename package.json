@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "check:links": "node scripts/check-links.mjs"
+    "check:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.0",

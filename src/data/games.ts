@@ -286,7 +286,31 @@ const EXTRA: Game[] = [
   },
 ];
 
-/** Study tools. Quizlet and Google Keep refuse to be framed, so they open in a tab. */
+/**
+ * The Eaglercraft client is deployed separately (see deploy/eaglercraft-relay/README.md)
+ * and its URL is baked in at build time. Unset means no card at all, which beats a
+ * card that opens a blank frame.
+ */
+const EAGLERCRAFT: Game[] = import.meta.env.VITE_EAGLERCRAFT_URL
+  ? [
+      {
+        slug: 'eaglercraft',
+        title: 'Eaglercraft',
+        section: 'arcade',
+        runtime: 'html5',
+        src: import.meta.env.VITE_EAGLERCRAFT_URL,
+        category: 'Sandbox',
+        blurb:
+          'Minecraft 1.8.8 in the browser. Singleplayer works immediately; shared worlds need a relay.',
+      },
+    ]
+  : [];
+
+/**
+ * Study tools. Quizlet and Google Keep refuse to be framed, so they open in a tab.
+ * `developer` is the vendor: without it the card subtitle falls through to the
+ * generic "Browser game" (GameCard), which says nothing about what the tool is.
+ */
 const STUDY: Game[] = [
   {
     slug: 'desmos',
@@ -295,6 +319,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://www.desmos.com/calculator',
     category: 'Math',
+    developer: 'Desmos',
   },
   {
     slug: 'geogebra',
@@ -303,6 +328,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://www.geogebra.org/calculator',
     category: 'Math',
+    developer: 'GeoGebra',
   },
   {
     slug: 'quizlet',
@@ -311,6 +337,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://quizlet.com',
     category: 'Flashcards',
+    developer: 'Quizlet',
     newTab: true,
   },
   {
@@ -320,11 +347,17 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://keep.google.com',
     category: 'Notes',
+    developer: 'Google',
     newTab: true,
   },
 ];
 
-export const GAMES: Game[] = [...SWFDUMP_FILES.map(([path]) => fromSwf(path)), ...EXTRA, ...STUDY].sort(
+export const GAMES: Game[] = [
+  ...SWFDUMP_FILES.map(([path]) => fromSwf(path)),
+  ...EXTRA,
+  ...EAGLERCRAFT,
+  ...STUDY,
+].sort(
   (a, b) => a.title.localeCompare(b.title),
 );
 

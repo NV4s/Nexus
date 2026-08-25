@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
 import { DEFAULT_LINK, comboFrom, label, readCombo, readLink } from '../lib/panic';
+import { openCloaked } from '../lib/launch';
 
 const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
@@ -54,17 +55,9 @@ export default function Settings() {
   };
 
   const cloak = () => {
-    const win = window.open('about:blank', '_blank');
-    if (!win) {
+    if (!openCloaked(window.location.href, link)) {
       alert('Your browser blocked the popup. Allow popups for this site and try again.');
-      return;
     }
-    const frame = win.document.createElement('iframe');
-    frame.src = window.location.href;
-    frame.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:none';
-    win.document.body.style.margin = '0';
-    win.document.body.append(frame);
-    window.location.replace(link);
   };
 
   return (
