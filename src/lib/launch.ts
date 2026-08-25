@@ -43,16 +43,40 @@ export function openCloaked(url: string, redirectThisTabTo?: string): boolean {
     'background:rgba(0,0,0,.55);color:#fff;font:500 15px/1.5 system-ui,sans-serif;text-align:center';
   cover.innerHTML =
     '<div><div style="font-size:19px;margin-bottom:6px">Click anywhere to play fullscreen</div>' +
-    '<div style="opacity:.65;font-size:13px">Press Esc to leave fullscreen</div></div>';
+    '<div style="opacity:.65;font-size:13px">or press Esc to skip and play in the tab</div></div>';
+
+  const dismiss = () => {
+    cover.remove();
+    doc.removeEventListener('keydown', onKey);
+  };
 
   const enter = () => {
-    // Fullscreen the whole document, not the frame: the frame is already the
-    // full viewport, and the document is what Esc returns you from cleanly.
+    // Fullscreen the whole document, not the frame: the frame already fills the
+    // viewport, and the document is what Esc returns you from cleanly.
     doc.documentElement.requestFullscreen?.().catch(() => {});
-    cover.remove();
+    dismiss();
   };
+
+  // Esc skips fullscreen rather than leaving the prompt sitting over the game.
+  // Listening on the parent document only works until the frame takes focus, so
+  // the frame gets the same handler where same-origin access allows it.
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') dismiss();
+  };
+  doc.addEventListener('keydown', onKey);
+  frame.addEventListener('load', () => {
+    try {
+      frame.contentDocument?.addEventListener('keydown', onKey);
+    } catch {
+      /* cross-origin frame — the parent handler is all we get */
+    }
+  });
+
   cover.addEventListener('click', enter, { once: true });
   doc.body.append(cover);
+  // The cover holds focus so Esc reaches the handler before the game claims it.
+  cover.tabIndex = -1;
+  cover.focus();
 
   if (redirectThisTabTo) window.location.replace(redirectThisTabTo);
   return true;
