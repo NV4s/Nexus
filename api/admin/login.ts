@@ -1,4 +1,5 @@
 import {
+  authConfigured,
   clientIp,
   ipKey,
   issueToken,
@@ -8,7 +9,7 @@ import {
   sessionCookie,
   type Req,
   type Res,
-} from '../_lib';
+} from '../_lib.js';
 
 const WINDOW_S = 900;
 const PER_IP_LIMIT = 10;
@@ -19,6 +20,14 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 250));
 
 export default async function handler(req: Req, res: Res) {
   if (req.method !== 'POST') return send(res, 405);
+
+  // Say so plainly rather than failing as a wrong password: the usual cause is a
+  // deploy that predates the environment variables being added.
+  if (!authConfigured()) {
+    return send(res, 503, {
+      error: 'ADMIN_PASSWORD and ADMIN_SESSION_SECRET are not set on this deployment.',
+    });
+  }
 
   const password = (req.body as { password?: unknown } | undefined)?.password;
   if (typeof password !== 'string') {

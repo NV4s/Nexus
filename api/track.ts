@@ -1,4 +1,4 @@
-import { redis, send, type Req, type Res } from './_lib';
+import { redis, send, type Req, type Res } from './_lib.js';
 
 /** Both values reach the admin's screen and a Redis field, so validate them here. */
 const SID = /^[0-9a-f-]{36}$/;

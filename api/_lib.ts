@@ -39,6 +39,14 @@ export async function redis(commands: (string | number)[][]): Promise<unknown[] 
 
 const encoder = new TextEncoder();
 
+/**
+ * Both admin variables must be present. Web Crypto refuses a zero-length HMAC
+ * key, so without this guard a half-configured deploy answers 500 to every
+ * admin request instead of saying what is actually wrong.
+ */
+export const authConfigured = () =>
+  Boolean(process.env.ADMIN_PASSWORD && process.env.ADMIN_SESSION_SECRET);
+
 async function hmac(message: string): Promise<string> {
   const secret = process.env.ADMIN_SESSION_SECRET ?? '';
   const key = await crypto.subtle.importKey(
@@ -71,11 +79,15 @@ export async function issueToken() {
 }
 
 export async function tokenValid(token: string | undefined) {
-  if (!token) return false;
+  if (!token || !authConfigured()) return false;
   const [expires, signature] = token.split('.');
   if (!expires || !signature) return false;
   if (Number(expires) <= Math.floor(Date.now() / 1000)) return false;
-  return (await hmac(expires)) === signature;
+  try {
+    return (await hmac(expires)) === signature;
+  } catch {
+    return false; // a malformed secret must read as "not signed in", not as a crash
+  }
 }
 
 /** Rate-limit buckets are keyed by a digest, so no raw IP is ever stored. */

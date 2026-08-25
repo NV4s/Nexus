@@ -58,6 +58,9 @@ export default function Admin() {
       if (response.ok) {
         setPassword('');
         await load();
+      } else if (response.status === 503) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        setError(body?.error ?? 'This deployment is missing its admin settings.');
       } else {
         setError(response.status === 429 ? 'Too many attempts. Wait 15 minutes.' : 'Wrong password.');
       }

@@ -1,4 +1,4 @@
-import { redis, requireAdmin, send, type Req, type Res } from '../_lib';
+import { redis, requireAdmin, send, type Req, type Res } from '../_lib.js';
 
 /** Tolerates one dropped beat at the client's 60s interval. */
 const STALE_AFTER_MS = 90_000;
