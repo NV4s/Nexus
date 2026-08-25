@@ -1,5 +1,5 @@
 import { SWFDUMP_FILES } from './swfdump';
-import { swfUrl } from '../lib/cdn';
+import { swfChunkBase, swfUrl } from '../lib/cdn';
 
 export type Runtime = 'flash' | 'html5';
 export type Section = 'arcade' | 'study';
@@ -18,6 +18,11 @@ export type Game = {
   blurb?: string;
   /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
   newTab?: boolean;
+  /**
+   * Number of `.001`, `.002`, … chunks the SWF is split across in the dump.
+   * Only for files past GitHub's 100 MB blob limit; the player rejoins them.
+   */
+  parts?: number;
 };
 
 const slugify = (value: string) =>
@@ -233,6 +238,17 @@ function fromSwf(path: string): Game {
 /** Games that are not in the SWF dump. */
 const EXTRA: Game[] = [
   {
+    slug: 'madness-project-nexus-mod-v9-5',
+    title: 'Madness: Project Nexus — Mod v9.5',
+    section: 'arcade',
+    runtime: 'flash',
+    // 152,891,223 bytes — past GitHub's 100 MB blob limit, and Git LFS is disabled
+    // on the dump, so it is committed as MPNC_modv9_5.swf.001 and .002 instead.
+    src: 'MPNC_modv9_5.swf',
+    parts: 2,
+    category: 'Arcade',
+  },
+  {
     slug: 'run-3',
     title: 'Run 3',
     section: 'arcade',
@@ -337,6 +353,14 @@ export const categoriesIn = (section: Section) => [
   ...new Set(gamesIn(section).map((game) => game.category)),
 ].sort();
 
-/** Resolved URL to load. Absolute and site-root sources pass through; the rest are swfdump paths. */
+/**
+ * Resolved URL to load. Absolute and site-root sources pass through; the rest are
+ * swfdump paths. A chunked game resolves to its base URL — the player appends the
+ * `.001`, `.002`, … suffixes.
+ */
 export const gameUrl = (game: Game) =>
-  /^(https?:\/\/|\/)/.test(game.src) ? game.src : swfUrl(game.src);
+  game.parts
+    ? swfChunkBase(game.src)
+    : /^(https?:\/\/|\/)/.test(game.src)
+      ? game.src
+      : swfUrl(game.src);

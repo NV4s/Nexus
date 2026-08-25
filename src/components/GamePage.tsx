@@ -41,7 +41,7 @@ export default function GamePage({ slug }: { slug: string }) {
 
       <div ref={frameRef} className="game-frame">
         {game.runtime === 'flash' ? (
-          <RufflePlayer url={url} title={game.title} />
+          <RufflePlayer url={url} parts={game.parts} title={game.title} />
         ) : (
           <EmbedPlayer url={url} title={game.title} />
         )}

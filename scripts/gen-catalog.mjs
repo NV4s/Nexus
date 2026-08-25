@@ -17,6 +17,8 @@ const { tree, truncated } = await json(
 );
 if (truncated) throw new Error('tree response truncated — needs pagination');
 
+// Chunked games (`<name>.swf.001`, `.002`, …) are deliberately skipped by the
+// `.swf` filter — they are declared by hand in games.ts, not as separate entries.
 const files = tree
   .filter((n) => n.type === 'blob' && n.path.toLowerCase().endsWith('.swf'))
   .map((n) => [n.path, n.size])

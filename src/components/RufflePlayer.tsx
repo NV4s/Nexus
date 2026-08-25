@@ -27,13 +27,23 @@ function loadRuffle() {
   return runtime;
 }
 
-/** Streams the SWF so the progress bar reflects the real download, not a guess. */
-async function fetchSwf(url: string, onProgress: (fraction: number) => void) {
+const concat = (parts: Uint8Array[]) => {
+  const merged = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    merged.set(part, offset);
+    offset += part.length;
+  }
+  return merged;
+};
+
+/** Streams one file so the progress bar reflects the real download, not a guess. */
+async function fetchFile(url: string, onProgress: (fraction: number) => void) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
   const total = Number(response.headers.get('content-length')) || 0;
-  if (!response.body || !total) return response.arrayBuffer();
+  if (!response.body || !total) return new Uint8Array(await response.arrayBuffer());
 
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -47,16 +57,34 @@ async function fetchSwf(url: string, onProgress: (fraction: number) => void) {
     onProgress(received / total);
   }
 
-  const merged = new Uint8Array(received);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return merged.buffer;
+  return concat(chunks);
 }
 
-export default function RufflePlayer({ url, title }: { url: string; title: string }) {
+/**
+ * Fetches the SWF. Files too large for a single GitHub blob are stored as
+ * `<url>.001`, `.002`, … and rejoined here, which yields the exact original bytes.
+ */
+async function fetchSwf(url: string, parts: number, onProgress: (fraction: number) => void) {
+  if (parts < 2) return (await fetchFile(url, onProgress)).buffer;
+
+  const downloaded: Uint8Array[] = [];
+  for (let i = 0; i < parts; i++) {
+    const suffix = String(i + 1).padStart(3, '0');
+    // Chunks are near-equal in size, so each one is an equal slice of the bar.
+    downloaded.push(await fetchFile(`${url}.${suffix}`, (f) => onProgress((i + f) / parts)));
+  }
+  return concat(downloaded).buffer;
+}
+
+export default function RufflePlayer({
+  url,
+  title,
+  parts = 1,
+}: {
+  url: string;
+  title: string;
+  parts?: number;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -75,7 +103,7 @@ export default function RufflePlayer({ url, title }: { url: string; title: strin
       try {
         const [ruffle, data] = await Promise.all([
           loadRuffle(),
-          fetchSwf(url, (fraction) => !cancelled && setProgress(fraction)),
+          fetchSwf(url, parts, (fraction) => !cancelled && setProgress(fraction)),
         ]);
         if (cancelled) return;
 
@@ -105,7 +133,7 @@ export default function RufflePlayer({ url, title }: { url: string; title: strin
       cancelled = true;
       container.replaceChildren();
     };
-  }, [url, attempt]);
+  }, [url, parts, attempt]);
 
   return (
     <div className="stage">
