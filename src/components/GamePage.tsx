@@ -37,7 +37,8 @@ export default function GamePage({ slug }: { slug: string }) {
   const url = gameUrl(game);
 
   const openBlank = () => {
-    if (!openCloaked(`${window.location.origin}/#/game/${game.slug}`)) {
+    // /embed/ rather than /game/: the second tab should be the game, not the site.
+    if (!openCloaked(`${window.location.origin}/#/embed/${game.slug}`)) {
       alert('Your browser blocked the popup. Allow popups for this site and try again.');
     }
   };

@@ -1169,3 +1169,19 @@ select,
   font-size: 0.72rem;
   color: var(--text-dim);
 }
+
+/* ---------- bare embed (blank-tab launcher) ---------- */
+
+.embed-stage {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+.embed-stage .stage {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  margin: 0;
+}

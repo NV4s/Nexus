@@ -8,6 +8,7 @@ import Settings from './components/Settings';
 import Changelog from './components/Changelog';
 import Achievements from './components/Achievements';
 import Saves from './components/Saves';
+import GameEmbed from './components/GameEmbed';
 import { segments, useRoute } from './lib/router';
 import { comboFrom, readCombo, readLink } from './lib/panic';
 import { startTracking } from './lib/track';
@@ -48,6 +49,10 @@ export default function App() {
   useEffect(startTracking, []);
 
   const [head, param] = segments(route);
+
+  // Bare player, no site chrome. Rendered before the shell so the blank-tab
+  // launcher gets the game alone rather than the page around it.
+  if (head === 'embed' && param) return <GameEmbed slug={param} />;
 
   return (
     <>

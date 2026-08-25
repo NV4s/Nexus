@@ -22,7 +22,8 @@ export function openCloaked(url: string, redirectThisTabTo?: string): boolean {
   if (!win) return false;
 
   const doc = win.document;
-  doc.body.style.cssText = 'margin:0;background:#000';
+  doc.title = 'New Tab';
+  doc.body.style.cssText = 'margin:0;background:#000;overflow:hidden';
 
   const frame = doc.createElement('iframe');
   frame.src = url;
@@ -31,17 +32,27 @@ export function openCloaked(url: string, redirectThisTabTo?: string): boolean {
   doc.body.append(frame);
 
   // Styles are inline because this document never sees the app's stylesheet.
-  const button = doc.createElement('button');
-  button.textContent = 'Fullscreen';
-  button.style.cssText =
-    'position:fixed;top:12px;right:12px;z-index:9;padding:8px 14px;border:0;' +
-    'border-radius:8px;background:rgba(20,20,24,.75);color:#fff;font:500 13px/1 system-ui,sans-serif;' +
-    'cursor:pointer;backdrop-filter:blur(8px)';
-  button.onclick = () => {
-    frame.requestFullscreen?.();
-    button.remove();
+  //
+  // Browsers only grant fullscreen from a gesture inside *this* tab, and opening
+  // the tab happened in the other one — so it cannot be automatic. The next best
+  // thing is making the whole page the button, so the one required click is
+  // anywhere rather than on something the player has to find.
+  const cover = doc.createElement('div');
+  cover.style.cssText =
+    'position:fixed;inset:0;z-index:9;display:grid;place-items:center;cursor:pointer;' +
+    'background:rgba(0,0,0,.55);color:#fff;font:500 15px/1.5 system-ui,sans-serif;text-align:center';
+  cover.innerHTML =
+    '<div><div style="font-size:19px;margin-bottom:6px">Click anywhere to play fullscreen</div>' +
+    '<div style="opacity:.65;font-size:13px">Press Esc to leave fullscreen</div></div>';
+
+  const enter = () => {
+    // Fullscreen the whole document, not the frame: the frame is already the
+    // full viewport, and the document is what Esc returns you from cleanly.
+    doc.documentElement.requestFullscreen?.().catch(() => {});
+    cover.remove();
   };
-  doc.body.append(button);
+  cover.addEventListener('click', enter, { once: true });
+  doc.body.append(cover);
 
   if (redirectThisTabTo) window.location.replace(redirectThisTabTo);
   return true;
