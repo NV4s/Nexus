@@ -15,23 +15,37 @@ import {
   type EngineId,
   type Message,
 } from '../lib/ai';
+import { extractText, isImage, isPdf } from '../lib/archive';
 
 /** 4 MB each: base64 inflates by a third, and providers reject large payloads. */
 const MAX_FILE = 4 * 1024 * 1024;
 
-const readFile = (file: File) =>
-  new Promise<Attachment>((resolve, reject) => {
+const asBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
-    reader.onload = () =>
-      resolve({
-        name: file.name,
-        type: file.type || 'application/octet-stream',
-        // Strip the "data:…;base64," prefix — every provider wants the payload alone.
-        data: String(reader.result).split(',')[1] ?? '',
-      });
+    // Strip the "data:…;base64," prefix — every provider wants the payload alone.
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
     reader.readAsDataURL(file);
   });
+
+/**
+ * Prepares one file for sending.
+ *
+ * Images and PDFs go up as themselves, because every provider accepts them.
+ * Everything else — zips, spreadsheets, source files, logs — is unpacked to text
+ * here, since none of these APIs accepts an arbitrary binary. A file with
+ * nothing readable inside is reported rather than sent empty.
+ */
+async function prepare(file: File): Promise<Attachment> {
+  const type = file.type || 'application/octet-stream';
+  if (isImage(type) || isPdf(type, file.name)) {
+    return { name: file.name, type, data: await asBase64(file) };
+  }
+  const text = await extractText(file);
+  if (!text) throw new Error(`Nothing readable in ${file.name}`);
+  return { name: file.name, type, text };
+}
 
 const KEY_HELP: Partial<Record<EngineId, string>> = {
   anthropic: 'console.anthropic.com → API keys',
@@ -289,7 +303,9 @@ export default function Assistant() {
                 {message.content}
                 {message.files?.length ? (
                   <span className="chat-files">
-                    {message.files.map((file) => file.name).join(', ')}
+                    {message.files
+                      .map((file) => (file.text ? `${file.name} (as text)` : file.name))
+                      .join(', ')}
                   </span>
                 ) : null}
               </div>
@@ -322,7 +338,7 @@ export default function Assistant() {
               type="file"
               hidden
               multiple
-              accept="image/*,application/pdf,.txt,.md,.csv,.json"
+              /* Anything: images and PDFs go as-is, the rest is read as text. */
               onChange={async (event) => {
                 const picked = [...(event.target.files ?? [])];
                 event.target.value = ''; // let the same file be chosen twice
@@ -331,7 +347,16 @@ export default function Assistant() {
                   setError(`${tooBig.map((f) => f.name).join(', ')} — over 4 MB, too large to send.`);
                 }
                 const ok = picked.filter((file) => file.size <= MAX_FILE);
-                if (ok.length) setFiles([...files, ...(await Promise.all(ok.map(readFile)))]);
+                if (!ok.length) return;
+                const prepared = await Promise.allSettled(ok.map(prepare));
+                const good = prepared.flatMap((result) =>
+                  result.status === 'fulfilled' ? [result.value] : [],
+                );
+                const bad = prepared.flatMap((result) =>
+                  result.status === 'rejected' ? [String(result.reason?.message ?? result.reason)] : [],
+                );
+                if (bad.length) setError(bad.join(' · '));
+                if (good.length) setFiles([...files, ...good]);
               }}
             />
             <button

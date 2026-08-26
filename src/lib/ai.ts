@@ -16,8 +16,16 @@ export type Attachment = {
   name: string;
   /** MIME type, e.g. image/png or application/pdf. */
   type: string;
-  /** Base64 without the data: prefix. */
-  data: string;
+  /** Base64 without the data: prefix. Only set for images and PDFs. */
+  data?: string;
+  /**
+   * Text pulled out of the file in the browser.
+   *
+   * The API accepts images, PDFs and plain text and nothing else — a .zip or a
+   * .docx sent as a document block is rejected. Anything else is therefore
+   * unpacked here and sent as text, which is what the docs recommend.
+   */
+  text?: string;
 };
 
 export type Message = {
@@ -199,6 +207,21 @@ const toText = async (response: Response, pick: (body: never) => string | undefi
 /** Every provider takes attachments in its own shape; these build each one. */
 const isImage = (type: string) => type.startsWith('image/');
 
+/**
+ * Folds extracted text into the message body.
+ *
+ * Text pulled from a zip or a spreadsheet has no content-block of its own on any
+ * of these APIs, so it rides along with the question, labelled by filename.
+ */
+function withText(message: Message): string {
+  const extracted = (message.files ?? []).filter((file) => file.text);
+  if (!extracted.length) return message.content;
+  const blocks = extracted
+    .map((file) => `----- ${file.name} -----\n${file.text}`)
+    .join('\n\n');
+  return `${message.content}\n\n${blocks}`;
+}
+
 async function askAnthropic(messages: Message[]): Promise<string> {
   // The official SDK rather than hand-rolled fetch, and loaded on demand so it
   // is not in the bundle for people who never open the assistant.
@@ -219,18 +242,28 @@ async function askAnthropic(messages: Message[]): Promise<string> {
         ? {
             role: message.role,
             content: [
-              ...message.files.map((file) =>
-                isImage(file.type)
-                  ? ({
-                      type: 'image' as const,
-                      source: { type: 'base64' as const, media_type: file.type as 'image/png', data: file.data },
-                    })
-                  : ({
-                      type: 'document' as const,
-                      source: { type: 'base64' as const, media_type: 'application/pdf' as const, data: file.data },
-                    }),
-              ),
-              { type: 'text' as const, text: message.content },
+              ...message.files
+                .filter((file) => file.data)
+                .map((file) =>
+                  isImage(file.type)
+                    ? ({
+                        type: 'image' as const,
+                        source: {
+                          type: 'base64' as const,
+                          media_type: file.type as 'image/png',
+                          data: file.data as string,
+                        },
+                      })
+                    : ({
+                        type: 'document' as const,
+                        source: {
+                          type: 'base64' as const,
+                          media_type: 'application/pdf' as const,
+                          data: file.data as string,
+                        },
+                      }),
+                ),
+              { type: 'text' as const, text: withText(message) },
             ],
           }
         : { role: message.role, content: message.content },
@@ -256,10 +289,10 @@ async function askGoogle(messages: Message[]): Promise<string> {
         contents: messages.map((message) => ({
           role: message.role === 'assistant' ? 'model' : 'user',
           parts: [
-            ...(message.files ?? []).map((file) => ({
-              inline_data: { mime_type: file.type, data: file.data },
-            })),
-            { text: message.content },
+            ...(message.files ?? [])
+              .filter((file) => file.data)
+              .map((file) => ({ inline_data: { mime_type: file.type, data: file.data as string } })),
+            { text: withText(message) },
           ],
         })),
       }),
@@ -295,12 +328,13 @@ async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[])
             ? {
                 role: message.role,
                 content: [
-                  { type: 'text', text: message.content },
-                  ...message.files.map((file) =>
-                    isImage(file.type)
-                      ? { type: 'image_url', image_url: { url: `data:${file.type};base64,${file.data}` } }
-                      : { type: 'text', text: `[attached file: ${file.name}]` },
-                  ),
+                  { type: 'text', text: withText(message) },
+                  ...message.files
+                    .filter((file) => file.data && isImage(file.type))
+                    .map((file) => ({
+                      type: 'image_url',
+                      image_url: { url: `data:${file.type};base64,${file.data}` },
+                    })),
                 ],
               }
             : { role: message.role, content: message.content },

@@ -6,11 +6,11 @@ import {
   downloadGameBackup,
   downloadGameSave,
   exportSaves,
-  importSaves,
   listSaves,
   saveFields,
   type SaveEntry,
 } from '../lib/saves';
+import { describe, importAnything } from '../lib/transfer';
 import { navigate } from '../lib/router';
 
 const size = (bytes: number) =>
@@ -75,9 +75,11 @@ export default function Saves() {
 
   const restore = async (file: File) => {
     try {
-      const count = await file.text().then(importSaves);
+      // Accepts a saves file, an achievements file or a full backup, so it does
+      // not matter which page the export came from.
+      const summary = importAnything(await file.text());
       setEntries(listSaves());
-      setNote(`Restored ${count} ${count === 1 ? 'entry' : 'entries'}. Reopen a game to load it.`);
+      setNote(describe(summary));
     } catch (cause) {
       setNote(cause instanceof Error ? cause.message : 'That file could not be read.');
     }

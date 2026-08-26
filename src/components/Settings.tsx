@@ -18,8 +18,8 @@ import {
   readPlayerPrefs,
   writePlayerPrefs,
 } from '../lib/player';
-import { exportAchievements, importAchievements } from '../lib/achievements';
 import { downloadBlob } from '../lib/saves';
+import { describe, exportEverything, importAnything } from '../lib/transfer';
 
 const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
@@ -255,21 +255,21 @@ export default function Settings() {
         <div className="panel">
           <h3>Move progress to another device</h3>
           <p>
-            Achievements and playtime as one file. Importing merges rather than replaces: it can
-            only add unlocks and keep the larger playtime, so an old file never undoes newer
-            progress. Game saves are separate, on the Saves page.
+            One file with your achievements, playtime and game saves. Importing merges rather than
+            replaces: it can only add unlocks and keep the larger playtime, so an older file never
+            undoes newer progress.
           </p>
           <div className="row">
             <button
               className="button"
               onClick={() =>
                 downloadBlob(
-                  new Blob([exportAchievements()], { type: 'application/json' }),
-                  `nexus-achievements-${new Date().toISOString().slice(0, 10)}.json`,
+                  new Blob([exportEverything()], { type: 'application/json' }),
+                  `nexus-backup-${new Date().toISOString().slice(0, 10)}.json`,
                 )
               }
             >
-              Export
+              Export everything
             </button>
             <button className="button ghost" onClick={() => progressRef.current?.click()}>
               Import
@@ -285,11 +285,9 @@ export default function Settings() {
               event.target.value = '';
               if (!file) return;
               try {
-                const result = importAchievements(await file.text());
-                setNote(
-                  `Merged ${result.games} ${result.games === 1 ? 'game' : 'games'}: ` +
-                    `${result.unlocked} new ${result.unlocked === 1 ? 'achievement' : 'achievements'}.`,
-                );
+                // Takes a full backup, an achievements file or a saves file —
+                // picking the wrong button used to fail with an unhelpful message.
+                setNote(describe(importAnything(await file.text())));
               } catch (cause) {
                 setNote(cause instanceof Error ? cause.message : 'That file could not be read.');
               }

@@ -12,26 +12,39 @@ const RECENT_KEEP = 200;
 const DAY_MS = 86_400_000;
 
 /**
- * Coarse location from Vercel's own edge headers.
+ * Location from Vercel's own edge headers: city, region, country.
  *
- * Country and region only, and never the IP they were derived from. The browser
- * Geolocation API is deliberately not used: it would prompt every visitor and
- * return a street-level fix, which is far more than a visitor count needs.
+ * This is derived from the IP by the edge, and the IP itself is never stored. It
+ * is roughly city-accurate, which is as far as this goes on purpose — the
+ * browser Geolocation API would give a street-level fix but has to prompt every
+ * visitor for permission, and a visitor counter is not a reason to ask a
+ * classroom of people to share where they are sitting.
  */
-const REGION = /^[A-Za-z0-9 .'-]{0,40}$/;
+const PLACE = /^[A-Za-z0-9 .'-]{1,40}$/;
 
 function placeOf(req: Req): string | null {
   const headers = req.headers as Record<string, string | string[] | undefined>;
   const pick = (name: string) => {
     const value = headers[name];
-    return typeof value === 'string' ? value : null;
+    if (typeof value !== 'string') return null;
+    // Decode first: city names arrive percent-encoded when they contain spaces,
+    // and validating the raw form threw away every multi-word city. Validate
+    // after, because this is free text from the edge that the admin panel renders.
+    let decoded = value;
+    try {
+      decoded = decodeURIComponent(value);
+    } catch {
+      return null; // malformed escape — treat as absent rather than guess
+    }
+    return PLACE.test(decoded) ? decoded : null;
   };
+
   const country = pick('x-vercel-ip-country');
   if (!country || !/^[A-Z]{2}$/.test(country)) return null;
-  const region = pick('x-vercel-ip-country-region');
-  // Region is free text from the edge, so it is validated before being stored
-  // and shown in the admin panel.
-  return region && REGION.test(region) ? `${country}-${region}` : country;
+
+  return [pick('x-vercel-ip-city'), pick('x-vercel-ip-country-region'), country]
+    .filter(Boolean)
+    .join(', ');
 }
 
 const slugOf = (page: string) => {
