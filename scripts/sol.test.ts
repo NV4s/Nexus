@@ -135,3 +135,32 @@ test('toDisplay survives a cycle and repeats a shared value', () => {
   assert.deepEqual(shown.shared, { n: 1 });
   assert.deepEqual(shown.also, { n: 1 });
 });
+
+/* ---------- save rules ---------- */
+
+const { passes } = await import('../src/data/saveRules.ts');
+
+test('rule operators are total and type-aware', () => {
+  // Missing path never matches, whatever the test says.
+  assert.equal(passes({ path: 'x', test: { atLeast: 1 } }, undefined), false);
+
+  assert.equal(passes({ path: 'x', test: { atLeast: 12 } }, 12), true);
+  assert.equal(passes({ path: 'x', test: { atLeast: 12 } }, 11), false);
+  // A numeric threshold against a string must not coerce: '13' > 12 is a lie.
+  assert.equal(passes({ path: 'x', test: { atLeast: 12 } }, '13'), false);
+
+  assert.equal(passes({ path: 'x', test: { equals: true } }, true), true);
+  assert.equal(passes({ path: 'x', test: { equals: 'gold' } }, 'gold'), true);
+  assert.equal(passes({ path: 'x', test: { equals: 1 } }, true), false);
+
+  assert.equal(passes({ path: 'x', test: { includes: 'gold' } }, ['silver', 'gold']), true);
+  assert.equal(passes({ path: 'x', test: { includes: 'gold' } }, 'gold'), false);
+
+  assert.equal(passes({ path: 'x', test: { countAtLeast: 2 } }, [1, 2]), true);
+  assert.equal(passes({ path: 'x', test: { countAtLeast: 3 } }, [1, 2]), false);
+
+  // No test means "exists and is truthy".
+  assert.equal(passes({ path: 'x' }, 1), true);
+  assert.equal(passes({ path: 'x' }, 0), false);
+  assert.equal(passes({ path: 'x' }, null), false);
+});

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS } from '../data/achievements';
+import { SAVE_RULES, passes } from '../data/saveRules';
+import { readSavePath } from './saves';
 
 /**
  * Ruffle runs a SWF as an opaque display object — nothing can read a Flash game's
@@ -66,12 +68,27 @@ const earned = (rule: AutoRule, progress: Progress) =>
         ? progress.seconds >= 7200
         : progress.sessions >= 5;
 
-/** Re-checks every self-unlocking objective against current progress. */
+/** Achievements this game unlocks from its own save file rather than from playtime. */
+export const saveDriven = (slug: string) => SAVE_RULES[slug] ?? {};
+
+/**
+ * Re-checks every self-unlocking objective: the playtime ones against progress,
+ * and the save-driven ones against what the game actually stored.
+ *
+ * Unlocks are only ever added, never removed. Deleting a save stops a rule
+ * matching, but the achievement stays — it records that something happened.
+ */
 function applyAuto(slug: string, progress = readProgress(slug)) {
   const unlocked = readUnlocked(slug);
+
   for (const achievement of achievementsFor(slug)) {
     if (achievement.auto && earned(achievement.auto, progress)) unlocked.add(achievement.id);
   }
+
+  for (const [id, rule] of Object.entries(saveDriven(slug))) {
+    if (passes(rule, readSavePath(slug, rule.path))) unlocked.add(id);
+  }
+
   return save(slug, unlocked);
 }
 

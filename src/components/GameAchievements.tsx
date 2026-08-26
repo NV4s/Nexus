@@ -1,11 +1,18 @@
 import { Check, Lock } from 'lucide-react';
-import { achievementsFor, readProgress, toggleManual, useGameSession } from '../lib/achievements';
+import {
+  achievementsFor,
+  readProgress,
+  saveDriven,
+  toggleManual,
+  useGameSession,
+} from '../lib/achievements';
 
 const minutes = (seconds: number) =>
   seconds < 60 ? 'under a minute' : `${Math.round(seconds / 60)} min`;
 
 export default function GameAchievements({ slug }: { slug: string }) {
   const list = achievementsFor(slug);
+  const fromSave = saveDriven(slug);
   // Opening the game is itself the first objective, so it lands immediately
   // rather than making the player leave before anything happens.
   const { unlocked, setUnlocked } = useGameSession(slug);
@@ -26,7 +33,9 @@ export default function GameAchievements({ slug }: { slug: string }) {
       <ul className="achievement-list">
         {list.map((achievement) => {
           const isDone = unlocked.has(achievement.id);
-          const isAuto = !!achievement.auto;
+          // Save-driven ones are not tickable either: un-ticking would be undone
+          // the next time the save is read, which just looks broken.
+          const isAuto = !!achievement.auto || achievement.id in fromSave;
           return (
             <li key={achievement.id} className={isDone ? 'is-done' : ''}>
               <button
@@ -34,7 +43,15 @@ export default function GameAchievements({ slug }: { slug: string }) {
                 className="achievement"
                 disabled={isAuto}
                 aria-pressed={isDone}
-                title={isAuto ? 'Unlocks on its own' : isDone ? 'Mark as not done' : 'Mark as done'}
+                title={
+                  achievement.id in fromSave
+                    ? 'Unlocks from the game’s own save file'
+                    : isAuto
+                      ? 'Unlocks on its own'
+                      : isDone
+                        ? 'Mark as not done'
+                        : 'Mark as done'
+                }
                 onClick={() => setUnlocked(new Set(toggleManual(slug, achievement.id)))}
               >
                 <span className="achievement-mark">

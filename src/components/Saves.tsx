@@ -1,10 +1,61 @@
 import { useRef, useState } from 'react';
 import { Download, Trash2, Upload } from 'lucide-react';
-import { deleteSave, exportSaves, importSaves, listSaves, type SaveEntry } from '../lib/saves';
+import {
+  decodeSaves,
+  deleteSave,
+  exportSaves,
+  importSaves,
+  listSaves,
+  saveFields,
+  type SaveEntry,
+} from '../lib/saves';
 import { navigate } from '../lib/router';
 
 const size = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
+
+/**
+ * What a game actually stored. Decoding is gated behind opening the panel so a
+ * large save is never parsed on the render path.
+ *
+ * The paths listed here are exactly what a rule in data/saveRules.ts takes, so
+ * turning a game into real achievements is copying a line rather than
+ * reverse-engineering its save format blind.
+ */
+function Inspector({ slug }: { slug: string }) {
+  const [open, setOpen] = useState(false);
+  const fields = open ? saveFields(slug) : [];
+  const problems = open ? decodeSaves(slug).filter((file) => file.error) : [];
+  const dump = fields.map((field) => `${field.path} = ${field.value}`).join('\n');
+
+  return (
+    <details className="inspector" onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <summary>Inspect save</summary>
+      {open && (
+        <>
+          {problems.map((file) => (
+            <p className="inspector-error" key={file.key}>
+              Stopped reading: {file.error}
+            </p>
+          ))}
+          {fields.length === 0 ? (
+            <p>Nothing readable in this save.</p>
+          ) : (
+            <>
+              <pre>{dump}</pre>
+              <button
+                className="button ghost"
+                onClick={() => navigator.clipboard?.writeText(dump).catch(() => {})}
+              >
+                Copy
+              </button>
+            </>
+          )}
+        </>
+      )}
+    </details>
+  );
+}
 
 export default function Saves() {
   const [entries, setEntries] = useState<SaveEntry[]>(listSaves);
@@ -103,6 +154,7 @@ export default function Saves() {
                   <Trash2 size={16} /> Delete
                 </button>
               </div>
+              <Inspector slug={entry.game.slug} />
             </div>
           ))}
         </div>

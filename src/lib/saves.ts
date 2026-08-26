@@ -1,5 +1,6 @@
 import { SWFDUMP_SHA } from '../data/swfdump';
 import { GAMES, type Game } from '../data/games';
+import { decodeSol, type SolValue } from './sol';
 
 /**
  * Ruffle keys Flash SharedObjects by the SWF's URL, and every swfdump URL carries
@@ -109,3 +110,116 @@ export function importSaves(json: string): number {
 }
 
 export const deleteSave = (entry: SaveEntry) => entry.keys.forEach((key) => localStorage.removeItem(key));
+
+/* ---------- reading what is inside a save ---------- */
+
+export type SaveFile = {
+  key: string;
+  /** The SharedObject's own name, from the file header. */
+  name: string;
+  data: Record<string, SolValue>;
+  /** Set when decoding stopped early; `data` still holds everything read first. */
+  error?: string;
+};
+
+/** Ruffle's own encoding: base64 of the raw .sol bytes. */
+const bytesOf = (value: string) => {
+  try {
+    return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+  } catch {
+    return null; // not base64, so not one of Ruffle's saves
+  }
+};
+
+/** Every SharedObject this game holds, decoded. Never throws. */
+export function decodeSaves(slug: string): SaveFile[] {
+  const files: SaveFile[] = [];
+  try {
+    for (const key of Object.keys(localStorage)) {
+      const file = swfFileIn(key);
+      const game = file && flashGamesByFile().get(file);
+      if (!game || game.slug !== slug) continue;
+
+      const raw = localStorage.getItem(key);
+      const bytes = raw && bytesOf(raw);
+      if (!bytes) continue;
+
+      const decoded = decodeSol(bytes);
+      files.push({ key, name: decoded.name, data: decoded.data, error: decoded.error });
+    }
+  } catch {
+    return [];
+  }
+  return files;
+}
+
+/** Guards a pathological save from producing an unreadable wall of rows. */
+const MAX_FIELDS = 400;
+
+/**
+ * Flattened `path → value` pairs for the inspector.
+ *
+ * The paths printed here are exactly the strings a rule in data/saveRules.ts
+ * takes, so mapping a game is reading this list rather than reverse-engineering.
+ */
+export function saveFields(slug: string, maxDepth = 6): { path: string; value: string }[] {
+  const rows: { path: string; value: string }[] = [];
+
+  const walk = (node: SolValue, path: string, depth: number) => {
+    if (rows.length >= MAX_FIELDS) return;
+
+    if (node === null || typeof node !== 'object') {
+      rows.push({ path, value: typeof node === 'string' ? `"${node}"` : String(node) });
+      return;
+    }
+    // `in` does not narrow the union to the numeric member, hence the casts.
+    if ('$bytes' in node) {
+      return rows.push({ path, value: `<${(node as { $bytes: number }).$bytes} bytes>` });
+    }
+    if ('$date' in node) {
+      const ms = (node as { $date: number }).$date;
+      return rows.push({ path, value: Number.isFinite(ms) ? new Date(ms).toISOString() : String(ms) });
+    }
+    if (depth >= maxDepth) return rows.push({ path, value: '…' });
+
+    const entries: [string, SolValue][] = Array.isArray(node)
+      ? node.map((item, index) => [String(index), item])
+      : Object.entries(node);
+
+    // An empty container is worth showing: it is still a path a rule can test.
+    if (!entries.length) return rows.push({ path, value: Array.isArray(node) ? '[]' : '{}' });
+
+    for (const [key, item] of entries) walk(item, path ? `${path}.${key}` : key, depth + 1);
+  };
+
+  for (const file of decodeSaves(slug)) {
+    for (const [key, value] of Object.entries(file.data)) walk(value, key, 1);
+  }
+  return rows;
+}
+
+/**
+ * One value by dotted path, e.g. `slots.1.wave`. A leading segment matching a
+ * SharedObject's name selects that file; otherwise every file is tried in turn.
+ * Returns undefined for anything missing — never throws.
+ */
+export function readSavePath(slug: string, path: string): SolValue | undefined {
+  const segments = path.split('.').filter(Boolean);
+  if (!segments.length) return undefined;
+
+  for (const file of decodeSaves(slug)) {
+    const rest = segments[0] === file.name ? segments.slice(1) : segments;
+    let node: SolValue | undefined = file.data as SolValue;
+
+    for (const segment of rest) {
+      if (node === null || typeof node !== 'object') {
+        node = undefined;
+        break;
+      }
+      node = (node as Record<string, SolValue>)[segment];
+      if (node === undefined) break;
+    }
+    if (node !== undefined) return node;
+  }
+  return undefined;
+}
