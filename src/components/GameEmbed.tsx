@@ -1,4 +1,5 @@
 import { bySlug, gameUrl } from '../data/games';
+import { useGameSession } from '../lib/achievements';
 import RufflePlayer from './RufflePlayer';
 import EmbedPlayer from './EmbedPlayer';
 
@@ -9,6 +10,9 @@ import EmbedPlayer from './EmbedPlayer';
  */
 export default function GameEmbed({ slug }: { slug: string }) {
   const game = bySlug(slug);
+  // Playing here counts exactly as it does on the game page.
+  useGameSession(game ? slug : null);
+
   if (!game) return <div className="embed-stage" />;
 
   const url = gameUrl(game);

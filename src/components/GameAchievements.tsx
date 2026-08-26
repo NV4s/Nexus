@@ -1,26 +1,14 @@
-import { useEffect, useState } from 'react';
 import { Check, Lock } from 'lucide-react';
-import {
-  achievementsFor,
-  markPlayed,
-  readProgress,
-  toggleManual,
-  trackPlay,
-} from '../lib/achievements';
+import { achievementsFor, readProgress, toggleManual, useGameSession } from '../lib/achievements';
 
 const minutes = (seconds: number) =>
   seconds < 60 ? 'under a minute' : `${Math.round(seconds / 60)} min`;
 
 export default function GameAchievements({ slug }: { slug: string }) {
   const list = achievementsFor(slug);
-  const [unlocked, setUnlocked] = useState<Set<string>>(() => new Set());
-
-  useEffect(() => {
-    // Opening the game is itself the first objective, so land it immediately
-    // rather than making the player leave to see anything happen.
-    setUnlocked(new Set(markPlayed(slug)));
-    return trackPlay(slug);
-  }, [slug]);
+  // Opening the game is itself the first objective, so it lands immediately
+  // rather than making the player leave before anything happens.
+  const { unlocked, setUnlocked } = useGameSession(slug);
 
   const progress = readProgress(slug);
   const done = list.filter((achievement) => unlocked.has(achievement.id)).length;

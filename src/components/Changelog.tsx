@@ -1,5 +1,21 @@
 const RELEASES = [
   {
+    version: 'v1.3.0',
+    date: '2026-08-25',
+    changes: [
+      'Madness: Project Nexus Mod v9.5 is on the site. It is 146 MB, larger than GitHub will hold in one file, so it ships in two pieces and gets stitched back together in your browser',
+      'Flash saves were being wiped every time the game list was rebuilt. Nothing said so — your progress was simply gone next visit. Old saves are found and carried across now',
+      'Saves page. See which games you have progress in, export all of it to a file, and load it back on another computer',
+      'Every game has an achievement list. Opening a game, time played and how often you come back tick themselves. The rest you tick yourself, because a Flash game cannot tell the page what you did in it',
+      'The objectives are researched per game, not filler. Bloxorz counts its 33 stages, every Henry Stickmin ending is listed by name, Duck Life wants all three leagues. Two games nobody has written anything about keep generic ones rather than invented ones',
+      'Study tab said “Browser game” under every tool. It says Desmos, GeoGebra, Quizlet and Google now',
+      'Linking straight to Quizlet or Keep used to land on a dead grey box. They open in a tab, the same as they do from the grid',
+      'Opening a game in a blank tab used to drag the whole site along with it. It is the game alone now, and one click anywhere makes it fullscreen',
+      'Esc skips that fullscreen prompt if you would rather play in the tab',
+      'The site counts visits. It records which page is open and nothing else — no name, no account, no IP address, no fingerprinting',
+    ],
+  },
+  {
     version: 'v1.2.1',
     date: '2026-08-20',
     changes: [

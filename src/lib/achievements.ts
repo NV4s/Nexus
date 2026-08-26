@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS } from '../data/achievements';
 
 /**
@@ -107,3 +108,26 @@ export const countsFor = (slug: string) => ({
   unlocked: readUnlocked(slug).size,
   total: achievementsFor(slug).length,
 });
+
+/**
+ * Opens a play session: unlocks `played` immediately and commits time on unmount.
+ *
+ * Shared so every route that mounts a player records the same thing. When only
+ * the achievements panel did this, the bare /embed route recorded nothing at all
+ * and playing through the blank-tab launcher counted for zero.
+ *
+ * Pass null for an unknown slug — the hook no-ops rather than inventing storage.
+ */
+export function useGameSession(slug: string | null) {
+  const [unlocked, setUnlocked] = useState<Set<string>>(() =>
+    slug ? readUnlocked(slug) : new Set(),
+  );
+
+  useEffect(() => {
+    if (!slug) return;
+    setUnlocked(new Set(markPlayed(slug)));
+    return trackPlay(slug);
+  }, [slug]);
+
+  return { unlocked, setUnlocked };
+}
