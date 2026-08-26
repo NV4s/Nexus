@@ -98,19 +98,50 @@ export const markPlayed = (slug: string) => applyAuto(slug);
 /**
  * Counts one play session. Call the returned function when the player leaves.
  *
- * Time and session count are committed on the way out rather than on the way in,
- * so a mis-click — or React's development double-mount — does not inflate either.
+ * Only time with the tab actually in front is counted. Wall-clock from open to
+ * close would call a game left open overnight an eight-hour session, which is
+ * both wrong and visible now that playtime is shown on the achievements page.
+ *
+ * Time is committed on the way out rather than on the way in, so a mis-click —
+ * or React's development double-mount — does not inflate anything.
  */
 export function trackPlay(slug: string) {
-  const opened = Date.now();
-  return () => {
-    const seconds = Math.round((Date.now() - opened) / 1000);
+  let counting = document.visibilityState === 'visible';
+  let since = Date.now();
+  let active = 0;
+
+  const settle = () => {
+    if (counting) active += Date.now() - since;
+    since = Date.now();
+  };
+
+  const onVisibility = () => {
+    settle();
+    counting = document.visibilityState === 'visible';
+  };
+
+  const commit = () => {
+    settle();
+    const seconds = Math.round(active / 1000);
+    // Reset first: closing a tab fires pagehide and may still unmount, and this
+    // is what stops the same stretch of play being counted twice.
+    active = 0;
     if (seconds < 5) return;
 
     const previous = readProgress(slug);
     const progress = { seconds: previous.seconds + seconds, sessions: previous.sessions + 1 };
     write(PROGRESS(slug), progress);
     applyAuto(slug, progress);
+  };
+
+  document.addEventListener('visibilitychange', onVisibility);
+  // Closing the tab is the common way to stop playing, and it never unmounts.
+  window.addEventListener('pagehide', commit);
+
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.removeEventListener('pagehide', commit);
+    commit();
   };
 }
 

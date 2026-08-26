@@ -1,4 +1,4 @@
-import { redis, requireAdmin, send, type Req, type Res } from '../_lib.js';
+import { configured, redis, requireAdmin, send, type Req, type Res } from '../_lib.js';
 
 /** Tolerates one dropped beat at the client's 60s interval. */
 const STALE_AFTER_MS = 90_000;
@@ -25,8 +25,18 @@ export default async function handler(req: Req, res: Res) {
     ['SCARD', `visitors:daily:${today}`],
   ]);
 
-  if (!results)
-    return send(res, 200, { total: 0, daily: {}, live: [], visitors: 0, visitorsToday: 0, offline: true });
+  if (!results) {
+    // Distinguishing these two matters: tracking degrades silently by design, so
+    // a rejected credential otherwise looks identical to no traffic at all.
+    return send(res, 200, {
+      total: 0,
+      daily: {},
+      live: [],
+      visitors: 0,
+      visitorsToday: 0,
+      offline: configured() ? 'rejected' : 'missing',
+    });
+  }
 
   const [total, dailyRaw, presenceRaw, size, visitors, visitorsToday] = results;
 

@@ -8,7 +8,7 @@ type Stats = {
   live: { page: string; seconds: number }[];
   visitors: number;
   visitorsToday: number;
-  offline?: boolean;
+  offline?: 'missing' | 'rejected';
 };
 
 type VisitorRow = { id: string; first: number; last: number; visits: number; games: string[] };
@@ -226,9 +226,17 @@ export default function Admin() {
         </div>
       </header>
 
-      {stats.offline && (
+      {stats.offline === 'missing' && (
         <p className="empty">
-          Storage is not configured on this deployment, so every number below is empty.
+          No storage credentials on this deployment, so nothing is being recorded and every number
+          below is empty. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN, then redeploy.
+        </p>
+      )}
+      {stats.offline === 'rejected' && (
+        <p className="admin-error">
+          The database refused the credentials, so nothing is being recorded. This is what a
+          rotated Upstash token looks like — copy the new one into
+          UPSTASH_REDIS_REST_TOKEN and redeploy.
         </p>
       )}
 
