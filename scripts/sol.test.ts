@@ -12,7 +12,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decodeSol, toDisplay } from '../src/lib/sol.ts';
+import { decodeSol, toDisplay, type SolValue } from '../src/lib/sol.ts';
 
 const FIXTURES: Record<string, string> = {
   "AS2-Number-Demo.sol":
@@ -163,4 +163,49 @@ test('rule operators are total and type-aware', () => {
   assert.equal(passes({ path: 'x' }, 1), true);
   assert.equal(passes({ path: 'x' }, 0), false);
   assert.equal(passes({ path: 'x' }, null), false);
+});
+
+
+/* ---------- the one real per-game mapping ---------- */
+
+// A genuine Madness: Project Nexus arena save. The rules in data/saveRules.ts were
+// written from this exact file, so if its field names ever stop matching, that is
+// the mapping breaking — which is the failure this guards, because a rule that
+// matches nothing raises no error and simply never unlocks.
+const MADNESS_SAVE =
+  'AL8AAA7zVENTTwAEAAAAAAARYXJlbmFNYWRuZXNzR2FtZTIAAAAAAAloYXZlU2F2ZWQBAQAACmRhdGFUZXN0ZXICABVGSUxFIElOVEVHUklUWSBJTlRBQ1QAAAZteUNhc2gAQc3NZP+AAAAAAAp0ZWFtTGVhZGVyAwAPcGVya1Nob3RndW5ST0YyAQAADnBlcmtLbm9ja2Rvd24xAQAABW15SGF0CAAAAAEAATAGAAAJAA5wZXJrQmxvY2tCcmVhawEAAAx0cmFpdEJyYXZlcnkAP/AAAAAAAAAAB215TW91dGgIAAAAAQABMAYAAAkAE3BlcmtNZWxlZVBpc3RvbFdoaXABAAARcGVya1Nob3RndW5EYW1hZ2UBAAAGbXlNYXNrCAAAAAEAATAGAAAJAA9mYXN0RGV0ZXJpb3JhdGUBAAAJZmFzdERlYXRoAQAAD3BlcmtNZWxlZU1vdmVzMgEAABJ0cmFpdFRyaWdnZXJGaW5nZXIAP/AAAAAAAAAADHBlcmtTaWRlYXJtMQEAAAhteVNsb3dNbwAAAAAAAAAAAAAIc2xhbUdyYWIBAAAOcGVya0tub2NrZG93bjIBAAAPcGVya01lbGVlRGlzYXJtAQAADnRyYWl0QXdhcmVuZXNzAEAQAAAAAAAAAAdteVNoaXJ0CAAAAAEAATAGAAAJAA9wZXJrTWVsZWVNb3ZlczMBAAAGbXlEYXNoAD/0zMzMzMzNAA1wZXJrU3R1bkRhc2gxAQAACnBlcmtEb2RnZTEBAAALZ3JhYkJyZWFrZXIBAAAKd2Vha1RvRGFzaAEAABFwZXJrVW5hcm1lZE1vdmVzMQEAAA9wZXJrQnVsbGV0VGltZTIBAAARcGVya1JpZmxlQWNjdXJhY3kBAAAHbXlXaWR0aABASQAAAAAAAAAKc3Ryb25nR3JpcAEAAA9wZXJrTWVsZWVNb3ZlczQBAAAHbm9SYW5nZQEAAAdzdGF0RU5EAAAAAAAAAAAAAApwZXJrRG9kZ2UyAQAAD3BlcmtBcm1vclBpZXJjZQEAAAtwZXJrUmVsb2FkMQEAAApwZXJrQmxvY2syAQAAD3BlcmtNZWxlZU1vdmVzMQEAAAhteVJlbG9hZABAWAAAAAAAAAAQdHJhaXRDb21iYXRTa2lsbAA/8AAAAAAAAAAPcGVya1JpZmxlUmVsb2FkAQAADWhpdFN0b3BBdHRhY2sBAAAIYm9keVR5cGUCAANjaXYAEXBlcmtVbmFybWVkTW92ZXMzAQAAC3BlcmtUYWNCYXIxAQAAB3N0YXRTVFIAAAAAAAAAAAAAC3BlcmtMb3dBY2MxAQAACGFtWm9tYmllAQAAB3N0YXRERVgAAAAAAAAAAAAACW15VW5hcm1lZAMAB3R3b0hhbmQBAAAHbXlSYW5nZQBAV8AAAAAAAAAGbXlUeXBlAgAHdW5hcm1lZAAKbXlQaWVyY2luZwAAAAAAAAAAAAAFbWVsZWUBAQAIbXlEYW1hZ2UAQAAAAAAAAAAAB215U2hvdHMAP/AAAAAAAAAABW15Q2F0AgAFbWVsZWUADG15RGFtYWdlVHlwZQIABXB1bmNoAAZteU5hbWUCAAdVbmFybWVkAAVteVJPRgBAPgAAAAAAAAAGbXlBbW1vAD/wAAAAAAAAAAVteVRhZwIAB1VuYXJtZWQACG15Q2FzaW5nAgAGc3BhcmsxAAhteVNwcmVhZABACAAAAAAAAAAACQALcGVya0xvd0FjYzIBAAARcGVya1Nob3RndW5TaG90czEBAAALbm9IZWFkc2hvdHMBAAAQcGVya1Bpc3RvbFJlbG9hZAEAAApwZXJrQmxvY2sxAQAAEXBlcmtVbmFybWVkTW92ZXMyAQAADnBlcmtQaXN0b2xST0YxAQAADnBlcmtDb3ZlclNob290AQAAB25vRG9kZ2UBAAAPdHJhaXREaXN0cmFjdGVkAEAgAAAAAAAAAApwZXJrRG9kZ2UzAQAACGF1dG9EYXNoAQAACGhlYWRUeXBlAgADY2l2ABFwZXJrVW5hcm1lZFNwZWVkMQEAAAlhdXRvQXdhcmUBAAAKYm9keVdvdW5kcwgAAAAAAAAJAAhteUhlaWdodABAV4AAAAAAAAARcGVya1VuYXJtZWRTcGVlZDIBAAALbXlDaGFyYWN0ZXICAANjaXYACnBlcmtBcm1vcjIBAAAKc2tpbGxNZWxlZQAAAAAAAAAAAAALbm9XaWVsZEd1bnMBAAAGYW1BYm9tAQAAC3NraWxsUGlzdG9sAAAAAAAAAAAAAAhzdGF0TEVBRAAAAAAAAAAAAAATcGVya1Bpc3RvbEFjY3VyYWN5MgEAAA1za2lsbFJldm9sdmVyAAAAAAAAAAAAAAt3ZWFwb25BcnJheQgAAAADAAEwAgADcHBrAAExAgAHYmVyZXR0YQABMgIAB2dsb2NrMjAAAAkACnRyYWl0Q292ZXIAP/AAAAAAAAAAB3N0YXRBV1IAAAAAAAAAAAAADXBlcmtTdHVuRGFzaDIBAAAHc3RhdFRBQwAAAAAAAAAAAAAOcGVya1Bpc3RvbFJPRjIBAAARcGVya1VuYXJtZWRTcGVlZDMBAAAXcGVya1Bpc3RvbEVmZmVjdGl2ZW5lc3MBAAALcGVya1RhY0JhcjIBAAALcGVya1NNR0FpbTEBAAAKcGVya0FybW9yMQEAAAxhbUludmluY2libGUBAAAIc2tpbGxTTUcAAAAAAAAAAAAACG5vWm9tYmllAQAADHNraWxsU2hvdGd1bgAAAAAAAAAAAAAKaGVhZFdvdW5kcwgAAAAAAAAJAAdteURlcHRoAEAwAAAAAAAAAAxza2lsbFVuYXJtZWQAAAAAAAAAAAAACW15SWNvblBvcwA/8AAAAAAAAAANbXlTaG9vdEhlaWdodABASQAAAAAAAAAHbm9IYW5kcwEAAAhmcmVha091dAEAAAdteVNjYWxlAD/wAAAAAAAAABJteU5hdHVyYWxBcm1vckhlYWQAAAAAAAAAAAAACW5vQ29sbGlkZQEAABJteU5hdHVyYWxBcm1vckJvZHkAAAAAAAAAAAAAC21lbGVlSGVhbHRoAEAIAAAAAAAAAA5wZXJrU3R1blByb29mMQEAAAZteU5hbWUCAANBY2UABmFtU2xvdwEAAA5tb2RIdXJ0VGFjdGljcwA/8AAAAAAAAAAIYW1FdmFkZXIBAAALYnVsbGV0RWF0ZXIBAAAKcGVya0FybW9yMwEAAApza2lsbFJpZmxlAAAAAAAAAAAAAA1wZXJrU01HUmVsb2FkAQAADWltcHJvdmVkQ2h1bXABAAAEbXlYUAAAAAAAAAAAAAAKc2tpbGxIZWF2eQAAAAAAAAAAAAAKc3RhbmRTdGlsbAEAAAZteUJvc3MCAAAAEHBlcmtJbW11bmVMb3dEbWcBAAAPcGVya0ZlYXJNb25nZXIxAQAAEHBlcmtTTUdUYWNEYW1hZ2UBAAAOcGVya1N0dW5Qcm9vZjIBAAAOcGVya1RlYW1Cb251czIBAAAHbXlLaWxscwAAAAAAAAAAAAAMbXlIZWFkSGVpZ2h0AEBJAAAAAAAAAAtza2lsbFBvaW50cwAAAAAAAAAAAAAHbXlXYXZlcwAAAAAAAAAAAAAPcGVya0ZlYXJNb25nZXIzAQAAC21vZFJlY2hhcmdlAD/wAAAAAAAAAA9wZXJrRmVhck1vbmdlcjIBAAAIbW9kU3BlZWQAP/AAAAAAAAAADnBlcmtUZWFtQm9udXMzAQAADnBlcmtUZWFtQm9udXMxAQAAC3BlcmtTTUdBaW0yAQAACWFtU3BlY2lhbAEBAA1rbm9ja2Rvd25EYXNoAQAABm1vZERtZwA/8AAAAAAAAAAScGVya1JpZmxlVGFjRGFtYWdlAQAAC3Rocm93bkJsb2NrAQAACnN0YXRQb2ludHMAAAAAAAAAAAAADXdlYXBvblN0ZWFsZXIBAAAIbXlIZWFsdGgAQDEAAAAAAAAAEWhlYWRHZWFyUmVzdXJyZWN0AQAAD3BlcmtSaWZsZVJhbmdlMQEAABFwZXJrSGVhZHNob3RDcml0cwEAAAdteUFjY2VsAD/0AAAAAAAAAAxtb2RBbGx5U21hcnQAP/AAAAAAAAAAB215U3BlZWQAQBMzMzMzMzMACXNlbGZTaG9vdAEAAAdteUJsb29kAgADcmVkAAhtb2RBcm1vcgA/8AAAAAAAAAAPcGVya0J1bGxldFRpbWUxAQAADHBlcmtTTUdSYW5nZQEAAA9wZXJrUmlmbGVSYW5nZTIBAAAPcGVya0J1bGxldFRpbWUzAQAAC215SGVhbHRoTWF4AEAxAAAAAAAAAA9wZXJrQnVsbGV0VGltZTQBAAAHYXV0b0hpdAEAABNwZXJrUGlzdG9sQWNjdXJhY3kxAQAADG15VGFjdGljc01heAAAAAAAAAAAAAAIZm9vdFR5cGUCAANjaXYAC3BlcmtMb3dBY2MzAQAACGhhbmRUeXBlAgADY2l2AAtteVNsb3dNb01heABAeQAAAAAAAAAPcGVya1Nob3RndW5ST0YxAQAAB25vUGFpbnQBAAAKbm9BaW1TaG90cwEAABZwZXJrUmlmbGVFZmZlY3RpdmVuZXNzAQAACW15VGFjdGljcwAAAAAAAAAAAAARcGVya1Nob3RndW5SZWxvYWQBAAAIbW9kUmFuZ2UAAAAAAAAAAAAACW15V2VhcG9ucwgAAAACAAEwBgABMQYAAAkAEXBlcmtTaG90Z3VuU2hvdHMyAQAADmF0dGFja05ldXRyYWxzAQAACG1lbGVlU2h5AQAACmRpc2FybUhlbG0BAAAHbXlMZXZlbAA/8AAAAAAAAAAACQAAD215QWN0aXZlTWVtYmVycwgAAAAAAAAJAAALY3VycmVudFdhdmUAP/AAAAAAAAAAAA1teVdlYXBvbnNMaXN0CAAAAAAAAAkAABFteUluYWN0aXZlTWVtYmVycwgAAAAAAAAJAAAKYXJlbmFXYXZlcwAAAAAAAAAAAAAACmFyZW5hS2lsbHMAAAAAAAAAAAAAAAhuZXdBcmVuYQEBAAALbXlBcm1vckxpc3QIAAAAAAAACQA=';
+
+test('Madness rules match a real arena save', async () => {
+  const { SAVE_RULES, passes } = await import('../src/data/saveRules.ts');
+  const save = decodeSol(Uint8Array.from(atob(MADNESS_SAVE), (c) => c.charCodeAt(0)));
+  assert.equal(save.error, undefined);
+  assert.equal(save.name, 'arenaMadnessGame2');
+
+  const at = (path: string): SolValue | undefined =>
+    path
+      .split('.')
+      .reduce<SolValue | undefined>(
+        (node, key) =>
+          node && typeof node === 'object' ? (node as Record<string, SolValue>)[key] : undefined,
+        save.data as SolValue,
+      );
+
+  const rules = SAVE_RULES['madness-project-nexus-classic'];
+  assert.ok(rules, 'MPN Classic has rules');
+
+  // Every path a rule names must exist in a real save. A typo would never throw —
+  // it would quietly never unlock, which is the whole hazard.
+  for (const rule of Object.values(rules)) {
+    assert.notEqual(at(rule.path), undefined, 'the save is missing ' + rule.path);
+  }
+
+  // A fresh run: a squad has been saved, but ten waves have not been survived.
+  assert.equal(passes(rules['custom-char'], at('haveSaved')), true);
+  assert.equal(passes(rules['arena-wave-10'], at('arenaWaves')), false);
+  assert.equal(passes(rules['arena-wave-10'], 10), true);
+  assert.equal(passes(rules['arena-wave-10'], 9), false);
+
+  // The mods are rebuilds of the same engine, so they must share the mapping.
+  const mods = Object.keys(SAVE_RULES).filter((slug) => slug.startsWith('madness-'));
+  assert.ok(mods.length >= 12, 'expected every mod mapped, got ' + mods.length);
 });

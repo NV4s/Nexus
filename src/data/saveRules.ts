@@ -32,8 +32,40 @@ export type SaveRule = {
 };
 
 /** slug → achievement id → rule. */
+/**
+ * Madness: Project Nexus stores its arena run at the top level of the save, in
+ * a SharedObject named `arenaMadnessGame2`. Verified against a real one:
+ *
+ *   haveSaved = true          arenaWaves = 0        arenaKills = 0
+ *   currentWave = 1           myCash = 999999999    newArena = true
+ *   teamLeader.myLevel = 1    teamLeader.myXP = 0   teamLeader.statPoints = 0
+ *
+ * The mods are rebuilds of the same engine, so they carry the same fields. A
+ * rule is matched against every save the game holds regardless of the object's
+ * name, so a mod that renames its SharedObject still works.
+ */
+const madnessArena: Record<string, SaveRule> = {
+  // "Reach wave 10 in Arena mode" — arenaWaves is the count survived, and
+  // currentWave is only the run in progress.
+  'arena-wave-10': { path: 'arenaWaves', test: { atLeast: 10 } },
+  // "Build and save a custom character" — the game writes this once a squad has
+  // been saved, which is the same act.
+  'custom-char': { path: 'haveSaved', test: { equals: true } },
+};
+
 export const SAVE_RULES: Record<string, Record<string, SaveRule>> = {
-  // Nothing yet. Entries land here as saves are inspected — see the header.
+  'madness-project-nexus-classic': madnessArena,
+  'madness-project-nexus-classic-redux': madnessArena,
+  'madness-project-nexus-mod-v9-5': madnessArena,
+  'madness-project-nexus-mod-v7': madnessArena,
+  'madness-project-nexus-mod-v6-1': madnessArena,
+  'madness-project-nexus-modded': madnessArena,
+  'madness-project-nexus-nexus-mod': madnessArena,
+  'madness-project-nexus-recompiled': madnessArena,
+  'madness-project-nexus-goofy-ahh-mod': madnessArena,
+  'madness-project-nexus-n-a-f-mod': madnessArena,
+  'madness-project-nexus-story-expansion-reborn': madnessArena,
+  'madness-project-nexus-tou-reborn-v1': madnessArena,
 };
 
 /** Total by construction: every branch returns a boolean, so it cannot throw. */

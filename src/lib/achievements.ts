@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS } from '../data/achievements';
 import { SAVE_RULES, passes } from '../data/saveRules';
-import { readSavePath } from './saves';
+import { readSavePath, saveRawFor } from './saves';
 
 /**
- * Ruffle runs a SWF as an opaque display object — nothing can read a Flash game's
- * score, level or flags from outside it. So only what the page itself can observe
- * unlocks automatically; every game-specific objective is ticked by the player.
+ * What unlocks by itself.
+ *
+ * `played`, `time30`, `time120` and `sessions5` come from watching the page.
+ * `saved` and `save-changed` come from the game's own save file, which Ruffle
+ * keeps in localStorage — so they are real progress in the game rather than time
+ * spent in front of it, and they need no per-game knowledge to work.
+ *
+ * Anything more specific than that ("reach stage 12") needs the game's own field
+ * names, which live in data/saveRules.ts.
  */
-export type AutoRule = 'played' | 'time30' | 'time120' | 'sessions5';
+export type AutoRule = 'played' | 'time30' | 'time120' | 'sessions5' | 'saved' | 'save-changed';
 
 export type Achievement = {
   id: string;
@@ -48,7 +54,30 @@ const GENERIC: Achievement[] = [
   { id: 'sessions5', name: 'Regular', hint: 'Come back for five separate sessions.', auto: 'sessions5' },
 ];
 
-export const achievementsFor = (slug: string): Achievement[] => ACHIEVEMENTS[slug] ?? GENERIC;
+/**
+ * Added to any game that actually keeps a save. Appended rather than written into
+ * every list because a game that never saves would otherwise show two objectives
+ * it can never earn.
+ */
+const SAVE_AWARE: Achievement[] = [
+  {
+    id: 'save-made',
+    name: 'Progress saved',
+    hint: 'The game wrote its own save file.',
+    auto: 'saved',
+  },
+  {
+    id: 'save-advanced',
+    name: 'Further than before',
+    hint: 'Your save changed between visits, so you got somewhere new.',
+    auto: 'save-changed',
+  },
+];
+
+export const achievementsFor = (slug: string): Achievement[] => {
+  const base = ACHIEVEMENTS[slug] ?? GENERIC;
+  return saveRawFor(slug) ? [...base, ...SAVE_AWARE] : base;
+};
 
 export const readProgress = (slug: string): Progress => read(PROGRESS(slug), { seconds: 0, sessions: 0 });
 
@@ -59,14 +88,55 @@ const save = (slug: string, ids: Set<string>) => {
   return ids;
 };
 
-const earned = (rule: AutoRule, progress: Progress) =>
-  rule === 'played'
-    ? true
-    : rule === 'time30'
-      ? progress.seconds >= 1800
-      : rule === 'time120'
-        ? progress.seconds >= 7200
-        : progress.sessions >= 5;
+const SIGNATURE = (slug: string) => `nexus:savesig:${slug}`;
+
+/** Cheap, stable fingerprint of a string — only ever compared for equality. */
+function fingerprint(text: string) {
+  let value = 0;
+  for (let i = 0; i < text.length; i++) value = (value * 31 + text.charCodeAt(i)) | 0;
+  return `${text.length}:${value}`;
+}
+
+type SaveFacts = { exists: boolean; changed: boolean };
+
+/**
+ * Compares the game's save against the one seen last time, and remembers the new
+ * one. A change means the game recorded something it had not before, which is
+ * the closest thing to real progress that works without knowing a game's format.
+ */
+function saveFacts(slug: string): SaveFacts {
+  const raw = saveRawFor(slug);
+  if (raw === null) return { exists: false, changed: false };
+
+  const current = fingerprint(raw);
+  let previous: string | null = null;
+  try {
+    previous = localStorage.getItem(SIGNATURE(slug));
+    if (previous !== current) localStorage.setItem(SIGNATURE(slug), current);
+  } catch {
+    /* unreadable storage just means this cannot be judged */
+  }
+
+  // A first sighting is not a change: there is nothing to have moved on from.
+  return { exists: true, changed: previous !== null && previous !== current };
+}
+
+const earned = (rule: AutoRule, progress: Progress, saves: SaveFacts) => {
+  switch (rule) {
+    case 'played':
+      return true;
+    case 'time30':
+      return progress.seconds >= 1800;
+    case 'time120':
+      return progress.seconds >= 7200;
+    case 'sessions5':
+      return progress.sessions >= 5;
+    case 'saved':
+      return saves.exists;
+    case 'save-changed':
+      return saves.changed;
+  }
+};
 
 /** Achievements this game unlocks from its own save file rather than from playtime. */
 export const saveDriven = (slug: string) => SAVE_RULES[slug] ?? {};
@@ -80,9 +150,12 @@ export const saveDriven = (slug: string) => SAVE_RULES[slug] ?? {};
  */
 function applyAuto(slug: string, progress = readProgress(slug)) {
   const unlocked = readUnlocked(slug);
+  // Read once and shared: this also records the current save, so calling it per
+  // achievement would compare the save against itself and never see a change.
+  const saves = saveFacts(slug);
 
   for (const achievement of achievementsFor(slug)) {
-    if (achievement.auto && earned(achievement.auto, progress)) unlocked.add(achievement.id);
+    if (achievement.auto && earned(achievement.auto, progress, saves)) unlocked.add(achievement.id);
   }
 
   for (const [id, rule] of Object.entries(saveDriven(slug))) {

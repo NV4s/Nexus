@@ -131,6 +131,28 @@ const bytesOf = (value: string) => {
   }
 };
 
+/**
+ * The game's raw save bytes, still base64, joined in key order — or null if it
+ * has never saved.
+ *
+ * Deliberately not decoded: this exists to answer "is there a save" and "has it
+ * changed", and comparing the stored strings does that for a 270 KB save without
+ * parsing it on every check.
+ */
+export function saveRawFor(slug: string): string | null {
+  try {
+    const parts: string[] = [];
+    for (const key of Object.keys(localStorage).sort()) {
+      const file = swfFileIn(key);
+      if (!file) continue;
+      if (flashGamesByFile().get(file)?.slug === slug) parts.push(localStorage.getItem(key) ?? '');
+    }
+    return parts.length ? parts.join('|') : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Every SharedObject this game holds, decoded. Never throws. */
 export function decodeSaves(slug: string): SaveFile[] {
   const files: SaveFile[] = [];
