@@ -24,6 +24,10 @@ const Admin = lazy(() => import('./components/Admin'));
 // Pulls in an LLM runtime on demand; never in the bundle a player downloads.
 const Assistant = lazy(() => import('./components/Assistant'));
 
+// Pulls a RetroArch core over the network on demand; never on the arcade path.
+const Consoles = lazy(() => import('./components/Consoles'));
+const Emulator = lazy(() => import('./components/Emulator'));
+
 export default function App() {
   const route = useRoute();
   // Only on a cold visit to the front page — a shared link to a game should just play it.
@@ -84,6 +88,14 @@ export default function App() {
           <Achievements />
         ) : head === 'saves' ? (
           <Saves />
+        ) : head === 'emulators' ? (
+          <Suspense fallback={<div className="empty">Loading…</div>}>
+            <Consoles />
+          </Suspense>
+        ) : head === 'emulator' && param ? (
+          <Suspense fallback={<div className="empty">Loading…</div>}>
+            <Emulator id={param} />
+          </Suspense>
         ) : head === 'assistant' ? (
           <Suspense fallback={<div className="empty">Loading…</div>}>
             <Assistant />

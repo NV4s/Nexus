@@ -23,6 +23,7 @@ export default async function handler(req: Req, res: Res) {
     ['HLEN', 'presence'],
     ['SCARD', 'visitors:all'],
     ['SCARD', `visitors:daily:${today}`],
+    ['HGETALL', 'visits:places'],
   ]);
 
   if (!results) {
@@ -34,11 +35,12 @@ export default async function handler(req: Req, res: Res) {
       live: [],
       visitors: 0,
       visitorsToday: 0,
+      places: {},
       offline: configured() ? 'rejected' : 'missing',
     });
   }
 
-  const [total, dailyRaw, presenceRaw, size, visitors, visitorsToday] = results;
+  const [total, dailyRaw, presenceRaw, size, visitors, visitorsToday, placesRaw] = results;
 
   // Upstash returns hashes as a flat [field, value, …] array.
   const pairs = (value: unknown): [string, string][] => {
@@ -49,6 +51,7 @@ export default async function handler(req: Req, res: Res) {
   };
 
   const daily = Object.fromEntries(pairs(dailyRaw).map(([day, count]) => [day, Number(count)]));
+  const places = Object.fromEntries(pairs(placesRaw).map(([place, count]) => [place, Number(count)]));
 
   const now = Date.now();
   const live: { page: string; seconds: number }[] = [];
@@ -80,5 +83,6 @@ export default async function handler(req: Req, res: Res) {
     live,
     visitors: Number(visitors ?? 0),
     visitorsToday: Number(visitorsToday ?? 0),
+    places,
   });
 }

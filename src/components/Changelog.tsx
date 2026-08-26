@@ -1,5 +1,20 @@
 const RELEASES = [
   {
+    version: 'v1.5.0',
+    date: '2026-08-26',
+    changes: [
+      'Console emulators: NES, SNES, N64, Game Boy, GBA, DS, PlayStation, Genesis, Master System, Sega CD, Saturn, Atari and arcade. You open your own ROM and it stays on your device — nothing is uploaded and no games are hosted here. Save states are in the emulator’s own toolbar',
+      'PS5, PS4, PS Vita and 3DS are not there. PS5 has no emulator at all, and the other three only run on a desktop, so a page for them would just fail',
+      'Flash games have a toolbar now: restart, download the .swf, download your save, and live FPS, quality and volume. Raising FPS speeds a lot of Flash games up rather than smoothing them, which is worth knowing before you touch it',
+      'Saves can be pulled out per game — either the real .sol file, which works in other Flash tools, or a backup this site can read back',
+      'Achievements and playtime move between devices from Settings. Importing merges, so an old file can never undo newer progress',
+      'The assistant picks models from a list instead of you typing an id, and can take images and documents',
+      'Khan Academy opens in a tab — it says it can be embedded and then refuses. Every embedded tool now offers a way out to a tab if it stays blank',
+      'Scratch and Quizlet are still blocked, so there are stand-ins that are not: TurboWarp runs Scratch projects and Quizizz covers flashcards. Snap!, Blockly Games, OpenStax and Excalidraw are new too',
+      'The panic key can open your link in a fresh tab and leave this one blank. A page cannot close a tab it did not open, so that is as close as it gets',
+    ],
+  },
+  {
     version: 'v1.4.1',
     date: '2026-08-25',
     changes: [

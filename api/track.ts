@@ -11,6 +11,29 @@ const VISITOR_TTL_S = 90 * 24 * 60 * 60;
 const RECENT_KEEP = 200;
 const DAY_MS = 86_400_000;
 
+/**
+ * Coarse location from Vercel's own edge headers.
+ *
+ * Country and region only, and never the IP they were derived from. The browser
+ * Geolocation API is deliberately not used: it would prompt every visitor and
+ * return a street-level fix, which is far more than a visitor count needs.
+ */
+const REGION = /^[A-Za-z0-9 .'-]{0,40}$/;
+
+function placeOf(req: Req): string | null {
+  const headers = req.headers as Record<string, string | string[] | undefined>;
+  const pick = (name: string) => {
+    const value = headers[name];
+    return typeof value === 'string' ? value : null;
+  };
+  const country = pick('x-vercel-ip-country');
+  if (!country || !/^[A-Z]{2}$/.test(country)) return null;
+  const region = pick('x-vercel-ip-country-region');
+  // Region is free text from the edge, so it is validated before being stored
+  // and shown in the admin panel.
+  return region && REGION.test(region) ? `${country}-${region}` : country;
+}
+
 const slugOf = (page: string) => {
   const match = page.match(/^\/(?:game|embed)\/([a-z0-9-]{1,60})$/);
   return match ? match[1] : null;
@@ -51,6 +74,14 @@ export default async function handler(req: Req, res: Res) {
     );
 
     if (vid) {
+      const place = placeOf(req);
+      if (place) {
+        commands.push(
+          ['HINCRBY', 'visits:places', place, 1],
+          ['HSET', `visitor:${vid}`, 'place', place],
+        );
+      }
+
       commands.push(
         ['SADD', 'visitors:all', vid],
         ['SADD', `visitors:daily:${today}`, vid],

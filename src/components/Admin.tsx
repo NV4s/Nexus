@@ -8,10 +8,11 @@ type Stats = {
   live: { page: string; seconds: number }[];
   visitors: number;
   visitorsToday: number;
+  places?: Record<string, number>;
   offline?: 'missing' | 'rejected';
 };
 
-type VisitorRow = { id: string; first: number; last: number; visits: number; games: string[] };
+type VisitorRow = { id: string; first: number; last: number; visits: number; games: string[]; place?: string };
 
 const POLL_MS = 5_000;
 
@@ -205,6 +206,7 @@ export default function Admin() {
   const today = days[days.length - 1].count;
   const peak = days.reduce((best, entry) => (entry.count > best.count ? entry : best), days[0]);
   const fortnight = days.reduce((sum, entry) => sum + entry.count, 0);
+  const places = Object.entries(stats.places ?? {}).sort((a, b) => b[1] - a[1]);
 
   return (
     <section className="section">
@@ -281,6 +283,26 @@ export default function Admin() {
         </div>
 
         <div className="panel">
+          <h3>Where from</h3>
+          {!places.length ? (
+            <p>No locations recorded yet. This fills in once the site is live on Vercel.</p>
+          ) : (
+            <ul className="live-list">
+              {places.slice(0, 12).map(([place, count]) => (
+                <li key={place}>
+                  <span>{place}</span>
+                  <span>{count}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="visitor-meta">
+            Country and region from the edge, never a precise position and never the address it
+            came from.
+          </p>
+        </div>
+
+        <div className="panel">
           <h3>Daily sessions</h3>
           {fortnight === 0 ? (
             <p>No visits recorded yet.</p>
@@ -324,6 +346,7 @@ export default function Admin() {
                     </div>
                     <div className="visitor-meta">
                       first seen {ago(visitor.first)} · last seen {ago(visitor.last)}
+                      {visitor.place ? ` · ${visitor.place}` : ''}
                     </div>
                     {visitor.games.length > 0 && (
                       <div className="visitor-games">

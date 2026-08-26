@@ -9,6 +9,8 @@ export type VisitorRow = {
   last: number;
   visits: number;
   games: string[];
+  /** Country, or country-region. Never a precise position. */
+  place?: string;
 };
 
 /**
@@ -47,6 +49,7 @@ export default async function handler(req: Req, res: Res) {
       last: Number(record.last ?? 0),
       visits: Number(record.visits ?? 0),
       games: Array.isArray(games) ? (games as string[]).slice(0, 12) : [],
+      ...(record.place ? { place: record.place } : {}),
     };
   });
 
