@@ -252,3 +252,79 @@ export function useGameSession(slug: string | null) {
 
   return { unlocked, setUnlocked };
 }
+
+/* ---------- moving progress between devices ---------- */
+
+const ACH_PREFIX = 'nexus:ach:';
+const PLAY_PREFIX = 'nexus:play:';
+
+/**
+ * Achievements and playtime as one file.
+ *
+ * Save data is deliberately not included — it is far larger, and the Saves page
+ * already exports it separately. Someone moving to a new laptop usually wants
+ * both, so both are offered rather than one silently carrying the other.
+ */
+export function exportAchievements(): string {
+  const unlocked: Record<string, string[]> = {};
+  const playtime: Record<string, Progress> = {};
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith(ACH_PREFIX)) unlocked[key.slice(ACH_PREFIX.length)] = read(key, []);
+      else if (key.startsWith(PLAY_PREFIX)) {
+        playtime[key.slice(PLAY_PREFIX.length)] = read(key, { seconds: 0, sessions: 0 });
+      }
+    }
+  } catch {
+    /* nothing readable to export */
+  }
+  return JSON.stringify({ format: 'nexus-achievements/1', exported: Date.now(), unlocked, playtime }, null, 2);
+}
+
+export type MergeResult = { games: number; unlocked: number; seconds: number };
+
+/**
+ * Merges a file from another device rather than overwriting.
+ *
+ * Unlocks are unioned and playtime takes the larger of the two, so importing an
+ * older backup can never take away progress this device already has — which is
+ * the mistake that makes people afraid to press the button.
+ */
+export function importAchievements(json: string): MergeResult {
+  const parsed = JSON.parse(json) as {
+    format?: string;
+    unlocked?: Record<string, string[]>;
+    playtime?: Record<string, Progress>;
+  };
+  if (!parsed || typeof parsed !== 'object' || !parsed.format?.startsWith('nexus-achievements/')) {
+    throw new Error('Not a Nexus achievements file.');
+  }
+
+  const touched = new Set<string>();
+  let gained = 0;
+  let seconds = 0;
+
+  for (const [slug, ids] of Object.entries(parsed.unlocked ?? {})) {
+    if (!Array.isArray(ids)) continue;
+    const current = readUnlocked(slug);
+    const before = current.size;
+    for (const id of ids) if (typeof id === 'string') current.add(id);
+    if (current.size !== before) gained += current.size - before;
+    save(slug, current);
+    touched.add(slug);
+  }
+
+  for (const [slug, incoming] of Object.entries(parsed.playtime ?? {})) {
+    if (!incoming || typeof incoming !== 'object') continue;
+    const mine = readProgress(slug);
+    const merged = {
+      seconds: Math.max(mine.seconds, Number(incoming.seconds) || 0),
+      sessions: Math.max(mine.sessions, Number(incoming.sessions) || 0),
+    };
+    seconds += Math.max(0, merged.seconds - mine.seconds);
+    write(PROGRESS(slug), merged);
+    touched.add(slug);
+  }
+
+  return { games: touched.size, unlocked: gained, seconds };
+}

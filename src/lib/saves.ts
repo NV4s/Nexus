@@ -245,3 +245,48 @@ export function readSavePath(slug: string, path: string): SolValue | undefined {
   }
   return undefined;
 }
+
+/* ---------- downloading a single game's save ---------- */
+
+/** Kicks off a browser download without leaving a stray object URL behind. */
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * One game's save as the real `.sol` file Flash would have written.
+ *
+ * This is the actual binary, not a wrapper, so it also loads in Ruffle desktop
+ * or any other SharedObject tool. A game holding several objects gets several
+ * files — hence the count.
+ */
+export function downloadGameSave(slug: string): number {
+  let written = 0;
+  for (const file of decodeSaves(slug)) {
+    const raw = localStorage.getItem(file.key);
+    const bytes = raw && bytesOf(raw);
+    if (!bytes) continue;
+    // A copy, because the download must not hold a view onto a larger buffer.
+    downloadBlob(new Blob([bytes.slice()], { type: 'application/octet-stream' }), `${file.name || slug}.sol`);
+    written++;
+  }
+  return written;
+}
+
+/** The same save as JSON, keyed the way importSaves expects it back. */
+export function downloadGameBackup(slug: string) {
+  const entries = decodeSaves(slug).map((file) => [file.key, localStorage.getItem(file.key) ?? '']);
+  if (!entries.length) return false;
+  const body = JSON.stringify(
+    { format: 'nexus-saves/1', sha: SWFDUMP_SHA, saved: Object.fromEntries(entries) },
+    null,
+    2,
+  );
+  downloadBlob(new Blob([body], { type: 'application/json' }), `${slug}-save.json`);
+  return true;
+}

@@ -26,3 +26,37 @@ export const label = (combo: string) =>
     .split('+')
     .map((part) => (part.length === 1 ? part.toUpperCase() : part[0].toUpperCase() + part.slice(1)))
     .join(' + ');
+
+/* ---------- what the key actually does ---------- */
+
+export type PanicMode = 'replace' | 'newtab';
+
+export const readPanicMode = (): PanicMode =>
+  localStorage.getItem('panicMode') === 'newtab' ? 'newtab' : 'replace';
+
+export const writePanicMode = (mode: PanicMode) => localStorage.setItem('panicMode', mode);
+
+/**
+ * Leaves the site.
+ *
+ * `replace` swaps this tab for the panic link. It leaves no forward history
+ * entry, but the tab keeps its back history — pressing Back returns here.
+ *
+ * `newtab` opens the link in a fresh tab and blanks this one. That is as close
+ * to "delete the tab" as a page can get: a script may only close a window it
+ * opened itself, so window.close() is attempted and silently ignored otherwise.
+ * The blank tab that remains carries no trace of the site in its address bar,
+ * and its history is replaced rather than pushed.
+ */
+export function panic(link = readLink(), mode = readPanicMode()) {
+  if (mode === 'newtab') {
+    const opened = window.open(link, '_blank', 'noopener');
+    // Blanking first means that even if the popup is blocked, this tab no longer
+    // shows the site — the worse failure is being left on it.
+    window.location.replace('about:blank');
+    // Only succeeds for a script-opened window; harmless everywhere else.
+    if (opened) window.close();
+    return;
+  }
+  window.location.replace(link);
+}

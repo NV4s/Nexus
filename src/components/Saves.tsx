@@ -3,6 +3,8 @@ import { Download, Trash2, Upload } from 'lucide-react';
 import {
   decodeSaves,
   deleteSave,
+  downloadGameBackup,
+  downloadGameSave,
   exportSaves,
   importSaves,
   listSaves,
@@ -149,6 +151,20 @@ export default function Saves() {
               <div className="row">
                 <button className="button ghost" onClick={() => navigate(`/game/${entry.game.slug}`)}>
                   Play
+                </button>
+                <button
+                  className="button ghost"
+                  title="The real .sol file, which also loads in Ruffle desktop"
+                  onClick={() => downloadGameSave(entry.game.slug)}
+                >
+                  <Download size={16} /> .sol
+                </button>
+                <button
+                  className="button ghost"
+                  title="A JSON backup this site can import again"
+                  onClick={() => downloadGameBackup(entry.game.slug)}
+                >
+                  <Download size={16} /> Backup
                 </button>
                 <button className="button ghost" onClick={() => remove(entry)}>
                   <Trash2 size={16} /> Delete

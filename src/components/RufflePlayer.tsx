@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Download, Gauge, RotateCcw, Save } from 'lucide-react';
+import { downloadBlob, downloadGameSave } from '../lib/saves';
+import { FRAME_RATES, QUALITIES, readPlayerPrefs, ruffleOptions, writePlayerPrefs } from '../lib/player';
 
 declare global {
   interface Window {
@@ -80,12 +83,19 @@ export default function RufflePlayer({
   url,
   title,
   parts = 1,
+  slug,
 }: {
   url: string;
   title: string;
   parts?: number;
+  /** Enables the save controls; the player itself does not need to know the game. */
+  slug?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // Kept so the SWF can be saved without downloading it a second time.
+  const dataRef = useRef<ArrayBuffer | null>(null);
+  const [prefs, setPrefs] = useState(readPlayerPrefs);
+  const [note, setNote] = useState('');
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState('');
@@ -107,6 +117,7 @@ export default function RufflePlayer({
         ]);
         if (cancelled) return;
 
+        dataRef.current = data;
         const player = ruffle.newest().createPlayer();
         player.style.width = '100%';
         player.style.height = '100%';
@@ -116,10 +127,7 @@ export default function RufflePlayer({
           data,
           // Relative asset loads inside the SWF resolve against its own directory.
           base: new URL(url, window.location.href).href.replace(/[^/]*$/, ''),
-          autoplay: 'on',
-          // Third-party SWFs get no reach into this page.
-          allowScriptAccess: false,
-          letterbox: 'on',
+          ...ruffleOptions(prefs),
         });
         if (!cancelled) setStatus('ready');
       } catch (cause) {
@@ -133,7 +141,18 @@ export default function RufflePlayer({
       cancelled = true;
       container.replaceChildren();
     };
-  }, [url, parts, attempt]);
+  }, [url, parts, attempt, prefs]);
+
+  const set = (change: Parameters<typeof writePlayerPrefs>[0]) => {
+    writePlayerPrefs(change);
+    setPrefs(readPlayerPrefs()); // re-reads so a partial change keeps the rest
+  };
+
+  const saveSwf = () => {
+    if (!dataRef.current) return;
+    const name = decodeURIComponent(url.split('/').pop() || `${title}.swf`);
+    downloadBlob(new Blob([dataRef.current], { type: 'application/x-shockwave-flash' }), name);
+  };
 
   return (
     <div className="stage">
@@ -146,6 +165,71 @@ export default function RufflePlayer({
             <div style={{ width: `${Math.round(progress * 100)}%` }} />
           </div>
           <span>{Math.round(progress * 100)}%</span>
+        </div>
+      )}
+
+      {status === 'ready' && (
+        <div className="player-bar">
+          <button className="button ghost" onClick={() => setAttempt((n) => n + 1)} title="Restart the game">
+            <RotateCcw size={14} /> Restart
+          </button>
+
+          <button className="button ghost" onClick={saveSwf} title="Download the .swf file itself">
+            <Download size={14} /> SWF
+          </button>
+
+          {slug && (
+            <button
+              className="button ghost"
+              title="Download this game's save file"
+              onClick={() => {
+                const written = downloadGameSave(slug);
+                setNote(written ? '' : 'This game has not saved anything yet.');
+              }}
+            >
+              <Save size={14} /> Save file
+            </button>
+          )}
+
+          <label className="player-field" title="Frames per second">
+            <Gauge size={14} />
+            <select
+              value={prefs.frameRate}
+              onChange={(event) => set({ frameRate: Number(event.target.value) })}
+            >
+              {FRAME_RATES.map((rate) => (
+                <option key={rate} value={rate}>
+                  {rate === 0 ? 'Default FPS' : `${rate} FPS`}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="player-field" title="Render quality">
+            <select
+              value={prefs.quality}
+              onChange={(event) => set({ quality: event.target.value as typeof prefs.quality })}
+            >
+              {QUALITIES.map((quality) => (
+                <option key={quality} value={quality}>
+                  {quality[0].toUpperCase() + quality.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="player-field" title="Volume">
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.1}
+              value={prefs.volume}
+              onChange={(event) => set({ volume: Number(event.target.value) })}
+            />
+          </label>
+
+          {note && <span className="player-note">{note}</span>}
         </div>
       )}
 

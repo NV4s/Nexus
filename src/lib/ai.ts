@@ -12,7 +12,20 @@
 
 export type EngineId = 'local' | 'chrome' | 'anthropic' | 'google' | 'openai' | 'custom';
 
-export type Message = { role: 'user' | 'assistant'; content: string };
+export type Attachment = {
+  name: string;
+  /** MIME type, e.g. image/png or application/pdf. */
+  type: string;
+  /** Base64 without the data: prefix. */
+  data: string;
+};
+
+export type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  /** Images and documents sent with this turn. Local engines ignore them. */
+  files?: Attachment[];
+};
 
 export type Availability =
   | { state: 'ready' }
@@ -45,13 +58,77 @@ export const writeKey = (id: EngineId, value: string) => store.set(`key:${id}`, 
 export const readSetting = (name: string) => store.get(name);
 export const writeSetting = (name: string, value: string) => store.set(name, value.trim());
 
-/** Defaults are editable in the UI, because provider model names move. */
+/**
+ * Models offered per provider. Presented as a list because typing an exact id is
+ * where this goes wrong, and left editable because provider names move and a
+ * hard-coded list goes stale — "Other" reveals a free-text box.
+ *
+ * The Anthropic ids are the current family. For the other providers these are the
+ * commonly available ids at time of writing rather than a live catalogue; the
+ * list can also be refreshed from the provider itself where the API allows it.
+ */
+export const MODELS: Record<string, { id: string; label: string }[]> = {
+  anthropic: [
+    { id: 'claude-opus-5', label: 'Claude Opus 5 — most capable' },
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5 — faster, cheaper' },
+    { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 — fastest' },
+  ],
+  google: [
+    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+    { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+    { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+    { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+  ],
+  openai: [
+    { id: 'gpt-4o-mini', label: 'GPT-4o mini — cheap' },
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
+    { id: 'gpt-4.1', label: 'GPT-4.1' },
+  ],
+  custom: [],
+};
+
 export const DEFAULT_MODEL: Record<string, string> = {
   anthropic: 'claude-opus-5',
   google: 'gemini-2.0-flash',
   openai: 'gpt-4o-mini',
   custom: 'gpt-4o-mini',
 };
+
+/**
+ * Asks the provider what it actually offers, where that is possible without a
+ * server. Google and OpenAI-compatible endpoints both list models over CORS with
+ * the user's own key; Anthropic's does not, so its list stays the one above.
+ */
+export async function fetchModels(id: EngineId): Promise<string[]> {
+  const key = readKey(id);
+  if (!key) return [];
+  try {
+    if (id === 'google') {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
+      );
+      if (!response.ok) return [];
+      const body = (await response.json()) as { models?: { name?: string; supportedGenerationMethods?: string[] }[] };
+      return (body.models ?? [])
+        .filter((model) => model.supportedGenerationMethods?.includes('generateContent'))
+        .map((model) => (model.name ?? '').replace(/^models\//, ''))
+        .filter(Boolean);
+    }
+    if (id === 'openai' || id === 'custom') {
+      const base =
+        id === 'openai' ? 'https://api.openai.com/v1' : (readSetting('baseUrl') || '').replace(/\/+$/, '');
+      if (!base) return [];
+      const response = await fetch(`${base}/models`, { headers: { authorization: `Bearer ${key}` } });
+      if (!response.ok) return [];
+      const body = (await response.json()) as { data?: { id?: string }[] };
+      return (body.data ?? []).map((model) => model.id ?? '').filter(Boolean).sort();
+    }
+  } catch {
+    /* listing is a convenience; the typed-in model still works */
+  }
+  return [];
+}
 
 const SYSTEM =
   'You are the assistant on Nexus, a browser games site. Be brief and concrete. ' +
@@ -119,6 +196,9 @@ const toText = async (response: Response, pick: (body: never) => string | undefi
   return pick((await response.json()) as never) ?? '(no answer)';
 };
 
+/** Every provider takes attachments in its own shape; these build each one. */
+const isImage = (type: string) => type.startsWith('image/');
+
 async function askAnthropic(messages: Message[]): Promise<string> {
   // The official SDK rather than hand-rolled fetch, and loaded on demand so it
   // is not in the bundle for people who never open the assistant.
@@ -134,7 +214,27 @@ async function askAnthropic(messages: Message[]): Promise<string> {
     model: readSetting('model:anthropic') || DEFAULT_MODEL.anthropic,
     max_tokens: 4096,
     system: SYSTEM,
-    messages,
+    messages: messages.map((message) =>
+      message.files?.length
+        ? {
+            role: message.role,
+            content: [
+              ...message.files.map((file) =>
+                isImage(file.type)
+                  ? ({
+                      type: 'image' as const,
+                      source: { type: 'base64' as const, media_type: file.type as 'image/png', data: file.data },
+                    })
+                  : ({
+                      type: 'document' as const,
+                      source: { type: 'base64' as const, media_type: 'application/pdf' as const, data: file.data },
+                    }),
+              ),
+              { type: 'text' as const, text: message.content },
+            ],
+          }
+        : { role: message.role, content: message.content },
+    ),
   });
 
   return response.content
@@ -155,7 +255,12 @@ async function askGoogle(messages: Message[]): Promise<string> {
         systemInstruction: { parts: [{ text: SYSTEM }] },
         contents: messages.map((message) => ({
           role: message.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: message.content }],
+          parts: [
+            ...(message.files ?? []).map((file) => ({
+              inline_data: { mime_type: file.type, data: file.data },
+            })),
+            { text: message.content },
+          ],
         })),
       }),
     },
@@ -181,7 +286,26 @@ async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[])
     },
     body: JSON.stringify({
       model: readSetting(`model:${id}`) || DEFAULT_MODEL[id],
-      messages: [{ role: 'system', content: SYSTEM }, ...messages],
+      messages: [
+        { role: 'system', content: SYSTEM },
+        ...messages.map((message) =>
+          // Only images have a standard form here; a document would be silently
+          // dropped by most OpenAI-compatible servers, so it is named instead.
+          message.files?.length
+            ? {
+                role: message.role,
+                content: [
+                  { type: 'text', text: message.content },
+                  ...message.files.map((file) =>
+                    isImage(file.type)
+                      ? { type: 'image_url', image_url: { url: `data:${file.type};base64,${file.data}` } }
+                      : { type: 'text', text: `[attached file: ${file.name}]` },
+                  ),
+                ],
+              }
+            : { role: message.role, content: message.content },
+        ),
+      ],
     }),
   });
   return toText(response, (body: { choices?: { message?: { content?: string } }[] }) =>
@@ -219,6 +343,9 @@ export const ENGINES: Engine[] = [
       return (await localModelCached()) ? { state: 'ready' } : { state: 'needs-download', size: 'about 350 MB' };
     },
     async ask(messages, onProgress) {
+      if (messages.some((message) => message.files?.length)) {
+        throw new Error('The on-device model reads text only. Use a key-based engine for files.');
+      }
       const engine = await loadLocal(onProgress);
       const stream = await engine.chat.completions.create({
         messages: [{ role: 'system', content: SYSTEM }, ...messages],
@@ -256,6 +383,9 @@ export const ENGINES: Engine[] = [
       return { state: 'unsupported', reason: 'Chrome reports its built-in model is unavailable here.' };
     },
     async ask(messages) {
+      if (messages.some((message) => message.files?.length)) {
+        throw new Error("Chrome's built-in model reads text only. Use a key-based engine for files.");
+      }
       const api = chromeApi();
       if (!api) throw new Error('No built-in model in this browser.');
       const session = await api.create({ initialPrompts: [{ role: 'system', content: SYSTEM }] });

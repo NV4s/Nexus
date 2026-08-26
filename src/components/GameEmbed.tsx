@@ -19,7 +19,7 @@ export default function GameEmbed({ slug }: { slug: string }) {
   return (
     <div className="embed-stage">
       {game.runtime === 'flash' ? (
-        <RufflePlayer url={url} parts={game.parts} title={game.title} />
+        <RufflePlayer url={url} parts={game.parts} title={game.title} slug={game.slug} />
       ) : (
         <EmbedPlayer url={url} title={game.title} />
       )}

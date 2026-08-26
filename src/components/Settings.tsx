@@ -1,7 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
-import { DEFAULT_LINK, comboFrom, label, readCombo, readLink } from '../lib/panic';
+import {
+  DEFAULT_LINK,
+  comboFrom,
+  label,
+  readCombo,
+  readLink,
+  readPanicMode,
+  writePanicMode,
+  type PanicMode,
+} from '../lib/panic';
 import { openCloaked } from '../lib/launch';
+import {
+  DEFAULT_PREFS,
+  FRAME_RATES,
+  QUALITIES,
+  readPlayerPrefs,
+  writePlayerPrefs,
+} from '../lib/player';
+import { exportAchievements, importAchievements } from '../lib/achievements';
+import { downloadBlob } from '../lib/saves';
 
 const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
@@ -16,6 +34,10 @@ export default function Settings() {
   const [link, setLink] = useState(readLink);
   const [recording, setRecording] = useState(false);
   const [quality, setQuality] = useState<QualityPreference>(readQualityPreference);
+  const [panicMode, setPanicMode] = useState<PanicMode>(readPanicMode);
+  const [player, setPlayer] = useState(readPlayerPrefs);
+  const [note, setNote] = useState('');
+  const progressRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -23,6 +45,13 @@ export default function Settings() {
   }, [theme]);
 
   useEffect(() => writeQualityPreference(quality), [quality]);
+
+  useEffect(() => writePanicMode(panicMode), [panicMode]);
+
+  const setPlayerPref = (change: Parameters<typeof writePlayerPrefs>[0]) => {
+    writePlayerPrefs(change);
+    setPlayer(readPlayerPrefs());
+  };
 
   useEffect(() => localStorage.setItem('panicCombo', combo), [combo]);
   useEffect(() => localStorage.setItem('panicLink', link), [link]);
@@ -134,8 +163,140 @@ export default function Settings() {
             value={link}
             onChange={(event) => setLink(event.target.value || DEFAULT_LINK)}
           />
+          <div className="row">
+            {(['replace', 'newtab'] as const).map((mode) => (
+              <button
+                key={mode}
+                className={`button ${panicMode === mode ? '' : 'ghost'}`}
+                onClick={() => setPanicMode(mode)}
+              >
+                {mode === 'replace' ? 'Replace this tab' : 'New tab, blank this one'}
+              </button>
+            ))}
+          </div>
+          <p>
+            A page cannot close a tab it did not open, so the second option opens your link in a
+            fresh tab and leaves this one blank, which is the closest thing to the tab disappearing.
+          </p>
         </div>
 
+
+        <div className="panel">
+          <h3>Flash player</h3>
+          <p>
+            Applies to every Flash game. A game reloads when these change, so finish what you are
+            doing first.
+          </p>
+          <div className="row">
+            <label className="player-field">
+              FPS
+              <select
+                value={player.frameRate}
+                onChange={(event) => setPlayerPref({ frameRate: Number(event.target.value) })}
+              >
+                {FRAME_RATES.map((rate) => (
+                  <option key={rate} value={rate}>
+                    {rate === 0 ? 'Game default' : rate}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="player-field">
+              Quality
+              <select
+                value={player.quality}
+                onChange={(event) =>
+                  setPlayerPref({ quality: event.target.value as typeof player.quality })
+                }
+              >
+                {QUALITIES.map((quality) => (
+                  <option key={quality} value={quality}>
+                    {quality[0].toUpperCase() + quality.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="player-field">
+              Volume
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.1}
+                value={player.volume}
+                onChange={(event) => setPlayerPref({ volume: Number(event.target.value) })}
+              />
+            </label>
+          </div>
+          <div className="row">
+            <button
+              className={`button ${player.letterbox ? '' : 'ghost'}`}
+              onClick={() => setPlayerPref({ letterbox: !player.letterbox })}
+            >
+              Letterbox {player.letterbox ? 'on' : 'off'}
+            </button>
+            <button
+              className={`button ${player.swfDownload ? '' : 'ghost'}`}
+              onClick={() => setPlayerPref({ swfDownload: !player.swfDownload })}
+              title="Adds Ruffle's own download entry to the right-click menu"
+            >
+              Right-click download {player.swfDownload ? 'on' : 'off'}
+            </button>
+            <button className="button ghost" onClick={() => setPlayerPref(DEFAULT_PREFS)}>
+              Reset
+            </button>
+          </div>
+          <p>
+            Raising FPS makes some games run faster rather than smoother, because a lot of Flash
+            games tie their speed to the frame rate. Lower quality helps on a slow machine.
+          </p>
+        </div>
+
+        <div className="panel">
+          <h3>Move progress to another device</h3>
+          <p>
+            Achievements and playtime as one file. Importing merges rather than replaces: it can
+            only add unlocks and keep the larger playtime, so an old file never undoes newer
+            progress. Game saves are separate, on the Saves page.
+          </p>
+          <div className="row">
+            <button
+              className="button"
+              onClick={() =>
+                downloadBlob(
+                  new Blob([exportAchievements()], { type: 'application/json' }),
+                  `nexus-achievements-${new Date().toISOString().slice(0, 10)}.json`,
+                )
+              }
+            >
+              Export
+            </button>
+            <button className="button ghost" onClick={() => progressRef.current?.click()}>
+              Import
+            </button>
+          </div>
+          <input
+            ref={progressRef}
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={async (event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (!file) return;
+              try {
+                const result = importAchievements(await file.text());
+                setNote(
+                  `Merged ${result.games} ${result.games === 1 ? 'game' : 'games'}: ` +
+                    `${result.unlocked} new ${result.unlocked === 1 ? 'achievement' : 'achievements'}.`,
+                );
+              } catch (cause) {
+                setNote(cause instanceof Error ? cause.message : 'That file could not be read.');
+              }
+            }}
+          />
+          {note && <p>{note}</p>}
+        </div>
         <div className="panel">
           <h3>about:blank</h3>
           <p>Reopens Nexus inside a blank tab and sends this one to your panic link.</p>

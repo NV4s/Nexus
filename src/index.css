@@ -1384,3 +1384,125 @@ select,
     order: 0;
   }
 }
+
+/* ---------- flash player toolbar ---------- */
+
+.player-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+/* Out of the way until wanted — it sits over the game. */
+.stage:hover .player-bar,
+.player-bar:focus-within {
+  opacity: 1;
+}
+
+.player-bar .button {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.player-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.player-field select,
+.player-field input[type='range'] {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.25rem 0.35rem;
+  font-size: 0.75rem;
+  max-width: 9rem;
+}
+
+.player-note {
+  font-size: 0.75rem;
+  color: #ffb27a;
+}
+
+/* ---------- embedded site escape hatch ---------- */
+
+.embed-escape {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: var(--glass-tint);
+  border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(14px);
+  font-size: 0.8rem;
+  max-width: min(34rem, 90%);
+}
+
+/* ---------- assistant attachments ---------- */
+
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+}
+
+.attachment button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.attachment button:hover {
+  color: var(--text);
+}
+
+.chat-files {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.key-set {
+  color: var(--accent);
+  font-size: 0.8rem;
+}
+
+select.field {
+  appearance: none;
+  cursor: pointer;
+}

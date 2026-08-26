@@ -1,17 +1,37 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, ShieldCheck, Cloud } from 'lucide-react';
+import { Paperclip, RefreshCw, Send, ShieldCheck, Cloud, X } from 'lucide-react';
 import {
   DEFAULT_MODEL,
   ENGINES,
+  MODELS,
   engineById,
+  fetchModels,
   readKey,
   readSetting,
   writeKey,
   writeSetting,
+  type Attachment,
   type Availability,
   type EngineId,
   type Message,
 } from '../lib/ai';
+
+/** 4 MB each: base64 inflates by a third, and providers reject large payloads. */
+const MAX_FILE = 4 * 1024 * 1024;
+
+const readFile = (file: File) =>
+  new Promise<Attachment>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
+    reader.onload = () =>
+      resolve({
+        name: file.name,
+        type: file.type || 'application/octet-stream',
+        // Strip the "data:…;base64," prefix — every provider wants the payload alone.
+        data: String(reader.result).split(',')[1] ?? '',
+      });
+    reader.readAsDataURL(file);
+  });
 
 const KEY_HELP: Partial<Record<EngineId, string>> = {
   anthropic: 'console.anthropic.com → API keys',
@@ -19,6 +39,83 @@ const KEY_HELP: Partial<Record<EngineId, string>> = {
   openai: 'platform.openai.com → API keys',
   custom: 'Whatever your provider calls it',
 };
+
+
+/**
+ * A list rather than a text box, because an exact model id is easy to mistype
+ * and the failure is a 404 from the provider. "Other" keeps the free-text escape
+ * hatch for anything newer than this list, and Refresh asks the provider what it
+ * actually offers where its API allows that from a browser.
+ */
+function ModelPicker({
+  engineId,
+  listed,
+  onRefresh,
+}: {
+  engineId: EngineId;
+  listed: string[];
+  onRefresh: () => Promise<void>;
+}) {
+  const known = MODELS[engineId] ?? [];
+  const options = listed.length ? listed.map((id) => ({ id, label: id })) : known;
+  const saved = readSetting(`model:${engineId}`) || DEFAULT_MODEL[engineId] || '';
+  const [value, setValue] = useState(saved);
+  const [custom, setCustom] = useState(() => !options.some((option) => option.id === saved));
+  const [busy, setBusy] = useState(false);
+
+  const choose = (next: string) => {
+    if (next === '__other') return setCustom(true);
+    setCustom(false);
+    setValue(next);
+    writeSetting(`model:${engineId}`, next);
+  };
+
+  return (
+    <>
+      {!custom && (
+        <select className="field" value={value} onChange={(event) => choose(event.target.value)}>
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+          <option value="__other">Other — type a model id…</option>
+        </select>
+      )}
+
+      {custom && (
+        <input
+          className="field"
+          placeholder={`Model id (default ${DEFAULT_MODEL[engineId] ?? 'provider default'})`}
+          defaultValue={saved}
+          onChange={(event) => writeSetting(`model:${engineId}`, event.target.value)}
+        />
+      )}
+
+      <div className="row">
+        {engineId !== 'anthropic' && (
+          <button
+            className="button ghost"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              await onRefresh();
+              setBusy(false);
+            }}
+            title="Ask the provider which models your key can use"
+          >
+            <RefreshCw size={14} /> {busy ? 'Asking…' : 'Refresh list'}
+          </button>
+        )}
+        {custom && (
+          <button className="button ghost" onClick={() => setCustom(false)}>
+            Back to list
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
 
 export default function Assistant() {
   const [engineId, setEngineId] = useState<EngineId>(
@@ -34,7 +131,10 @@ export default function Assistant() {
   // The key inputs are uncontrolled, so they need a new identity to pick up a
   // different engine's saved value or a clear.
   const [keyFields, setKeyFields] = useState(0);
+  const [models, setModels] = useState<string[]>([]);
+  const [files, setFiles] = useState<Attachment[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const engine = engineById(engineId);
 
@@ -57,9 +157,13 @@ export default function Assistant() {
     const text = draft.trim();
     if (!text || busy) return;
 
-    const history = [...messages, { role: 'user' as const, content: text }];
+    const history: Message[] = [
+      ...messages,
+      { role: 'user', content: text, ...(files.length ? { files } : {}) },
+    ];
     setMessages(history);
     setDraft('');
+    setFiles([]);
     setBusy(true);
     setError('');
     setStatus('Thinking…');
@@ -147,12 +251,11 @@ export default function Assistant() {
                 defaultValue={readKey(engineId)}
                 onChange={(event) => writeKey(engineId, event.target.value)}
               />
-              <input
+              <ModelPicker
                 key={`model-${engineId}-${keyFields}`}
-                className="field"
-                placeholder={`Model (default ${DEFAULT_MODEL[engineId] ?? 'provider default'})`}
-                defaultValue={readSetting(`model:${engineId}`)}
-                onChange={(event) => writeSetting(`model:${engineId}`, event.target.value)}
+                engineId={engineId}
+                listed={models}
+                onRefresh={async () => setModels(await fetchModels(engineId))}
               />
               <div className="row">
                 <button className="button" onClick={() => engine.check().then(setAvailability)}>
@@ -184,6 +287,11 @@ export default function Assistant() {
             {messages.map((message, index) => (
               <div className={`chat-turn is-${message.role}`} key={index}>
                 {message.content}
+                {message.files?.length ? (
+                  <span className="chat-files">
+                    {message.files.map((file) => file.name).join(', ')}
+                  </span>
+                ) : null}
               </div>
             ))}
             {status && <div className="chat-turn is-status">{status}</div>}
@@ -191,7 +299,54 @@ export default function Assistant() {
             <div ref={endRef} />
           </div>
 
+          {files.length > 0 && (
+            <div className="attachments">
+              {files.map((file, index) => (
+                <span className="attachment" key={`${file.name}-${index}`}>
+                  {file.name}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${file.name}`}
+                    onClick={() => setFiles(files.filter((_, i) => i !== index))}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
           <form className="row" onSubmit={send}>
+            <input
+              ref={fileRef}
+              type="file"
+              hidden
+              multiple
+              accept="image/*,application/pdf,.txt,.md,.csv,.json"
+              onChange={async (event) => {
+                const picked = [...(event.target.files ?? [])];
+                event.target.value = ''; // let the same file be chosen twice
+                const tooBig = picked.filter((file) => file.size > MAX_FILE);
+                if (tooBig.length) {
+                  setError(`${tooBig.map((f) => f.name).join(', ')} — over 4 MB, too large to send.`);
+                }
+                const ok = picked.filter((file) => file.size <= MAX_FILE);
+                if (ok.length) setFiles([...files, ...(await Promise.all(ok.map(readFile)))]);
+              }}
+            />
+            <button
+              type="button"
+              className="button ghost"
+              disabled={busy || engine.private}
+              title={
+                engine.private
+                  ? 'On-device models read text only'
+                  : 'Attach an image or document'
+              }
+              onClick={() => fileRef.current?.click()}
+            >
+              <Paperclip size={16} />
+            </button>
             <input
               className="field"
               placeholder={blocked ? 'Pick an engine that is ready first' : 'Message'}

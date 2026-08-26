@@ -10,7 +10,7 @@ import Achievements from './components/Achievements';
 import Saves from './components/Saves';
 import GameEmbed from './components/GameEmbed';
 import { segments, useRoute } from './lib/router';
-import { comboFrom, readCombo, readLink } from './lib/panic';
+import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
 
 // three.js is ~300 kB gzipped. Only the intro and the home page need it, so the
@@ -42,7 +42,7 @@ export default function App() {
       if (localStorage.getItem('recordingPanicCombo') === 'true') return;
       if (comboFrom(event) === readCombo()) {
         event.preventDefault();
-        window.location.replace(readLink());
+        panic();
       }
     };
     window.addEventListener('keydown', onKeyDown);
