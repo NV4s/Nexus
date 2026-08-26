@@ -1318,3 +1318,69 @@ select,
 .chat + form .field {
   flex: 1 1 12rem;
 }
+
+/* ---------- home: scroll chapters ---------- */
+
+.chapter {
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 14vh, 9rem) 1.25rem;
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+  grid-template-columns: minmax(16rem, 26rem) 1fr;
+}
+
+/* Alternating sides so the page does not read as one long left-aligned column. */
+.chapter.is-flipped .chapter-copy {
+  order: 2;
+}
+
+.chapter.is-closing {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+
+.chapter-copy {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.chapter-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.chapter-copy h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4.2vw, 2.9rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.chapter-copy p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 34rem;
+}
+
+.chapter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .chapter {
+    grid-template-columns: 1fr;
+  }
+  /* The flip is a two-column idea; stacked, copy always leads. */
+  .chapter.is-flipped .chapter-copy {
+    order: 0;
+  }
+}

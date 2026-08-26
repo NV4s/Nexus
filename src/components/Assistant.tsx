@@ -31,6 +31,9 @@ export default function Assistant() {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [answeredBy, setAnsweredBy] = useState('');
+  // The key inputs are uncontrolled, so they need a new identity to pick up a
+  // different engine's saved value or a clear.
+  const [keyFields, setKeyFields] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   const engine = engineById(engineId);
@@ -108,6 +111,8 @@ export default function Assistant() {
           </div>
           <p>{engine.note}</p>
 
+          {!availability && <p>Checking…</p>}
+
           {availability?.state === 'unsupported' && <p className="admin-error">{availability.reason}</p>}
 
           {availability?.state === 'needs-download' && (
@@ -118,10 +123,16 @@ export default function Assistant() {
             </p>
           )}
 
-          {availability?.state === 'needs-key' && (
+          {engine.keyed && (
             <>
+              {availability?.state === 'ready' && (
+                <p className="key-set">
+                  A key is saved for {engine.label}. Change or clear it below.
+                </p>
+              )}
               {engineId === 'custom' && (
                 <input
+                  key={`base-${keyFields}`}
                   className="field"
                   placeholder="Base URL, e.g. https://openrouter.ai/api/v1"
                   defaultValue={readSetting('baseUrl')}
@@ -129,6 +140,7 @@ export default function Assistant() {
                 />
               )}
               <input
+                key={`key-${engineId}-${keyFields}`}
                 className="field"
                 type="password"
                 placeholder={`API key — ${KEY_HELP[engineId] ?? 'from your provider'}`}
@@ -136,6 +148,7 @@ export default function Assistant() {
                 onChange={(event) => writeKey(engineId, event.target.value)}
               />
               <input
+                key={`model-${engineId}-${keyFields}`}
                 className="field"
                 placeholder={`Model (default ${DEFAULT_MODEL[engineId] ?? 'provider default'})`}
                 defaultValue={readSetting(`model:${engineId}`)}
@@ -144,6 +157,16 @@ export default function Assistant() {
               <div className="row">
                 <button className="button" onClick={() => engine.check().then(setAvailability)}>
                   Save
+                </button>
+                <button
+                  className="button ghost"
+                  onClick={() => {
+                    writeKey(engineId, '');
+                    setKeyFields((n) => n + 1); // remount the inputs so they clear
+                    engine.check().then(setAvailability);
+                  }}
+                >
+                  Clear key
                 </button>
               </div>
               <p>

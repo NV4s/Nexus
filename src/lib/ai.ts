@@ -196,6 +196,8 @@ export type Engine = {
   label: string;
   /** True when the conversation never leaves this device. */
   private: boolean;
+  /** Needs an API key, so its settings are always editable — not only while unset. */
+  keyed?: boolean;
   note: string;
   check(): Promise<Availability>;
   ask(messages: Message[], onProgress: Progress): Promise<string>;
@@ -262,6 +264,7 @@ export const ENGINES: Engine[] = [
   },
   {
     id: 'anthropic',
+    keyed: true,
     label: 'Claude',
     private: false,
     note: 'Your Anthropic API key, from console.anthropic.com. The conversation goes to Anthropic.',
@@ -270,6 +273,7 @@ export const ENGINES: Engine[] = [
   },
   {
     id: 'google',
+    keyed: true,
     label: 'Gemini',
     private: false,
     note: 'Your Google AI Studio key, from aistudio.google.com. The conversation goes to Google.',
@@ -278,6 +282,7 @@ export const ENGINES: Engine[] = [
   },
   {
     id: 'openai',
+    keyed: true,
     label: 'ChatGPT',
     private: false,
     note: 'Your OpenAI key, from platform.openai.com. The conversation goes to OpenAI.',
@@ -286,6 +291,7 @@ export const ENGINES: Engine[] = [
   },
   {
     id: 'custom',
+    keyed: true,
     label: 'Other (OpenAI-compatible)',
     private: false,
     // One field instead of one integration per service: OpenRouter, OpenClaw's

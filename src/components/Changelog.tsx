@@ -1,5 +1,15 @@
 const RELEASES = [
   {
+    version: 'v1.4.1',
+    date: '2026-08-25',
+    changes: [
+      'The API key box sometimes would not appear on the assistant. Once a key was saved the whole form disappeared, so there was no way to change or remove one, and switching engines showed nothing at all for a moment while it checked. It stays put now, and there is a button to clear a key',
+      'The front page scrolls through the arcade instead of stopping at eight tiles — puzzles, the ones that take an afternoon, the stories with several endings, and the five-minute ones',
+      'The starting games are a different handful every visit rather than the same eight forever',
+      'Study has 17 tools instead of 4. Khan Academy, Wikipedia, the periodic table, a dictionary and more calculators. The ones that refuse to load in a frame open in a tab, which was checked per site rather than guessed',
+    ],
+  },
+  {
     version: 'v1.4.0',
     date: '2026-08-25',
     changes: [

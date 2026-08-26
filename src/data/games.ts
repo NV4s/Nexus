@@ -307,7 +307,10 @@ const EAGLERCRAFT: Game[] = import.meta.env.VITE_EAGLERCRAFT_URL
   : [];
 
 /**
- * Study tools. Quizlet and Google Keep refuse to be framed, so they open in a tab.
+ * Study tools. `newTab` is set from each site's actual headers rather than by
+ * guessing: Wolfram Alpha, Symbolab, Translate, PhET, Scratch, Merriam-Webster,
+ * Quizlet and Keep all send X-Frame-Options or a frame-ancestors policy that
+ * refuses this origin, and an embedded one would be a dead grey box.
  * `developer` is the vendor: without it the card subtitle falls through to the
  * generic "Browser game" (GameCard), which says nothing about what the tool is.
  */
@@ -329,6 +332,129 @@ const STUDY: Game[] = [
     src: 'https://www.geogebra.org/calculator',
     category: 'Math',
     developer: 'GeoGebra',
+  },
+  {
+    slug: 'desmos-scientific',
+    title: 'Desmos Scientific Calculator',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.desmos.com/scientific',
+    category: 'Math',
+    developer: 'Desmos',
+  },
+  {
+    slug: 'geogebra-geometry',
+    title: 'GeoGebra Geometry',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.geogebra.org/geometry',
+    category: 'Math',
+    developer: 'GeoGebra',
+  },
+  {
+    slug: 'mathway',
+    title: 'Mathway',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.mathway.com/',
+    category: 'Math',
+    developer: 'Mathway',
+  },
+  {
+    slug: 'khan-academy',
+    title: 'Khan Academy',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.khanacademy.org/',
+    category: 'Courses',
+    developer: 'Khan Academy',
+  },
+  {
+    slug: 'wikipedia',
+    title: 'Wikipedia',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://en.wikipedia.org/wiki/Main_Page',
+    category: 'Reference',
+    developer: 'Wikimedia',
+  },
+  {
+    slug: 'periodic-table',
+    title: 'Periodic Table',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://ptable.com/',
+    category: 'Science',
+    developer: 'Ptable',
+  },
+  {
+    slug: 'onelook',
+    title: 'OneLook Dictionary',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.onelook.com/',
+    category: 'Reference',
+    developer: 'OneLook',
+  },
+  {
+    slug: 'wolfram-alpha',
+    title: 'Wolfram Alpha',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.wolframalpha.com/',
+    category: 'Math',
+    developer: 'Wolfram',
+    newTab: true,
+  },
+  {
+    slug: 'symbolab',
+    title: 'Symbolab',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.symbolab.com/',
+    category: 'Math',
+    developer: 'Symbolab',
+    newTab: true,
+  },
+  {
+    slug: 'google-translate',
+    title: 'Google Translate',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://translate.google.com/',
+    category: 'Language',
+    developer: 'Google',
+    newTab: true,
+  },
+  {
+    slug: 'phet',
+    title: 'PhET Simulations',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://phet.colorado.edu/',
+    category: 'Science',
+    developer: 'University of Colorado',
+    newTab: true,
+  },
+  {
+    slug: 'scratch',
+    title: 'Scratch',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://scratch.mit.edu/',
+    category: 'Coding',
+    developer: 'MIT',
+    newTab: true,
+  },
+  {
+    slug: 'merriam-webster',
+    title: 'Merriam-Webster',
+    section: 'study',
+    runtime: 'html5',
+    src: 'https://www.merriam-webster.com/',
+    category: 'Reference',
+    developer: 'Merriam-Webster',
+    newTab: true,
   },
   {
     slug: 'quizlet',
@@ -367,18 +493,69 @@ if (duplicates.length) throw new Error(`duplicate game slugs: ${duplicates.join(
 export const bySlug = (slug: string) => GAMES.find((game) => game.slug === slug);
 
 /** A way in, so 113 tiles are not the first thing anyone has to parse. */
-const FEATURED = [
+/**
+ * Games worth a first visit. Deliberately wider than the eight shown, because the
+ * front page samples from it — a returning player should meet something different
+ * rather than the same eight tiles every time.
+ */
+const STARTERS = [
   'bloxorz',
   'run-3',
   'alien-hominid',
   'escaping-the-prison',
+  'stealing-the-diamond',
+  'fleeing-the-complex',
   'duck-life-3',
+  'duck-life-4',
   'cactus-mccoy',
+  'cactus-mccoy-2',
   'papas-pizzeria',
+  'papas-freezeria',
+  'papas-burgeria',
   'warfare-1917',
+  'boxhead-the-zombie-wars',
+  'gun-mayhem-2',
+  'raft-wars',
+  'jacksmith',
+  'bubble-tanks-2',
+  'cursor-10',
+  'crimson-room',
+  'achievement-unlocked',
+  'doom',
+  'curveball',
+  'cubefield',
+  'causality',
+  'steak-and-jake',
+  'madness-project-nexus-classic',
+  'n-gon',
+  'adrenaline-challenge',
+  'commando',
+  'bloxorz',
 ];
 
-export const featuredGames = () => FEATURED.map(bySlug).filter((game): game is Game => !!game);
+const SHOWN = 8;
+
+/**
+ * Sampled once when the module loads: the same eight for as long as this tab is
+ * open, a different eight next visit. Re-sampling per render would reshuffle the
+ * grid under the cursor every time React re-rendered the page.
+ */
+const starters = (() => {
+  const pool = [...new Set(STARTERS)].map(bySlug).filter((game): game is Game => !!game);
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, SHOWN);
+})();
+
+export const featuredGames = () => starters;
+
+// A starter naming a game that does not exist would silently shrink the row.
+if (import.meta.env?.DEV) {
+  const missing = [...new Set(STARTERS)].filter((slug) => !bySlug(slug));
+  if (missing.length) console.warn(`starters: no game called ${missing.join(', ')}`);
+}
 
 export const gamesIn = (section: Section) => GAMES.filter((game) => game.section === section);
 
