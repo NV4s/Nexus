@@ -1,5 +1,17 @@
 const RELEASES = [
   {
+    version: 'v1.4.0',
+    date: '2026-08-25',
+    changes: [
+      'There is an assistant now. It can run entirely on your own device, so nothing you type leaves it, or use your own API key for Claude, Gemini, ChatGPT or anything OpenAI-shaped. There is no shared key and nothing goes through this site either way',
+      'Running it on the device downloads a small model the first time, and browsers only allow that from a button press — so it tells you the size and waits for you',
+      'Achievements can read a game’s own save file now. Flash games store their progress in your browser, and that turned out to be readable after all, so an objective can be unlocked by what you actually did in the game rather than by minutes played',
+      'The Saves page will show you exactly what a game stored. Mostly useful for working out which games can have real objectives written for them',
+      'Playing a game in the blank tab counts again. It had been recording nothing at all since that tab was added',
+      'Visits are counted per browser rather than only per tab, so the site can tell a returning player from a new one. Still a random id and nothing else — no name, no account, no IP address',
+    ],
+  },
+  {
     version: 'v1.3.0',
     date: '2026-08-25',
     changes: [

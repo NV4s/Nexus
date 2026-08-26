@@ -21,6 +21,9 @@ const VoidIntro = lazy(() => import('./webgl/VoidIntro'));
 // else's bundle rather than shipping a dashboard to every visitor.
 const Admin = lazy(() => import('./components/Admin'));
 
+// Pulls in an LLM runtime on demand; never in the bundle a player downloads.
+const Assistant = lazy(() => import('./components/Assistant'));
+
 export default function App() {
   const route = useRoute();
   // Only on a cold visit to the front page — a shared link to a game should just play it.
@@ -81,6 +84,10 @@ export default function App() {
           <Achievements />
         ) : head === 'saves' ? (
           <Saves />
+        ) : head === 'assistant' ? (
+          <Suspense fallback={<div className="empty">Loading…</div>}>
+            <Assistant />
+          </Suspense>
         ) : head === 'admin' ? (
           <Suspense fallback={<div className="empty">Loading…</div>}>
             <Admin />

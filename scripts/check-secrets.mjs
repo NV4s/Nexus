@@ -17,6 +17,14 @@ const FORBIDDEN = [
   /VITE_[A-Z_]*PASSWORD/,
   /UPSTASH_REDIS_REST_TOKEN/,
   /ADMIN_SESSION_SECRET/,
+  // Assistant keys live in the user's own localStorage and must never be built in.
+  /VITE_[A-Z_]*API_KEY/,
+  /VITE_ANTHROPIC/,
+  /VITE_OPENAI/,
+  /VITE_GEMINI/,
+  /sk-ant-api[0-9]{2}-/,
+  /sk-proj-[A-Za-z0-9_-]{20}/,
+  /AIzaSy[A-Za-z0-9_-]{30}/,
 ];
 
 async function* files(dir) {

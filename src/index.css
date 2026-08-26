@@ -1267,3 +1267,54 @@ select,
 .inspector-error {
   color: #ffb27a;
 }
+
+/* ---------- assistant ---------- */
+
+.chat {
+  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+  max-height: 26rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.chat-turn {
+  padding: 0.6rem 0.8rem;
+  border-radius: calc(var(--radius) - 6px);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  user-select: text;
+}
+
+.chat-turn.is-user {
+  background: color-mix(in oklab, var(--accent) 16%, var(--surface-2));
+  justify-self: end;
+  max-width: 85%;
+}
+
+.chat-turn.is-assistant {
+  background: var(--surface-2);
+}
+
+.chat-turn.is-status {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  padding: 0.25rem 0.2rem;
+}
+
+.chat-turn.is-error {
+  background: color-mix(in oklab, #ff6b6b 14%, var(--surface-2));
+  color: #ffb4b4;
+  font-size: 0.8rem;
+}
+
+.chat + form {
+  margin-top: 0.75rem;
+  width: 100%;
+}
+
+.chat + form .field {
+  flex: 1 1 12rem;
+}

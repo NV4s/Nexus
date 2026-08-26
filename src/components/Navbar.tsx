@@ -5,6 +5,7 @@ import { navigate } from '../lib/router';
 const LINKS = [
   ['/arcade', 'Arcade'],
   ['/study', 'Study'],
+  ['/assistant', 'Assistant'],
   ['/achievements', 'Achievements'],
   ['/saves', 'Saves'],
   ['/settings', 'Settings'],
