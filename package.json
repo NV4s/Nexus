@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "check:secrets": "node scripts/check-secrets.mjs",
-    "redis:stub": "node scripts/redis-stub.mjs"
+    "redis:stub": "node scripts/redis-stub.mjs",
+    "test": "node --test scripts/sol.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.0",
