@@ -1185,3 +1185,50 @@ select,
   border-radius: 0;
   margin: 0;
 }
+
+/* ---------- admin: visitors ---------- */
+
+.visitor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.visitor-list li {
+  padding: 0.6rem 0.75rem;
+  border-radius: calc(var(--radius) - 8px);
+  background: var(--surface-2);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.visitor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.visitor-head code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.02em;
+}
+
+.visitor-meta {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+}
+
+.visitor-games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.visitor-games .card-chip {
+  position: static;
+}

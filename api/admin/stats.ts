@@ -12,16 +12,23 @@ export default async function handler(req: Req, res: Res) {
   // so there is no separate endpoint that could disagree with this one.
   if (!(await requireAdmin(req, res))) return;
 
+  const today = new Date().toISOString().slice(0, 10);
+  // Two cheap SCARDs rather than reading the visitor records: this runs on a 5s
+  // poll, so per-visitor detail lives in /api/admin/visitors and is fetched only
+  // when that panel is opened.
   const results = await redis([
     ['GET', 'visits:total'],
     ['HGETALL', 'visits:daily'],
     ['HGETALL', 'presence'],
     ['HLEN', 'presence'],
+    ['SCARD', 'visitors:all'],
+    ['SCARD', `visitors:daily:${today}`],
   ]);
 
-  if (!results) return send(res, 200, { total: 0, daily: {}, live: [], offline: true });
+  if (!results)
+    return send(res, 200, { total: 0, daily: {}, live: [], visitors: 0, visitorsToday: 0, offline: true });
 
-  const [total, dailyRaw, presenceRaw, size] = results;
+  const [total, dailyRaw, presenceRaw, size, visitors, visitorsToday] = results;
 
   // Upstash returns hashes as a flat [field, value, …] array.
   const pairs = (value: unknown): [string, string][] => {
@@ -57,5 +64,11 @@ export default async function handler(req: Req, res: Res) {
   else if (stale.length) await redis([['HDEL', 'presence', ...stale]]);
 
   live.sort((a, b) => b.seconds - a.seconds);
-  return send(res, 200, { total: Number(total ?? 0), daily, live });
+  return send(res, 200, {
+    total: Number(total ?? 0),
+    daily,
+    live,
+    visitors: Number(visitors ?? 0),
+    visitorsToday: Number(visitorsToday ?? 0),
+  });
 }

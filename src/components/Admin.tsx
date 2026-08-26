@@ -1,18 +1,32 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { LogOut, RefreshCw, Users } from 'lucide-react';
 import { GAMES } from '../data/games';
 
 type Stats = {
   total: number;
   daily: Record<string, number>;
   live: { page: string; seconds: number }[];
+  visitors: number;
+  visitorsToday: number;
   offline?: boolean;
 };
+
+type VisitorRow = { id: string; first: number; last: number; visits: number; games: string[] };
 
 const POLL_MS = 5_000;
 
 const dwell = (seconds: number) =>
   seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, '0')}s`;
+
+const ago = (ms: number) => {
+  if (!ms) return 'unknown';
+  const mins = Math.floor((Date.now() - ms) / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
 
 /** Routes are stored, but a title is what the owner actually recognises. */
 function useRouteLabels() {
@@ -73,6 +87,8 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(0);
+  const [visitors, setVisitors] = useState<VisitorRow[] | null>(null);
+  const [loadingVisitors, setLoadingVisitors] = useState(false);
   const label = useRouteLabels();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -134,6 +150,20 @@ export default function Admin() {
     }
   };
 
+  // Not polled: two commands per visitor is fine once, wasteful every 5s.
+  const loadVisitors = async () => {
+    setLoadingVisitors(true);
+    try {
+      const response = await fetch('/api/admin/visitors');
+      const body = (await response.json()) as { visitors?: VisitorRow[] };
+      setVisitors(body.visitors ?? []);
+    } catch {
+      setVisitors([]);
+    } finally {
+      setLoadingVisitors(false);
+    }
+  };
+
   const signOut = async () => {
     await fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
     setStats(null);
@@ -182,7 +212,8 @@ export default function Admin() {
         <div>
           <h2>Admin</h2>
           <p>
-            Sessions, not people — a new tab counts again, and nothing identifies a visitor.
+            A visitor is a browser on a device, not a person — a second browser counts twice, and
+            clearing site data makes a new one. No name, no account, no IP, no fingerprinting.
           </p>
         </div>
         <div className="row">
@@ -211,11 +242,15 @@ export default function Admin() {
           <p className="stat">{today.toLocaleString()}</p>
         </div>
         <div className="panel stat-tile">
-          <h3>Last 14 days</h3>
-          <p className="stat">{fortnight.toLocaleString()}</p>
+          <h3>Visitors today</h3>
+          <p className="stat">{stats.visitorsToday.toLocaleString()}</p>
         </div>
         <div className="panel stat-tile">
-          <h3>All time</h3>
+          <h3>Visitors all time</h3>
+          <p className="stat">{stats.visitors.toLocaleString()}</p>
+        </div>
+        <div className="panel stat-tile">
+          <h3>Sessions all time</h3>
           <p className="stat">{stats.total.toLocaleString()}</p>
         </div>
       </div>
@@ -251,6 +286,52 @@ export default function Admin() {
                 </span>
                 <span>today</span>
               </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="panels admin-panels">
+        <div className="panel">
+          <h3>
+            <Users size={15} /> Visitors
+          </h3>
+          {visitors === null ? (
+            <>
+              <p>Recent devices, with when they first arrived and what they played.</p>
+              <button className="button ghost" onClick={loadVisitors} disabled={loadingVisitors}>
+                {loadingVisitors ? 'Loading…' : 'Show recent visitors'}
+              </button>
+            </>
+          ) : visitors.length === 0 ? (
+            <p>No visitors recorded yet.</p>
+          ) : (
+            <>
+              <ul className="visitor-list">
+                {visitors.map((visitor) => (
+                  <li key={visitor.id}>
+                    <div className="visitor-head">
+                      <code>{visitor.id}</code>
+                      <span>{visitor.visits} {visitor.visits === 1 ? 'visit' : 'visits'}</span>
+                    </div>
+                    <div className="visitor-meta">
+                      first seen {ago(visitor.first)} · last seen {ago(visitor.last)}
+                    </div>
+                    {visitor.games.length > 0 && (
+                      <div className="visitor-games">
+                        {visitor.games.map((slug) => (
+                          <span className="card-chip" key={slug}>
+                            {label(`/game/${slug}`)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <button className="button ghost" onClick={loadVisitors} disabled={loadingVisitors}>
+                {loadingVisitors ? 'Loading…' : 'Refresh'}
+              </button>
             </>
           )}
         </div>
