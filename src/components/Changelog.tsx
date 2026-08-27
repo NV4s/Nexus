@@ -1,5 +1,13 @@
 const RELEASES = [
   {
+    version: 'v1.5.1',
+    date: '2026-08-26',
+    changes: [
+      'Madness: Project Nexus Mod v9.5 loads as one file again. GitHub re-enabled Git LFS for the game repository, so the 146 MB version no longer has to be stitched together in your browser',
+      'The two-piece copy is still there as a spare. LFS only allows so much traffic each month, and if it runs out the game quietly falls back to the pieces instead of refusing to load',
+    ],
+  },
+  {
     version: 'v1.5.0',
     date: '2026-08-26',
     changes: [

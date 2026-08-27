@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ArrowLeft, ExternalLink, Maximize2 } from 'lucide-react';
-import { bySlug, gameUrl } from '../data/games';
+import { bySlug, gameFallback, gameUrl } from '../data/games';
 import { navigate } from '../lib/router';
 import { openCloaked } from '../lib/launch';
 import RufflePlayer from './RufflePlayer';
@@ -35,6 +35,7 @@ export default function GamePage({ slug }: { slug: string }) {
 
   const back = () => navigate(game.section === 'study' ? '/study' : '/arcade');
   const url = gameUrl(game);
+  const fallback = gameFallback(game);
 
   const openBlank = () => {
     // /embed/ rather than /game/: the second tab should be the game, not the site.
@@ -65,7 +66,7 @@ export default function GamePage({ slug }: { slug: string }) {
 
       <div ref={frameRef} className="game-frame">
         {game.runtime === 'flash' ? (
-          <RufflePlayer url={url} parts={game.parts} title={game.title} slug={game.slug} />
+          <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
         ) : (
           <EmbedPlayer url={url} title={game.title} />
         )}

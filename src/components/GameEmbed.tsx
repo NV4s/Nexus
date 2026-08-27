@@ -1,4 +1,4 @@
-import { bySlug, gameUrl } from '../data/games';
+import { bySlug, gameFallback, gameUrl } from '../data/games';
 import { useGameSession } from '../lib/achievements';
 import RufflePlayer from './RufflePlayer';
 import EmbedPlayer from './EmbedPlayer';
@@ -16,10 +16,11 @@ export default function GameEmbed({ slug }: { slug: string }) {
   if (!game) return <div className="embed-stage" />;
 
   const url = gameUrl(game);
+  const fallback = gameFallback(game);
   return (
     <div className="embed-stage">
       {game.runtime === 'flash' ? (
-        <RufflePlayer url={url} parts={game.parts} title={game.title} slug={game.slug} />
+        <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
       ) : (
         <EmbedPlayer url={url} title={game.title} />
       )}

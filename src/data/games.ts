@@ -19,8 +19,11 @@ export type Game = {
   /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
   newTab?: boolean;
   /**
-   * Number of `.001`, `.002`, … chunks the SWF is split across in the dump.
-   * Only for files past GitHub's 100 MB blob limit; the player rejoins them.
+   * Number of `.001`, `.002`, … chunks the SWF also ships as.
+   *
+   * Not how the game is normally loaded — it comes from LFS — but LFS bandwidth
+   * is capped monthly, and these are plain blobs with no meter. The player falls
+   * back to them when the primary download fails.
    */
   parts?: number;
 };
@@ -57,6 +60,7 @@ const TITLES: Record<string, string> = {
   'MPNC_Mod_(V6_1).swf': 'Madness: Project Nexus — Mod v6.1',
   'MPNC_Modded.swf': 'Madness: Project Nexus — Modded',
   'MPNC_modv7.swf': 'Madness: Project Nexus — Mod v7',
+  'MPNC_modv9_5.swf': 'Madness: Project Nexus — Mod v9.5',
   'MPNC_Nexus_Mod.swf': 'Madness: Project Nexus — Nexus Mod',
   'MPNC_Recompiled.swf': 'Madness: Project Nexus — Recompiled',
   'MPNC_Story_Expantion_Reborn.swf': 'Madness: Project Nexus — Story Expansion Reborn',
@@ -218,6 +222,16 @@ const META: Record<string, Partial<Game>> = {
   'color-switch': { developer: 'Fortafy Games', year: '2015' },
 };
 
+/**
+ * Games stored in LFS that also ship as chunks, and how many.
+ *
+ * LFS allows 10 GB of transfer a month, which at 146 MB is roughly 68 plays of
+ * this file. The chunks cost nothing against that, so they stand by.
+ */
+const CHUNK_FALLBACK: Record<string, number> = {
+  'madness-project-nexus-mod-v9-5': 2,
+};
+
 const PAPA_SIM = /^Papa_Games\/Papa's_/;
 
 function fromSwf(path: string): Game {
@@ -231,23 +245,13 @@ function fromSwf(path: string): Game {
     runtime: 'flash',
     src: path,
     category,
+    ...(CHUNK_FALLBACK[slug] ? { parts: CHUNK_FALLBACK[slug] } : {}),
     ...META[slug],
   };
 }
 
 /** Games that are not in the SWF dump. */
 const EXTRA: Game[] = [
-  {
-    slug: 'madness-project-nexus-mod-v9-5',
-    title: 'Madness: Project Nexus — Mod v9.5',
-    section: 'arcade',
-    runtime: 'flash',
-    // 152,891,223 bytes — past GitHub's 100 MB blob limit, and Git LFS is disabled
-    // on the dump, so it is committed as MPNC_modv9_5.swf.001 and .002 instead.
-    src: 'MPNC_modv9_5.swf',
-    parts: 2,
-    category: 'Arcade',
-  },
   {
     slug: 'run-3',
     title: 'Run 3',
@@ -642,12 +646,16 @@ export const categoriesIn = (section: Section) => [
 
 /**
  * Resolved URL to load. Absolute and site-root sources pass through; the rest are
- * swfdump paths. A chunked game resolves to its base URL — the player appends the
- * `.001`, `.002`, … suffixes.
+ * swfdump paths, which resolve to jsDelivr, raw, or the LFS media endpoint by size.
  */
 export const gameUrl = (game: Game) =>
-  game.parts
-    ? swfChunkBase(game.src)
-    : /^(https?:\/\/|\/)/.test(game.src)
-      ? game.src
-      : swfUrl(game.src);
+  /^(https?:\/\/|\/)/.test(game.src) ? game.src : swfUrl(game.src);
+
+/**
+ * Where to look if the primary download fails.
+ *
+ * Only for the LFS-hosted games, which also ship as chunks. Returning null means
+ * a failure is simply a failure — there is nowhere else to try.
+ */
+export const gameFallback = (game: Game) =>
+  game.parts ? { base: swfChunkBase(game.src), parts: game.parts } : null;

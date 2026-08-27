@@ -63,31 +63,54 @@ async function fetchFile(url: string, onProgress: (fraction: number) => void) {
   return concat(chunks);
 }
 
-/**
- * Fetches the SWF. Files too large for a single GitHub blob are stored as
- * `<url>.001`, `.002`, … and rejoined here, which yields the exact original bytes.
- */
-async function fetchSwf(url: string, parts: number, onProgress: (fraction: number) => void) {
-  if (parts < 2) return (await fetchFile(url, onProgress)).buffer;
+export type Fallback = { base: string; parts: number };
 
+/** Rejoins `<base>.001`, `.002`, … into the exact original bytes. */
+async function fetchChunks(base: string, parts: number, onProgress: (fraction: number) => void) {
   const downloaded: Uint8Array[] = [];
   for (let i = 0; i < parts; i++) {
     const suffix = String(i + 1).padStart(3, '0');
     // Chunks are near-equal in size, so each one is an equal slice of the bar.
-    downloaded.push(await fetchFile(`${url}.${suffix}`, (f) => onProgress((i + f) / parts)));
+    downloaded.push(await fetchFile(`${base}.${suffix}`, (f) => onProgress((i + f) / parts)));
   }
-  return concat(downloaded).buffer;
+  return concat(downloaded);
+}
+
+/**
+ * Fetches the SWF, with a standby for the games that have one.
+ *
+ * The big files are served from Git LFS, whose bandwidth is capped per month —
+ * around 68 plays of a 146 MB game before GitHub starts refusing. The same file
+ * is also committed as ordinary chunks on raw, which has no such meter, so a
+ * refusal costs a retry rather than the game.
+ */
+async function fetchSwf(
+  url: string,
+  fallback: Fallback | null,
+  onProgress: (fraction: number) => void,
+): Promise<ArrayBuffer> {
+  try {
+    return (await fetchFile(url, onProgress)).buffer;
+  } catch (cause) {
+    if (!fallback) throw cause;
+    // Worth saying out loud: this is the quota running out, and knowing that
+    // beats wondering why the game took two goes to start.
+    console.warn(`Primary download failed (${String(cause)}); using the chunk copy.`);
+    onProgress(0);
+    return (await fetchChunks(fallback.base, fallback.parts, onProgress)).buffer;
+  }
 }
 
 export default function RufflePlayer({
   url,
   title,
-  parts = 1,
+  fallback = null,
   slug,
 }: {
   url: string;
   title: string;
-  parts?: number;
+  /** Where to look if the primary download fails. */
+  fallback?: Fallback | null;
   /** Enables the save controls; the player itself does not need to know the game. */
   slug?: string;
 }) {
@@ -113,7 +136,7 @@ export default function RufflePlayer({
       try {
         const [ruffle, data] = await Promise.all([
           loadRuffle(),
-          fetchSwf(url, parts, (fraction) => !cancelled && setProgress(fraction)),
+          fetchSwf(url, fallback, (fraction) => !cancelled && setProgress(fraction)),
         ]);
         if (cancelled) return;
 
@@ -141,7 +164,9 @@ export default function RufflePlayer({
       cancelled = true;
       container.replaceChildren();
     };
-  }, [url, parts, attempt, prefs]);
+    // Depends on the fallback's values, not the object: callers build it fresh
+    // each render, and an object identity here would reload the game endlessly.
+  }, [url, fallback?.base, fallback?.parts, attempt, prefs]);
 
   const set = (change: Parameters<typeof writePlayerPrefs>[0]) => {
     writePlayerPrefs(change);
