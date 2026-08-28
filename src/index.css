@@ -454,6 +454,17 @@ select,
   transform: scale(1.04);
 }
 
+/*
+ * Study cards carry the tool's own logo, not a screenshot. `cover` would crop a
+ * square mark to a 16:10 sliver, so these are fitted whole and given room to
+ * breathe. Selecting on the path keeps GameCard unaware of the difference.
+ */
+.card-art img[src^='/thumbs/study/'] {
+  object-fit: contain;
+  padding: 14%;
+  background: linear-gradient(140deg, var(--surface-2), var(--surface));
+}
+
 .card-fallback {
   font-family: var(--font-body);
   display: grid;
@@ -1523,4 +1534,95 @@ select.field {
   height: 100%;
   color: var(--text-dim);
   font-size: 0.85rem;
+}
+
+/* ---------- advertising ---------- */
+
+/*
+ * Every slot reserves its space whether or not it is filled, so switching ads on
+ * does not move the page under someone mid-click. With no publisher id set the
+ * placeholder below is what renders — see docs/ads.md.
+ */
+.ad-slot {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-inline: auto;
+}
+
+.ad-slot.is-placeholder {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.ad-slot.is-placeholder em {
+  display: block;
+  margin-top: 0.35rem;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.6;
+}
+
+.home-ad {
+  max-width: 88rem;
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 4vw, 3rem);
+}
+
+/* Spans the whole grid so it breaks the rows cleanly rather than posing as a card. */
+.grid-ad {
+  grid-column: 1 / -1;
+}
+
+/*
+ * The player with a rail either side. Below 1200px the rails would squeeze the
+ * game itself, so the columns collapse and the rails are removed outright — a
+ * hidden ad that still loads is worth nothing to anyone.
+ */
+.with-rails {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 160px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.with-rails .rail {
+  position: sticky;
+  top: 5rem;
+}
+
+@media (max-width: 1200px) {
+  .with-rails {
+    display: block;
+  }
+
+  .with-rails .rail {
+    display: none;
+  }
+}
+
+/* The game frame is the positioning context; the interstitial covers it. */
+.game-frame {
+  position: relative;
+}
+
+.ad-interstitial {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

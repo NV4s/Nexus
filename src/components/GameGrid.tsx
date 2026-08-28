@@ -1,7 +1,38 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { categoriesIn, featuredGames, gamesIn, type Section } from '../data/games';
 import { openGame as open } from '../lib/launch';
+import { ROWS_BETWEEN_ADS } from '../lib/ads';
 import GameCard from './GameCard';
+import AdSlot from './AdSlot';
+
+/**
+ * How many cards the grid is currently fitting per row.
+ *
+ * The count is read back from the resolved `grid-template-columns` rather than
+ * derived from the breakpoint, because the grid is `auto-fill` — the browser is
+ * the only thing that knows how the tracks came out at this width.
+ */
+function useColumns(ref: React.RefObject<HTMLDivElement | null>) {
+  const [columns, setColumns] = useState(0);
+
+  useEffect(() => {
+    const measure = () => {
+      const grid = ref.current;
+      if (!grid) return;
+      setColumns(getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length);
+    };
+
+    // A resize listener rather than a ResizeObserver: the grid is full-width, so
+    // the window is the only thing that changes it, and an observer's callbacks
+    // are delivered at frame time — which never arrives in a tab that is not
+    // painting, leaving the count stuck at whatever it was on mount.
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [ref]);
+
+  return columns;
+}
 
 export default function GameGrid({
   section,
@@ -14,6 +45,8 @@ export default function GameGrid({
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
+  const gridRef = useRef<HTMLDivElement>(null);
+  const perBreak = useColumns(gridRef) * ROWS_BETWEEN_ADS;
 
   const all = useMemo(() => gamesIn(section), [section]);
   const categories = useMemo(() => ['All', ...categoriesIn(section)], [section]);
@@ -73,17 +106,24 @@ export default function GameGrid({
       {visible.length === 0 ? (
         <p className="empty">Nothing matches “{query}”.</p>
       ) : (
-        <div className="grid">
+        <div className="grid" ref={gridRef}>
           {visible.map((game, index) => (
-            <div
-              key={game.slug}
-              className="grid-item"
-              // Deliberate, Apple-paced stagger across the first couple of rows;
-              // browsers with scroll-driven timelines replace this per-card.
-              style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
-            >
-              <GameCard game={game} onOpen={() => open(game)} />
-            </div>
+            <Fragment key={game.slug}>
+              <div
+                className="grid-item"
+                // Deliberate, Apple-paced stagger across the first couple of rows;
+                // browsers with scroll-driven timelines replace this per-card.
+                style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
+              >
+                <GameCard game={game} onOpen={() => open(game)} />
+              </div>
+
+              {/* After every third full row, never after the last card — a slot
+                  dangling under a half-empty row reads as a broken grid. */}
+              {perBreak > 0 &&
+                (index + 1) % perBreak === 0 &&
+                index + 1 < visible.length && <AdSlot name="grid-inline" className="grid-ad" />}
+            </Fragment>
           ))}
         </div>
       )}

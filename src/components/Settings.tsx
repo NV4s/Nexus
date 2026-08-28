@@ -170,13 +170,15 @@ export default function Settings() {
                 className={`button ${panicMode === mode ? '' : 'ghost'}`}
                 onClick={() => setPanicMode(mode)}
               >
-                {mode === 'replace' ? 'Replace this tab' : 'New tab, blank this one'}
+                {mode === 'replace' ? 'Replace this tab' : 'New tab, close this one'}
               </button>
             ))}
           </div>
           <p>
-            A page cannot close a tab it did not open, so the second option opens your link in a
-            fresh tab and leaves this one blank, which is the closest thing to the tab disappearing.
+            A page can only close a tab that a page opened. Launch through <b>Open cloaked</b> below
+            and the second option really does delete the tab — your link opens in a fresh one and
+            this tab disappears. Opened any other way it cannot close, so it is left blank instead,
+            which is the closest a page is allowed to get.
           </p>
         </div>
 
@@ -234,6 +236,13 @@ export default function Settings() {
               onClick={() => setPlayerPref({ letterbox: !player.letterbox })}
             >
               Letterbox {player.letterbox ? 'on' : 'off'}
+            </button>
+            <button
+              className={`button ${player.stretch ? '' : 'ghost'}`}
+              onClick={() => setPlayerPref({ stretch: !player.stretch })}
+              title="Fills the frame even when a game asks to stay at its authored size"
+            >
+              Stretch to fit {player.stretch ? 'on' : 'off'}
             </button>
             <button
               className={`button ${player.swfDownload ? '' : 'ghost'}`}
@@ -297,10 +306,22 @@ export default function Settings() {
         </div>
         <div className="panel">
           <h3>about:blank</h3>
-          <p>Reopens Nexus inside a blank tab and sends this one to your panic link.</p>
+          <p>
+            Reopens Nexus inside a blank tab and sends this one to your panic link. A tab opened
+            this way can close itself, which is what makes the panic key delete it outright.
+          </p>
           <button className="button" onClick={cloak}>
             Open cloaked
           </button>
+        </div>
+
+        <div className="panel">
+          <h3>Advertising</h3>
+          <p>
+            The ad positions are built but switched off, and take up no space until a publisher id
+            is set. Add <code>?adpreview=1</code> to any page to see where they will go. Setup is
+            written up in <code>docs/ads.md</code>.
+          </p>
         </div>
       </div>
     </section>

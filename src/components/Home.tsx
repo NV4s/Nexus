@@ -1,7 +1,8 @@
-import { Suspense, lazy, useMemo } from 'react';
+import { Fragment, Suspense, lazy, useMemo } from 'react';
 import { GAMES, bySlug, featuredGames, type Game } from '../data/games';
 import { navigate } from '../lib/router';
 import GameCard from './GameCard';
+import AdSlot from './AdSlot';
 
 const HomeField = lazy(() => import('../webgl/HomeField'));
 
@@ -106,6 +107,8 @@ export default function Home() {
         </div>
       </section>
 
+      <AdSlot name="home-1" className="home-ad" />
+
       <section className="showcase">
         <div className="showcase-head reveal">
           <h2>Start with these</h2>
@@ -124,15 +127,23 @@ export default function Home() {
       </section>
 
       {chapters.map((chapter, index) => (
-        <section className={`chapter ${index % 2 ? 'is-flipped' : ''}`} key={chapter.title}>
-          <div className="chapter-copy reveal">
-            <span className="chapter-eyebrow">{chapter.eyebrow}</span>
-            <h2>{chapter.title}</h2>
-            <p>{chapter.body}</p>
-          </div>
-          <Row games={chapter.games} />
-        </section>
+        <Fragment key={chapter.title}>
+          <section className={`chapter ${index % 2 ? 'is-flipped' : ''}`}>
+            <div className="chapter-copy reveal">
+              <span className="chapter-eyebrow">{chapter.eyebrow}</span>
+              <h2>{chapter.title}</h2>
+              <p>{chapter.body}</p>
+            </div>
+            <Row games={chapter.games} />
+          </section>
+
+          {/* Between chapters rather than inside one, so a chapter's copy and
+              its row are never split by an advert. */}
+          {index === 1 && <AdSlot name="home-2" className="home-ad" />}
+        </Fragment>
       ))}
+
+      <AdSlot name="home-3" className="home-ad" />
 
       <section className="chapter is-closing">
         <div className="chapter-copy reveal">

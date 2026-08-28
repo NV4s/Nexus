@@ -64,8 +64,19 @@ const boxhead = (): Achievement[] => [
  * Endless War is one series with a hard split: 1–4 march a single soldier across
  * a map, 5–7 hand you tanks and self-propelled guns instead.
  */
-const endlessWarInfantry = (): Achievement[] => [
+/**
+ * Endless War 4 is the only one of the infantry games whose save counts
+ * missions, so `missionsDone` is passed in for it and left off the rest rather
+ * than listing an objective the others can never unlock.
+ */
+const endlessWarInfantry = (missionsDone = false): Achievement[] => [
   opened('Deployed', 'Start your first mission.'),
+  ...(missionsDone
+    ? [
+        { id: 'mission-done', name: 'One down', hint: 'Complete a mission.' },
+        { id: 'missions-10', name: 'Ten missions', hint: 'Complete 10 missions.' },
+      ]
+    : []),
   { id: 'cross-map', name: 'Other side', hint: 'Get your soldier from one end of a map to the other.' },
   { id: 'swap-weapon', name: 'Field pickup', hint: 'Take a weapon from a fallen enemy and use it.' },
   { id: 'finish-campaign', name: 'Campaign done', hint: 'Finish an entire campaign.' },
@@ -105,6 +116,8 @@ const customerpalooza = (): Achievement[] => [
 const madness = (): Achievement[] => [
   opened('Nexus online', 'Boot the mod.'),
   { id: 'arena-wave-10', name: 'Arena regular', hint: 'Reach wave 10 in Arena mode.' },
+  { id: 'arena-kills-100', name: 'Hundred in the arena', hint: 'Reach 100 Arena kills.' },
+  { id: 'rich', name: 'Funded', hint: 'Bank 100,000 in the Arena.' },
   { id: 'melee-only', name: 'Up close', hint: 'Clear a wave using only melee weapons.' },
   { id: 'story-mission', name: 'On mission', hint: 'Finish a Story mode mission.' },
   { id: 'custom-char', name: 'Made to order', hint: 'Build and save a custom character.' },
@@ -210,6 +223,10 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
 
   'duck-life': [
     opened('Hatched', 'Start training your duck.'),
+    { id: 'run-10', name: 'Sprinter', hint: 'Train running to level 10.' },
+    { id: 'swim-10', name: 'Swimmer', hint: 'Train swimming to level 10.' },
+    { id: 'fly-10', name: 'Flier', hint: 'Train flying to level 10.' },
+    { id: 'coins-500', name: 'Well fed', hint: 'Save up 500 coins.' },
     { id: 'max-run', name: 'Max running', hint: 'Train running to its maximum.' },
     { id: 'win-race', name: 'First win', hint: 'Win a race.' },
     { id: 'champion', name: 'Champion', hint: 'Beat the final race.' },
@@ -217,6 +234,10 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   ],
   'duck-life-2': [
     opened('Back in training', 'Start the sequel.'),
+    { id: 'named', name: 'Named', hint: 'Give your duck a name.' },
+    { id: 'run-10', name: 'Sprinter', hint: 'Train running to level 10.' },
+    { id: 'climb-10', name: 'Climber', hint: 'Train climbing to level 10.' },
+    { id: 'coins-500', name: 'Well fed', hint: 'Save up 500 coins.' },
     { id: 'all-stats', name: 'Well rounded', hint: 'Train every stat past halfway.' },
     { id: 'win-league', name: 'League winner', hint: 'Win a league.' },
     { id: 'champion', name: 'Champion', hint: 'Beat the final race.' },
@@ -225,6 +246,11 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   // Four stats — running, swimming, climbing, flying — then three leagues.
   'duck-life-3': [
     opened('Evolution', 'Pick a duck and start.'),
+    { id: 'run-10', name: 'Sprinter', hint: 'Train running to level 10.' },
+    { id: 'climb-10', name: 'Climber', hint: 'Train climbing to level 10.' },
+    { id: 'coins-500', name: 'Well fed', hint: 'Save up 500 coins.' },
+    // Duck Life 3 keeps its own award flags in the save, a1 through a10.
+    { id: 'own-medal', name: 'First award', hint: "Earn the game's own first award." },
     { id: 'four-stats', name: 'All four', hint: 'Train running, swimming, climbing and flying.' },
     { id: 'amateur', name: 'Amateur league', hint: 'Win the Amateur league.' },
     { id: 'advanced', name: 'Advanced league', hint: 'Win the Advanced league.' },
@@ -233,6 +259,11 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   ],
   'duck-life-4': [
     opened('Fourth time', 'Start Duck Life 4.'),
+    { id: 'run-10', name: 'Sprinter', hint: "Train your first duck's running to level 10." },
+    { id: 'race-won', name: 'Off the line', hint: 'Win the first race.' },
+    { id: 'race-10', name: 'Ten down', hint: 'Win the tenth race.' },
+    { id: 'tournament', name: 'Tournament', hint: 'Win your first tournament.' },
+    { id: 'coins-500', name: 'Well fed', hint: 'Save up 500 coins.' },
     { id: 'all-stats', name: 'Well rounded', hint: 'Train every stat past halfway.' },
     { id: 'win-league', name: 'League winner', hint: 'Win a league.' },
     { id: 'champion', name: 'Champion', hint: 'Beat the final race.' },
@@ -281,6 +312,10 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'ground-win', name: 'Ground taken', hint: 'Win by capturing enough enemy trenches.' },
     { id: 'artillery', name: 'Fire support', hint: 'Call in artillery, mortar or gas.' },
     { id: 'tank', name: 'Armour', hint: 'Deploy a tank.' },
+    // Warfare 1917 keeps a full career record, so these read the real totals.
+    { id: 'kills-100', name: 'Hundred fallen', hint: 'Kill 100 enemy soldiers across your career.' },
+    { id: 'trenches-10', name: 'Trench raider', hint: 'Take 10 trenches across your career.' },
+    { id: 'rank-5', name: 'Experienced', hint: 'Reach experience level 5.' },
     { id: 'campaign', name: 'Campaign over', hint: 'Finish the British or German campaign.' },
   ],
 
@@ -371,10 +406,15 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'no-walls', name: 'Close call', hint: 'Survive a full lap around the edge.' },
     regular,
   ],
+  // Cubefield saves exactly one field, `TopScore`, and flushes it when a run
+  // ends — so the three tiers below unlock from the number the game itself
+  // wrote rather than from the player's word. See data/saveRules.ts.
   cubefield: [
     opened('Into the field', 'Start flying.'),
     { id: 'colour-change', name: 'Colour shift', hint: 'Survive long enough for the field to change colour.' },
-    { id: 'far', name: 'Deep run', hint: 'Beat your own best distance.' },
+    { id: 'score-5k', name: 'Five thousand', hint: 'Set a top score of 5,000.' },
+    { id: 'score-20k', name: 'Twenty thousand', hint: 'Set a top score of 20,000.' },
+    { id: 'score-50k', name: 'Fifty thousand', hint: 'Set a top score of 50,000.' },
     regular,
   ],
   curveball: [
@@ -383,10 +423,16 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'beat-ai', name: 'Match won', hint: 'Beat the computer.' },
     regular,
   ],
+  // Neave's Asteroids writes one thing to its save — the initials typed on the
+  // score screen — so `named` is the only objective here the save can prove.
+  // The scores themselves were POSTed to neave.com, which no longer answers.
   asteroids: [
     opened('Thrusters on', 'Start a game.'),
     { id: 'clear-wave', name: 'Field cleared', hint: 'Destroy every rock in a wave.' },
     { id: 'ufo', name: 'Saucer down', hint: 'Shoot down a flying saucer.' },
+    { id: 'hyperspace', name: 'Hyperspace', hint: 'Jump to hyperspace to escape a collision.' },
+    { id: 'extra-life', name: 'Spare ship', hint: 'Score enough to earn an extra life.' },
+    { id: 'named', name: 'Signed the board', hint: 'Finish a run and enter your initials.' },
     regular,
   ],
   'bubble-shooter': [
@@ -412,7 +458,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'endless-war': endlessWarInfantry(),
   'endless-war-2': endlessWarInfantry(),
   'endless-war-3': endlessWarInfantry(),
-  'endless-war-4': endlessWarInfantry(),
+  'endless-war-4': endlessWarInfantry(true),
   'endless-war-5': endlessWarArmour(),
   'endless-war-6': endlessWarArmour(),
   'endless-war-7': endlessWarArmour(),
@@ -546,10 +592,18 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'win', name: 'Continent held', hint: 'Win the campaign.' },
     settled,
   ],
+  // Commando contains no SharedObject at all — no getLocal, no flush anywhere
+  // in the SWF — so none of these can unlock from a save, and no rule for it
+  // belongs in data/saveRules.ts. Its highscores went to the portal it shipped
+  // on. What the objectives below name is what the game's own code tracks:
+  // mission_start, mission_end, level_pass, kill_boss, kill_num, weapon_name.
   commando: [
     opened('Boots on', 'Start the first mission.'),
-    { id: 'upgrade', name: 'Upgraded', hint: 'Spend experience on an upgrade.' },
-    { id: 'finish-mission', name: 'Mission complete', hint: 'Finish a mission.' },
+    { id: 'level-pass', name: 'Level passed', hint: 'Clear a level and reach the mission screen.' },
+    { id: 'weapon-swap', name: 'New hardware', hint: 'Pick up a second weapon type and fight with it.' },
+    { id: 'boss-killed', name: 'Boss down', hint: 'Kill a mission boss.' },
+    { id: 'kill-100', name: 'Hundred down', hint: 'Reach 100 kills in a single run.' },
+    { id: 'finish-mission', name: 'Mission complete', hint: 'Finish a mission end to end.' },
     veteran,
   ],
   'bush-shootout': [
@@ -560,6 +614,8 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   ],
   'gun-mayhem-2': [
     opened('Step up', 'Start a match.'),
+    { id: 'named-fighter', name: 'Signed up', hint: 'Name your fighter.' },
+    { id: 'campaign-5', name: 'Five deep', hint: 'Reach campaign level 5.' },
     { id: 'knock-off', name: 'Off the edge', hint: 'Knock an opponent off the platform.' },
     { id: 'unlock', name: 'New kit', hint: 'Unlock a weapon or perk.' },
     { id: 'win-match', name: 'Last hat standing', hint: 'Win a match.' },
@@ -629,7 +685,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
 
 // A key that matches no game produces no achievements and no error, so say so in
 // development. Imported dynamically: nothing here should depend on the catalog.
-if (import.meta.env.DEV) {
+if (import.meta.env?.DEV) {
   import('./games').then(({ GAMES }) => {
     const slugs = new Set(GAMES.map((game) => game.slug));
     const unknown = Object.keys(ACHIEVEMENTS).filter((slug) => !slugs.has(slug));

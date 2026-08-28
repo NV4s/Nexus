@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Upload } from 'lucide-react';
 import { CONSOLES, consoleById, type ConsoleId } from '../data/consoles';
 import { useGameSession } from '../lib/achievements';
+import AdSlot from './AdSlot';
+import { railsClass } from '../lib/ads';
 
 /** Pinned so an upstream change cannot break the page without a commit here. */
 const EJS_VERSION = '4.2.3';
@@ -121,8 +123,14 @@ export default function Emulator({ id }: { id: string }) {
 
       {error && <p className="admin-error">{error}</p>}
 
-      <div className="game-frame">
-        <div id="emulator-host" ref={hostRef} className="emulator-host" />
+      <div className={railsClass()}>
+        <AdSlot name="rail-left" className="rail" />
+
+        <div className="game-frame">
+          <div id="emulator-host" ref={hostRef} className="emulator-host" />
+        </div>
+
+        <AdSlot name="rail-right" className="rail" />
       </div>
 
       {rom && (

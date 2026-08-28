@@ -16,6 +16,7 @@ import {
   type Message,
 } from '../lib/ai';
 import { extractText, isImage, isPdf } from '../lib/archive';
+import AdSlot from './AdSlot';
 
 /** 4 MB each: base64 inflates by a third, and providers reject large payloads. */
 const MAX_FILE = 4 * 1024 * 1024;
@@ -392,6 +393,8 @@ export default function Assistant() {
           )}
         </div>
       </div>
+
+      <AdSlot name="assistant" />
     </section>
   );
 }

@@ -19,6 +19,15 @@ export type PlayerPrefs = {
   /** Adds Ruffle's own "Download .swf" entry to its right-click menu. */
   swfDownload: boolean;
   letterbox: boolean;
+  /**
+   * Overrides a SWF that pins its own stage size.
+   *
+   * Some games set `Stage.scaleMode = "noScale"` in their own code — Commando
+   * is one — which leaves them drawn at their authored size in the middle of
+   * the frame however large the frame is. Ruffle's `forceScale` ignores that
+   * instruction; `scale: showAll` then fits them without distorting anything.
+   */
+  stretch: boolean;
 };
 
 export const DEFAULT_PREFS: PlayerPrefs = {
@@ -28,6 +37,7 @@ export const DEFAULT_PREFS: PlayerPrefs = {
   maxExecution: 15,
   swfDownload: true,
   letterbox: true,
+  stretch: true,
 };
 
 const KEY = 'nexus:player';
@@ -62,6 +72,10 @@ export function ruffleOptions(prefs: PlayerPrefs) {
     volume: prefs.volume,
     maxExecutionDuration: prefs.maxExecution,
     showSwfDownload: prefs.swfDownload,
+    // showAll is Ruffle's own default and preserves the aspect ratio; forceScale
+    // is what makes it apply to a SWF that sets its own scaleMode.
+    scale: 'showAll',
+    forceScale: prefs.stretch,
     // null is Ruffle's own "use the file's own rate"; a number overrides it.
     frameRate: prefs.frameRate > 0 ? prefs.frameRate : null,
   };

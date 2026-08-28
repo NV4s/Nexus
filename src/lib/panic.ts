@@ -37,25 +37,49 @@ export const readPanicMode = (): PanicMode =>
 export const writePanicMode = (mode: PanicMode) => localStorage.setItem('panicMode', mode);
 
 /**
+ * Closes the tab this page is running in, if the browser will allow it.
+ *
+ * A script may only close a window that a script opened. That is never true of
+ * the tab the site is loaded into directly — but it is true of the one
+ * `openCloaked` in lib/launch.ts makes: an about:blank tab opened with
+ * window.open, with the app in an iframe inside it. That parent was
+ * script-opened, so it can close, and because a script-created about:blank
+ * inherits its opener's origin, this frame is allowed to reach it.
+ *
+ * So the call that matters is parent.close(), not close(). Anywhere else it
+ * either throws (cross-origin) or does nothing (a tab the user opened), which
+ * is why the caller still needs a fallback.
+ */
+function closeTab(): boolean {
+  try {
+    if (window.parent !== window) window.parent.close();
+    else window.close();
+  } catch {
+    /* cross-origin parent — not ours to close */
+  }
+  return window.closed || window.parent.closed;
+}
+
+/**
  * Leaves the site.
  *
  * `replace` swaps this tab for the panic link. It leaves no forward history
  * entry, but the tab keeps its back history — pressing Back returns here.
  *
- * `newtab` opens the link in a fresh tab and blanks this one. That is as close
- * to "delete the tab" as a page can get: a script may only close a window it
- * opened itself, so window.close() is attempted and silently ignored otherwise.
- * The blank tab that remains carries no trace of the site in its address bar,
- * and its history is replaced rather than pushed.
+ * `newtab` opens the link in a fresh tab and gets rid of this one. Closing is
+ * tried first and blanking is the fallback, in that order: the previous version
+ * blanked before closing, which guaranteed a leftover blank tab even on the
+ * path where the close would have worked. Launching through Settings → "Open
+ * cloaked" is what makes the close succeed.
  */
 export function panic(link = readLink(), mode = readPanicMode()) {
   if (mode === 'newtab') {
-    const opened = window.open(link, '_blank', 'noopener');
-    // Blanking first means that even if the popup is blocked, this tab no longer
-    // shows the site — the worse failure is being left on it.
+    window.open(link, '_blank', 'noopener');
+    if (closeTab()) return;
+    // Still here, so the tab cannot be closed. Blanking is second best: the
+    // address bar keeps no trace of the site, and history is replaced rather
+    // than pushed. Being left on the site is the worse failure.
     window.location.replace('about:blank');
-    // Only succeeds for a script-opened window; harmless everywhere else.
-    if (opened) window.close();
     return;
   }
   window.location.replace(link);

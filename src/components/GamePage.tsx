@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ExternalLink, Maximize2 } from 'lucide-react';
 import { bySlug, gameFallback, gameUrl } from '../data/games';
 import { navigate } from '../lib/router';
@@ -6,6 +6,46 @@ import { openCloaked } from '../lib/launch';
 import RufflePlayer from './RufflePlayer';
 import EmbedPlayer from './EmbedPlayer';
 import GameAchievements from './GameAchievements';
+import AdSlot from './AdSlot';
+import { railsClass, slotShows } from '../lib/ads';
+
+/**
+ * The pre-game ad. Shown over the player until it is dismissed, once per game
+ * per tab — a second one on the way back from the achievements list would be
+ * the kind of thing that makes people leave.
+ */
+function Interstitial({ slug }: { slug: string }) {
+  const key = `nexus:ad-seen:${slug}`;
+  const [done, setDone] = useState(() => {
+    try {
+      return sessionStorage.getItem(key) === '1';
+    } catch {
+      return false; // private mode: show it, do not crash the page
+    }
+  });
+
+  // Nothing to show means no overlay: an interstitial holding only a "Play now"
+  // button would be a door with no room behind it.
+  if (done || !slotShows('game-interstitial')) return null;
+
+  const dismiss = () => {
+    try {
+      sessionStorage.setItem(key, '1');
+    } catch {
+      /* nothing to remember it with; it will show again */
+    }
+    setDone(true);
+  };
+
+  return (
+    <div className="ad-interstitial">
+      <AdSlot name="game-interstitial" />
+      <button className="button" onClick={dismiss} autoFocus>
+        Play now
+      </button>
+    </div>
+  );
+}
 
 export default function GamePage({ slug }: { slug: string }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -64,12 +104,21 @@ export default function GamePage({ slug }: { slug: string }) {
         </div>
       </header>
 
-      <div ref={frameRef} className="game-frame">
-        {game.runtime === 'flash' ? (
-          <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
-        ) : (
-          <EmbedPlayer url={url} title={game.title} />
-        )}
+      {/* The rails sit outside the fullscreen element on purpose: fullscreen
+          should be the game, not the game with advertising down both sides. */}
+      <div className={railsClass()}>
+        <AdSlot name="rail-left" className="rail" />
+
+        <div ref={frameRef} className="game-frame">
+          {game.runtime === 'flash' ? (
+            <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
+          ) : (
+            <EmbedPlayer url={url} title={game.title} />
+          )}
+          <Interstitial slug={game.slug} />
+        </div>
+
+        <AdSlot name="rail-right" className="rail" />
       </div>
 
       {game.blurb && <p className="game-blurb">{game.blurb}</p>}

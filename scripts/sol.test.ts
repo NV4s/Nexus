@@ -193,10 +193,10 @@ test('Madness rules match a real arena save', async () => {
   const rules = SAVE_RULES['madness-project-nexus-classic'];
   assert.ok(rules, 'MPN Classic has rules');
 
-  // Every path a rule names must exist in a real save. A typo would never throw —
-  // it would quietly never unlock, which is the whole hazard.
-  for (const rule of Object.values(rules)) {
-    assert.notEqual(at(rule.path), undefined, 'the save is missing ' + rule.path);
+  // Every path describing arena state must exist in a real arena save. A typo
+  // would never throw — it would quietly never unlock, which is the whole hazard.
+  for (const id of ['arena-wave-10', 'custom-char', 'arena-kills-100', 'rich']) {
+    assert.notEqual(at(rules[id].path), undefined, 'the save is missing ' + rules[id].path);
   }
 
   // A fresh run: a squad has been saved, but ten waves have not been survived.
@@ -204,8 +204,130 @@ test('Madness rules match a real arena save', async () => {
   assert.equal(passes(rules['arena-wave-10'], at('arenaWaves')), false);
   assert.equal(passes(rules['arena-wave-10'], 10), true);
   assert.equal(passes(rules['arena-wave-10'], 9), false);
+  assert.equal(passes(rules['arena-kills-100'], at('arenaKills')), false);
+  assert.equal(passes(rules['rich'], at('myCash')), true);
+
+  // Story progress is deliberately absent here: this fixture is an arena-only
+  // save, and `story-mission` unlocking off it would be a false positive — the
+  // failure that matters, since a rule that never unlocks only disappoints.
+  assert.equal(at('storyProgressWorld0'), undefined, 'fixture should have no story progress');
+  assert.equal(passes(rules['story-mission'], at('storyProgressWorld0')), false);
 
   // The mods are rebuilds of the same engine, so they must share the mapping.
   const mods = Object.keys(SAVE_RULES).filter((slug) => slug.startsWith('madness-'));
   assert.ok(mods.length >= 12, 'expected every mod mapped, got ' + mods.length);
+});
+
+/*
+ * The other two saves that drive achievements, both real files written by the
+ * games themselves rather than by an encoder of mine.
+ */
+const CUBEFIELD_SAVE = 'AL8AAAAtVENTTwAEAAAAAAAJY3ViZWZpZWxkAAAAAAAIVG9wU2NvcmUAQNZZQAAAAAAA';
+const ASTEROIDS_SAVE =
+  'AL8AAAAxVENTTwAEAAAAAAAObmVhdmVBc3Rlcm9pZHMAAAAAAApwbGF5ZXJOYW1lAgADQUxFAA==';
+
+test("Cubefield's score tiers read the game's own TopScore", async () => {
+  const { SAVE_RULES, passes } = await import('../src/data/saveRules.ts');
+  const save = decodeSol(Uint8Array.from(atob(CUBEFIELD_SAVE), (c) => c.charCodeAt(0)));
+
+  assert.equal(save.error, undefined);
+  assert.equal(save.name, 'cubefield');
+  assert.equal(save.data.TopScore, 22885);
+
+  const rules = SAVE_RULES.cubefield;
+  const score = save.data.TopScore as SolValue;
+
+  // 22885 clears the first two tiers and not the third. A rule that matched
+  // nothing would pass an "unlocks" assertion by accident, so both directions
+  // are checked.
+  assert.equal(passes(rules['score-5k'], score), true);
+  assert.equal(passes(rules['score-20k'], score), true);
+  assert.equal(passes(rules['score-50k'], score), false);
+
+  // Nothing unlocks from an absent field.
+  assert.equal(passes(rules['score-5k'], undefined), false);
+});
+
+test('Asteroids unlocks from the initials it stores, and stores nothing else', async () => {
+  const { SAVE_RULES, passes } = await import('../src/data/saveRules.ts');
+  const save = decodeSol(Uint8Array.from(atob(ASTEROIDS_SAVE), (c) => c.charCodeAt(0)));
+
+  assert.equal(save.error, undefined);
+  assert.equal(save.name, 'neaveAsteroids');
+  assert.deepEqual(Object.keys(save.data), ['playerName']);
+
+  const rules = SAVE_RULES.asteroids;
+  assert.equal(passes(rules.named, save.data.playerName as SolValue), true);
+  // The game writes the field before the player types, so an empty string is
+  // not a finished run.
+  assert.equal(passes(rules.named, ''), false);
+  assert.equal(passes(rules.named, undefined), false);
+});
+
+test('every save rule names an achievement that exists', async () => {
+  const { SAVE_RULES } = await import('../src/data/saveRules.ts');
+  const { ACHIEVEMENTS } = await import('../src/data/achievements.ts');
+
+  // Same check the browser makes in development, run where it cannot be missed:
+  // a rule pointing at an id nobody defined can never unlock anything, and says
+  // nothing at all when it fails.
+  for (const [slug, rules] of Object.entries(SAVE_RULES)) {
+    const ids = new Set((ACHIEVEMENTS[slug] ?? []).map((a) => a.id));
+    assert.ok(ACHIEVEMENTS[slug], slug + ' has no achievements');
+    for (const id of Object.keys(rules)) {
+      assert.ok(ids.has(id), slug + ' has no achievement called ' + id);
+    }
+  }
+});
+
+/**
+ * Rules and evidence must not drift apart.
+ *
+ * scripts/save-scan.json is what `node scripts/scan-saves.mjs` read out of each
+ * SWF's own bytecode: every name the game touches on `<sharedObject>.data`. A
+ * rule naming anything else is a typo, and a typo here is invisible — the
+ * achievement simply never unlocks and nothing anywhere says why.
+ */
+test('every save rule names a field the game actually writes', async () => {
+  const { SAVE_RULES } = await import('../src/data/saveRules.ts');
+  const { readFileSync } = await import('node:fs');
+
+  const scan: { file: string; fields: string[] }[] = JSON.parse(
+    readFileSync('scripts/save-scan.json', 'utf8'),
+  );
+  const byFile = new Map(scan.map((entry) => [entry.file, new Set(entry.fields)]));
+
+  // Written out rather than derived from the catalog, because data/games.ts
+  // pulls in the generated dump index and this file has no bundler.
+  const SOURCE: Record<string, string> = {
+    cubefield: 'Cubefield.swf',
+    asteroids: 'Asteroids.swf',
+    'duck-life': 'Duck_Life.swf',
+    'duck-life-2': 'Duck_Life_2.swf',
+    'duck-life-3': 'Duck_Life_3.swf',
+    'duck-life-4': 'Duck_Life_4.swf',
+    'endless-war-4': 'Endless_War_4.swf',
+    'gun-mayhem-2': 'Gun_Mayhem_2.swf',
+    'warfare-1917': 'Warfare_1917.swf',
+    'madness-project-nexus-classic': 'Madness_Project_Nexus_Classic.swf',
+  };
+
+  for (const [slug, file] of Object.entries(SOURCE)) {
+    const fields = byFile.get(file);
+    assert.ok(fields, `${file} is missing from the scan — rerun scripts/scan-saves.mjs`);
+    for (const [id, rule] of Object.entries(SAVE_RULES[slug])) {
+      // Only the first segment: nested paths step into objects the scan cannot
+      // see the shape of, but the field they start from is still named.
+      const root = rule.path.split('.')[0];
+      assert.ok(fields.has(root), `${slug}/${id}: ${file} never writes "${root}"`);
+    }
+  }
+
+  // Every game with rules should be covered here, or a typo in a game left out
+  // of SOURCE would go unnoticed. The Madness mods share one rule set that the
+  // base game already proves, so they are counted rather than each listed.
+  const unchecked = Object.keys(SAVE_RULES).filter(
+    (slug) => !(slug in SOURCE) && !slug.startsWith('madness-'),
+  );
+  assert.deepEqual(unchecked, [], 'these games have rules but no scan check');
 });

@@ -1,0 +1,711 @@
+[
+  {
+    "file": "Adrenaline.swf",
+    "scripts": 6,
+    "objects": [
+      "kianisMoto"
+    ],
+    "fields": [
+      "bikeProperties",
+      "gameVersion",
+      "maps",
+      "music",
+      "sound",
+      "totalTime",
+      "unlocked_"
+    ]
+  },
+  {
+    "file": "Asteroids.swf",
+    "scripts": 3,
+    "objects": [
+      "neaveAsteroids"
+    ],
+    "fields": [
+      "playerName"
+    ]
+  },
+  {
+    "file": "Avalanche.swf",
+    "scripts": 19,
+    "objects": [
+      "ag2007",
+      "ag2007champs",
+      "ag2007records",
+      "ag2007rem"
+    ],
+    "fields": [
+      "agc",
+      "agcavatar",
+      "avatarcode",
+      "br",
+      "bra",
+      "brn",
+      "cash",
+      "exists",
+      "hr",
+      "hra",
+      "hrn",
+      "noof_agc",
+      "noof_tc",
+      "noof_worldc",
+      "nr",
+      "nra",
+      "nrn",
+      "playername",
+      "recordweight",
+      "remroll",
+      "rr",
+      "rra",
+      "rrn",
+      "seasonpoints",
+      "tc",
+      "tcavatar",
+      "worldc",
+      "worldcavatar",
+      "wr",
+      "wra",
+      "wrn"
+    ]
+  },
+  {
+    "file": "Boxhead/Boxhead_2Play_Rooms.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Boxhead/Boxhead_More_Rooms.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Boxhead/Boxhead_The_Rooms.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Boxhead/Boxhead.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Bubble_Tanks_2.swf",
+    "scripts": 4,
+    "objects": [
+      "settings"
+    ],
+    "fields": [
+      "avatarDown",
+      "avatarLeft",
+      "avatarRight",
+      "avatarUp",
+      "enemyList",
+      "fireHotkey",
+      "firstTime",
+      "graphics",
+      "musicOn",
+      "pauseHotkey",
+      "set1",
+      "set2",
+      "set3",
+      "soundOn",
+      "statesList",
+      "versionNumber"
+    ]
+  },
+  {
+    "file": "Bush-Shootout.swf",
+    "scripts": 1,
+    "objects": [
+      "MiniclipLoaderAd"
+    ],
+    "fields": [
+      "showThisAd"
+    ]
+  },
+  {
+    "file": "Conquer_Antarctica.swf",
+    "scripts": 1,
+    "objects": [
+      "user_data"
+    ],
+    "fields": []
+  },
+  {
+    "file": "Cubefield.swf",
+    "scripts": 2,
+    "objects": [
+      "cubefield"
+    ],
+    "fields": [
+      "TopScore"
+    ]
+  },
+  {
+    "file": "Duck_Life_2.swf",
+    "scripts": 15,
+    "objects": [
+      "mydata"
+    ],
+    "fields": [
+      "clilvl",
+      "colour",
+      "flylvl",
+      "hat",
+      "maxi",
+      "maxmaxi",
+      "money",
+      "namee",
+      "race",
+      "runlvl",
+      "stalvl",
+      "swilvl"
+    ]
+  },
+  {
+    "file": "Duck_Life_3.swf",
+    "scripts": 64,
+    "objects": [
+      "mydata"
+    ],
+    "fields": [
+      "a1",
+      "a10",
+      "a2",
+      "a3",
+      "a4",
+      "a5",
+      "a6",
+      "a7",
+      "a8",
+      "a9",
+      "athf",
+      "clilvl",
+      "dt",
+      "flyf",
+      "flylvl",
+      "maxi",
+      "money",
+      "race",
+      "runlvl",
+      "stalvl",
+      "sthf",
+      "strf",
+      "swif",
+      "swilvl"
+    ]
+  },
+  {
+    "file": "Duck_Life_4.swf",
+    "scripts": 44,
+    "objects": [
+      "mydata",
+      "playtomic"
+    ],
+    "fields": [
+      "a1",
+      "clouds",
+      "coins",
+      "currentframe",
+      "dist",
+      "duck1",
+      "duck1clvl",
+      "duck1colour",
+      "duck1elvl",
+      "duck1eye",
+      "duck1flvl",
+      "duck1hair",
+      "duck1jlvl",
+      "duck1name",
+      "duck1rlvl",
+      "duck1slvl",
+      "duck1spot",
+      "duck1spotcolour",
+      "duck2",
+      "duck2clvl",
+      "duck2colour",
+      "duck2elvl",
+      "duck2eye",
+      "duck2flvl",
+      "duck2hair",
+      "duck2jlvl",
+      "duck2name",
+      "duck2rlvl",
+      "duck2slvl",
+      "duck2spot",
+      "duck2spotcolour",
+      "duck3",
+      "duck3clvl",
+      "duck3colour",
+      "duck3elvl",
+      "duck3eye",
+      "duck3flvl",
+      "duck3hair",
+      "duck3jlvl",
+      "duck3name",
+      "duck3rlvl",
+      "duck3slvl",
+      "duck3spot",
+      "duck3spotcolour",
+      "duck4",
+      "duck4clvl",
+      "duck4colour",
+      "duck4elvl",
+      "duck4eye",
+      "duck4flvl",
+      "duck4hair",
+      "duck4jlvl",
+      "duck4name",
+      "duck4rlvl",
+      "duck4slvl",
+      "duck4spot",
+      "duck4spotcolour",
+      "duck5",
+      "duck5clvl",
+      "duck5colour",
+      "duck5elvl",
+      "duck5eye",
+      "duck5flvl",
+      "duck5hair",
+      "duck5jlvl",
+      "duck5name",
+      "duck5rlvl",
+      "duck5slvl",
+      "duck5spot",
+      "duck5spotcolour",
+      "duck6",
+      "duck6clvl",
+      "duck6colour",
+      "duck6elvl",
+      "duck6eye",
+      "duck6flvl",
+      "duck6hair",
+      "duck6jlvl",
+      "duck6name",
+      "duck6rlvl",
+      "duck6slvl",
+      "duck6spot",
+      "duck6spotcolour",
+      "duckinuse",
+      "fog",
+      "grass",
+      "money",
+      "mountains",
+      "music",
+      "newlvl",
+      "race1",
+      "race10",
+      "race11",
+      "race12",
+      "race13",
+      "race14",
+      "race15",
+      "race16",
+      "race17",
+      "race18",
+      "race2",
+      "race3",
+      "race4",
+      "race5",
+      "race6",
+      "race7",
+      "race8",
+      "race9",
+      "sfx",
+      "startlvl",
+      "tourn1",
+      "tourn2",
+      "tourn3",
+      "tourn4",
+      "tourn5"
+    ]
+  },
+  {
+    "file": "Duck_Life.swf",
+    "scripts": 17,
+    "objects": [
+      "mydata"
+    ],
+    "fields": [
+      "colour",
+      "colour10",
+      "colour2",
+      "colour3",
+      "colour4",
+      "colour5",
+      "colour6",
+      "colour7",
+      "colour8",
+      "colour9",
+      "flylvl",
+      "hat",
+      "hat2",
+      "hat3",
+      "hat4",
+      "hat5",
+      "money",
+      "runlvl",
+      "seed",
+      "skill",
+      "stalvl",
+      "swilvl"
+    ]
+  },
+  {
+    "file": "Endless_War_2.swf",
+    "scripts": 1,
+    "objects": [
+      "EndlessWar2"
+    ],
+    "fields": [
+      "BLOOD",
+      "CORPSES",
+      "DIFFICULTLY",
+      "OLD_BULLETS",
+      "SAVED_QUALITY",
+      "SHELLS"
+    ]
+  },
+  {
+    "file": "Endless_War_3.swf",
+    "scripts": 1,
+    "objects": [
+      "EndlessWar3"
+    ],
+    "fields": [
+      "ALL_GUNS",
+      "BLOOD",
+      "CORPSES",
+      "CO_ALT",
+      "CO_COMMAND",
+      "CO_DOWN",
+      "CO_DROP",
+      "CO_LEFT",
+      "CO_RELOAD",
+      "CO_RIGHT",
+      "CO_UP",
+      "DIFFICULTLY",
+      "LOCK_American",
+      "LOCK_Blood",
+      "LOCK_CT",
+      "LOCK_Fallout",
+      "LOCK_German",
+      "LOCK_Humans",
+      "LOCK_Iraq",
+      "LOCK_Mutants",
+      "LOCK_Pacific",
+      "LOCK_Soviet",
+      "LOCK_Terror",
+      "LOCK_USA",
+      "LOCK_Vietnam",
+      "OLD_BULLETS",
+      "SAVED_QUALITY",
+      "SHELLS",
+      "WOUND_FLASH"
+    ]
+  },
+  {
+    "file": "Endless_War_4.swf",
+    "scripts": 1,
+    "objects": [
+      "EndlessWar4"
+    ],
+    "fields": [
+      "ALL_GUNS",
+      "BLOOD",
+      "CORPSES",
+      "CO_ALT",
+      "CO_COMMAND",
+      "CO_DOWN",
+      "CO_DROP",
+      "CO_GRENADE",
+      "CO_LEFT",
+      "CO_LIE",
+      "CO_RELOAD",
+      "CO_RIGHT",
+      "CO_UNITS",
+      "CO_UP",
+      "DIFFICULTLY",
+      "MISSIONS_COMPLETED",
+      "OLD_BULLETS",
+      "SAVED_QUALITY",
+      "SHELLS",
+      "WOUND_FLASH"
+    ]
+  },
+  {
+    "file": "Gun_Mayhem_2.swf",
+    "scripts": 17,
+    "objects": [
+      "arena2gamedata",
+      "arena2gamedata2"
+    ],
+    "fields": [
+      "campaign",
+      "challenge",
+      "controlarray",
+      "customlives",
+      "filled",
+      "gamemode",
+      "mapnumber",
+      "menuchallenge",
+      "menugunlib",
+      "musicON",
+      "p1color",
+      "p1eyes",
+      "p1gun",
+      "p1hat",
+      "p1name",
+      "p1perk",
+      "p1ptype",
+      "p1shirt",
+      "p1team",
+      "p2color",
+      "p2eyes",
+      "p2gun",
+      "p2hat",
+      "p2name",
+      "p2perk",
+      "p2ptype",
+      "p2shirt",
+      "p2team",
+      "p3color",
+      "p3eyes",
+      "p3gun",
+      "p3hat",
+      "p3name",
+      "p3perk",
+      "p3ptype",
+      "p3shirt",
+      "p3team",
+      "p4color",
+      "p4eyes",
+      "p4gun",
+      "p4hat",
+      "p4name",
+      "p4perk",
+      "p4ptype",
+      "p4shirt",
+      "p4team",
+      "soundON",
+      "toggle_crates",
+      "toggle_powerups"
+    ]
+  },
+  {
+    "file": "Henry_Stickmin_Legacy_Collection/(3)Stealing_the_Diamond.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Madness_Project_Nexus_Classic.swf",
+    "scripts": 3,
+    "objects": [
+      "arenaMadnessTest31"
+    ],
+    "fields": [
+      "arenaKills",
+      "arenaWaves",
+      "backgroundQuality",
+      "currentWave",
+      "data",
+      "dataTester",
+      "haveSaved",
+      "muteMusic",
+      "myActiveMembers",
+      "myArmorList",
+      "myCash",
+      "myInactiveMembers",
+      "myQuality",
+      "myWeaponsList",
+      "newArena",
+      "optionsSaveCheck",
+      "playerRoster",
+      "playerRosterMembers",
+      "storeRoster",
+      "storeRosterMembers",
+      "storyProgressWorld0",
+      "storyProgressWorld1",
+      "storyProgressWorld2",
+      "storyProgressWorld3",
+      "teamLeader"
+    ]
+  },
+  {
+    "file": "MPN_Classic_Redux.swf",
+    "scripts": 2,
+    "objects": [
+      "arenaMadnessTest31"
+    ],
+    "fields": [
+      "arenaKills",
+      "arenaWaves",
+      "backgroundQuality",
+      "currentWave",
+      "dataTester",
+      "haveSaved",
+      "makeShells",
+      "muteMusic",
+      "myActiveMembers",
+      "myArmorList",
+      "myCash",
+      "myInactiveMembers",
+      "myQuality",
+      "myWeaponsList",
+      "newArena",
+      "optionsSaveCheck",
+      "playerRoster",
+      "playerRosterMembers",
+      "selectTac",
+      "storyProgressWorld0",
+      "storyProgressWorld1",
+      "storyProgressWorld2",
+      "storyProgressWorld3",
+      "teamLeader"
+    ]
+  },
+  {
+    "file": "MPNC_modv7.swf",
+    "scripts": 3,
+    "objects": [
+      "arenaMadnessTest31"
+    ],
+    "fields": [
+      "arenaKills",
+      "arenaWaves",
+      "backgroundQuality",
+      "currentWave",
+      "data",
+      "dataTester",
+      "haveSaved",
+      "muteMusic",
+      "myActiveMembers",
+      "myArmorList",
+      "myCash",
+      "myInactiveMembers",
+      "myQuality",
+      "myWeaponsList",
+      "newArena",
+      "optionsSaveCheck",
+      "playerRoster",
+      "playerRosterMembers",
+      "storeRoster",
+      "storeRosterMembers",
+      "storyProgressWorld0",
+      "storyProgressWorld1",
+      "storyProgressWorld2",
+      "storyProgressWorld3",
+      "teamLeader"
+    ]
+  },
+  {
+    "file": "MPNC_Story_Expantion_Reborn.swf",
+    "scripts": 2,
+    "objects": [
+      "arenaMadnessTest31"
+    ],
+    "fields": [
+      "arenaKills",
+      "arenaWaves",
+      "backgroundQuality",
+      "currentWave",
+      "dataTester",
+      "haveSaved",
+      "muteMusic",
+      "myActiveMembers",
+      "myArmorList",
+      "myCash",
+      "myInactiveMembers",
+      "myQuality",
+      "myWeaponsList",
+      "newArena",
+      "optionsSaveCheck",
+      "playerRoster",
+      "playerRosterMembers",
+      "selectTac",
+      "storeRoster",
+      "storeRosterMembers",
+      "storyProgressWorld0",
+      "storyProgressWorld1",
+      "storyProgressWorld2",
+      "storyProgressWorld3",
+      "teamLeader"
+    ]
+  },
+  {
+    "file": "Papa_Games/Papa_Louie.swf",
+    "scripts": 3,
+    "objects": [
+      "PapaLouieControls",
+      "PizzaPanicSlot1",
+      "PizzaPanicSlot2",
+      "PizzaPanicSlot3"
+    ],
+    "fields": [
+      "savedKeys",
+      "savedata"
+    ]
+  },
+  {
+    "file": "Raft_Wars_2.swf",
+    "scripts": 1,
+    "objects": [],
+    "fields": []
+  },
+  {
+    "file": "Rock_Garden_Deluxe.swf",
+    "scripts": 4,
+    "objects": [
+      "/"
+    ],
+    "fields": [
+      "saveData"
+    ]
+  },
+  {
+    "file": "Warfare_1917.swf",
+    "scripts": 1,
+    "objects": [
+      "ConArtists_Warfare1917"
+    ],
+    "fields": [
+      "career_assaultDeployed",
+      "career_bonusExpGained",
+      "career_conquerLosses",
+      "career_conquerWins",
+      "career_experienceGained",
+      "career_losses",
+      "career_machineGunDeployed",
+      "career_moraleLosses",
+      "career_moraleWins",
+      "career_officerDeployed",
+      "career_riflemenDeployed",
+      "career_sniperDeployed",
+      "career_soldiersKilled",
+      "career_soldiersLost",
+      "career_supportUsed",
+      "career_tankDeployed",
+      "career_trenchesTaken",
+      "career_wins",
+      "currentMapName",
+      "enemyTeamName",
+      "experienceLevel",
+      "experiencePoints",
+      "gameName",
+      "helpArrayIndex",
+      "helpEnabled",
+      "lastMapPlayed",
+      "missionNumber",
+      "musicOn",
+      "qualitySetting",
+      "soundEffectsOn",
+      "teamName",
+      "upgradePoints"
+    ]
+  }
+]
