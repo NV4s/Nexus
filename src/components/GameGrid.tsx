@@ -47,6 +47,9 @@ export default function GameGrid({
   const [category, setCategory] = useState('All');
   const gridRef = useRef<HTMLDivElement>(null);
   const perBreak = useColumns(gridRef) * ROWS_BETWEEN_ADS;
+  // Sampled once per mount: re-rolling on each render would reshuffle the row
+  // under the pointer every time anything else on the page changed.
+  const starters = useMemo(featuredGames, []);
 
   const all = useMemo(() => gamesIn(section), [section]);
   const categories = useMemo(() => ['All', ...categoriesIn(section)], [section]);
@@ -79,10 +82,25 @@ export default function GameGrid({
       {section === 'arcade' && !query && category === 'All' && (
         <div className="featured">
           <h3>Start here</h3>
-          <div className="featured-row">
-            {featuredGames().map((game) => (
-              <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
-            ))}
+          {/*
+            The list is rendered twice and the track slides exactly half its own
+            width before repeating, so the seam lands on an identical frame and
+            the loop is invisible. Duplicating is what makes it seamless — one
+            copy would snap back to the start in full view.
+
+            The second copy is hidden from assistive tech and from tabbing, or
+            every game would be announced and focusable twice.
+          */}
+          <div className="marquee">
+            <div className="marquee-track">
+              {[0, 1].map((copy) => (
+                <div className="marquee-run" key={copy} aria-hidden={copy === 1} inert={copy === 1}>
+                  {starters.map((game) => (
+                    <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

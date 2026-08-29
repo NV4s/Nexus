@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LogOut, RefreshCw, Users } from 'lucide-react';
+import { OWNER_NOTES } from '../data/changelog';
 import { GAMES } from '../data/games';
 
 type Stats = {
@@ -322,6 +323,28 @@ export default function Admin() {
       </div>
 
       <div className="panels admin-panels">
+        <div className="panel">
+          <h3>For you</h3>
+          <p>
+            Notes about running the site. Only shown here — none of this is on the public changelog,
+            because it names settings and pending work that would tell a visitor nothing useful.
+          </p>
+          <ol className="owner-notes">
+            {OWNER_NOTES.map((note) => (
+              <li key={note.title} className={`owner-note is-${note.kind}`}>
+                <div className="owner-note-head">
+                  <span className="card-chip">{note.kind === 'todo' ? 'Needs you' : 'Worth knowing'}</span>
+                  <time dateTime={note.date}>{note.date}</time>
+                </div>
+                <h4>{note.title}</h4>
+                {note.body.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </li>
+            ))}
+          </ol>
+        </div>
+
         <div className="panel">
           <h3>
             <Users size={15} /> Visitors

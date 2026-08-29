@@ -21,7 +21,13 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
     <button type="button" onClick={onOpen} className="card group" aria-label={`${game.section === 'study' ? 'Open' : 'Play'} ${game.title}`}>
       <div className="card-art">
         {game.thumb ? (
-          <img src={game.thumb} alt="" loading="lazy" decoding="async" />
+          <img
+            src={game.thumb}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className={game.thumbFit === 'cover' ? 'is-cover' : undefined}
+          />
         ) : (
           <span
             className="card-fallback"

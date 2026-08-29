@@ -247,7 +247,33 @@ export function useGameSession(slug: string | null) {
   useEffect(() => {
     if (!slug) return;
     setUnlocked(new Set(markPlayed(slug)));
-    return trackPlay(slug);
+    const stop = trackPlay(slug);
+
+    /*
+     * Re-check the save while the game is still open.
+     *
+     * Ruffle writes a SharedObject straight to localStorage the moment the game
+     * flushes it, but nothing tells this page that happened: storage events only
+     * fire for *other* tabs, so a same-document write is silent. Checking once on
+     * mount meant beating your top score and seeing nothing until you left the
+     * game and came back — the achievement was already earned and simply unread.
+     *
+     * Ten seconds is well under how long anyone stares at a score screen, and the
+     * work is decoding one small save, so it is cheap enough to leave running.
+     */
+    const recheck = () => setUnlocked(new Set(applyAuto(slug)));
+    const timer = window.setInterval(recheck, 10_000);
+
+    // Leaving the tab is the other moment a game has just written something.
+    const onHide = () => document.visibilityState === 'hidden' && recheck();
+    document.addEventListener('visibilitychange', onHide);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onHide);
+      recheck(); // one last look before the unmount commits the session
+      stop();
+    };
   }, [slug]);
 
   return { unlocked, setUnlocked };

@@ -1,4 +1,4 @@
-import { Fragment, Suspense, lazy, useMemo } from 'react';
+import { Fragment, Suspense, lazy, useEffect, useMemo } from 'react';
 import { GAMES, bySlug, featuredGames, type Game } from '../data/games';
 import { navigate } from '../lib/router';
 import GameCard from './GameCard';
@@ -10,9 +10,9 @@ const flashCount = GAMES.filter((game) => game.runtime === 'flash').length;
 const arcadeCount = GAMES.filter((game) => game.section === 'arcade').length;
 
 /**
- * One idea per screen, in the order someone would actually meet them: what to
- * play first, what to sink an afternoon into, what fills five minutes, what the
- * archive is for. Each names real games rather than describing a genre.
+ * One idea per screen, each naming real games rather than describing a genre.
+ * The page snaps between them, so a chapter is written to be read on its own
+ * rather than skimmed on the way past.
  */
 type Chapter = {
   eyebrow: string;
@@ -24,32 +24,32 @@ type Chapter = {
 const CHAPTERS: Chapter[] = [
   {
     eyebrow: 'Think',
-    title: 'Puzzles that respect your time',
-    body: 'No tutorials, no timers, no accounts. Roll a block into a hole for thirty-three stages, or spend ten cursors solving a tower that only cooperates with your own ghosts.',
+    title: 'Thirty-three stages, one block',
+    body: 'Bloxorz gives you a 1×2 block and a hole to fall into, and takes about four hours to finish. Cursor*10 is stranger: ten goes at the same tower, and every run has to cooperate with the ghosts of the last nine.',
     slugs: ['bloxorz', 'cursor-10', 'causality', 'crimson-room'],
   },
   {
     eyebrow: 'Commit',
-    title: 'The ones that take an afternoon',
-    body: 'Shops to run, ducks to train, a desert to fight through. These remember where you left off, and the site now backs that progress up for you.',
+    title: 'Games that expect you back',
+    body: 'A pizza shop, a duck in training, a desert to punch through. They keep your progress in the browser, which the site now backs up and reads — a top score here unlocks something because the game wrote it down, not because you said so.',
     slugs: ['papas-pizzeria', 'duck-life-3', 'cactus-mccoy', 'jacksmith'],
   },
   {
     eyebrow: 'Choose',
-    title: 'Stories that end differently',
-    body: 'Every wrong answer is the point. The Henry Stickmin chapters have three to five endings each, and failing is usually funnier than winning.',
+    title: 'Wrong answers are the good ones',
+    body: 'Every Henry Stickmin chapter has three to five endings, and most of them are failures. Picking the sensible option is usually the worst thing you can do to yourself.',
     slugs: ['escaping-the-prison', 'stealing-the-diamond', 'fleeing-the-complex', 'infiltrating-the-airship'],
   },
   {
     eyebrow: 'Aim',
-    title: 'For when you want noise',
-    body: 'Trench warfare as a lane battle, a squad you build yourself, and a great many barrels that should not be shot indoors.',
+    title: 'Loud ones',
+    body: 'Warfare 1917 is the First World War as a lane battle. Madness hands you a squad you built yourself. Boxhead is mostly about learning which barrels not to shoot while standing next to them.',
     slugs: ['warfare-1917', 'madness-project-nexus-classic', 'boxhead-the-zombie-wars', 'gun-mayhem-2'],
   },
   {
     eyebrow: 'Five minutes',
-    title: 'Between one thing and the next',
-    body: 'Nothing to learn and nothing to lose. Start, fail, start again, and stop whenever the bell goes.',
+    title: 'Something to do until the bell',
+    body: 'One button, one life, no explanation needed. Cubefield keeps a top score; the rest do not care how you did.',
     slugs: ['cubefield', 'curveball', 'snake', 'run-3'],
   },
 ];
@@ -67,6 +67,11 @@ function Row({ games }: { games: Game[] }) {
 }
 
 export default function Home() {
+  useEffect(() => {
+    document.documentElement.classList.add('is-snapping');
+    return () => document.documentElement.classList.remove('is-snapping');
+  }, []);
+
   // The starters are already sampled once per page load; memo keeps the rest of
   // the page from rebuilding its lists on every render.
   const chapters = useMemo(
@@ -88,8 +93,8 @@ export default function Home() {
         <div className="hero-copy parallax-slow">
           <h1>Nexus</h1>
           <p>
-            {flashCount} Flash games and a handful of browser games, running in the tab you already
-            have open. Nothing to install.
+            {flashCount} Flash games, a pile of browser ones, and console emulators that read your
+            own ROMs. It all runs in this tab.
           </p>
           <div className="hero-actions">
             <button className="button" onClick={() => navigate('/arcade')}>
@@ -112,9 +117,7 @@ export default function Home() {
       <section className="showcase">
         <div className="showcase-head reveal">
           <h2>Start with these</h2>
-          <p>
-            A different handful every visit, pulled from the ones worth your first ten minutes.
-          </p>
+          <p>A different handful every visit. Reload if none of them appeal.</p>
         </div>
 
         <div className="showcase-grid">
@@ -150,8 +153,9 @@ export default function Home() {
           <span className="chapter-eyebrow">Everything else</span>
           <h2>{arcadeCount} games, one tab</h2>
           <p>
-            Saves stay on your device and can be exported. Achievements track what you actually did
-            in the game, not just how long you sat there.
+            Saves stay on this device and export to a file when you move. Achievements read the
+            game's own save where it keeps one, so they record what you did rather than how long you
+            sat there.
           </p>
           <div className="hero-actions">
             <button className="button" onClick={() => navigate('/arcade')}>

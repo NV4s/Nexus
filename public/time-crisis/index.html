@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Crisis Point — Rail Shooter</title>
+<style>
+  :root {
+    --bg: #05070d;
+    --ink: #e6f1ff;
+    --amber: #ffb020;
+    --cyan: #35e0ff;
+    --red: #ff2f4a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  #wrap {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 16 / 9;
+    cursor: none;
+    touch-action: none;
+    background: #05070d;
+  }
+  /* Pointer returns outside the play state so menus stay usable. */
+  canvas.showcursor { cursor: default; }
+  #selftest {
+    position: fixed;
+    inset: 0;
+    padding: 24px;
+    overflow: auto;
+    background: #05070d;
+    font: 13px/1.6 ui-monospace, Menlo, Consolas, monospace;
+    white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c" width="1280" height="720"></canvas></div>
+<script>
+(() => {
+  'use strict';
+
+  /* ------------------------------------------------------------------ *
+   * Tuning lifted from the arcade build's own config files, so the feel
+   * is inherited rather than invented. Keys are named where they came
+   * from — TC5/TimeCrisisGame/Config/DefaultGame.ini unless noted.
+   * ------------------------------------------------------------------ */
+  const TC = {
+    INVINCIBLE_AFTER_HIT: 2.0,   // TCPlayerPawn.InvincibleDuration
+    INVINCIBLE_ON_ENTRY: 3.0,    // TCPlayerPawn.InvincibleDurationWhenEntry
+    HEADSHOT_MULT: 20.0,         // RailsShooterPawn.HeadShotDamageRate
+    RED_SHOT_WAIT: 0.05,         // TCWeap_EGun.RedBulletShotWaitTime
+    RED_DAMAGE_WAIT: 0.4,        // TCWeap_EGun.RedBulletDamageWaitTime
+    RED_MIN_INTERVAL: 0.0833,    // TCWeap_EGun.MinRedBulletInterval
+    COVER_MULT: 2.0,             // TCPlayerPawn.PlayerPawnCoverTimeMultiplier
+    UNCOVER_MULT: 1.0,           // TCPlayerPawn.PlayerPawnUnCoverTimeMultiplier
+    // TCPawn_Enemy.DropAmmoNums — [sidearm, machinegun, shotgun, grenade]
+    DROP_AMMO: [0, 20, 5, 1],
+    MAG: 9,
+    // TimeCrisisPlayerController.bReversePlayerCoverInput=true —
+    // pedal held = exposed, pedal released = hidden. Release also reloads.
+    REVERSE_COVER_INPUT: true,
+  };
+
+  // Base cover transition, then scaled by the multipliers above: dropping
+  // into cover is twice as quick as leaning back out of it.
+  const COVER_BASE = 0.2;
+  const T_COVER = COVER_BASE / TC.COVER_MULT;    // 0.10s
+  const T_UNCOVER = COVER_BASE / TC.UNCOVER_MULT; // 0.20s
+
+  const W = 1280, H = 720;
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+
+  /* ---------------------------- helpers ---------------------------- */
+  const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[(Math.random() * arr.length) | 0];
+
+  /* ----------------------------- audio ----------------------------- */
+  /* Synthesised so the game stays a single file with no asset fetches. */
+  let actx = null;
+  const audio = (type) => {
+    if (!actx) return;
+    const t = actx.currentTime;
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    if (type === 'shot') {
+      o.type = 'square'; o.frequency.setValueAtTime(320, t);
+      o.frequency.exponentialRampToValueAtTime(60, t + 0.09);
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+      o.start(t); o.stop(t + 0.1);
+    } else if (type === 'dry') {
+      o.type = 'square'; o.frequency.setValueAtTime(90, t);
+      g.gain.setValueAtTime(0.07, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      o.start(t); o.stop(t + 0.06);
+    } else if (type === 'hit') {
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(180, t);
+      o.frequency.exponentialRampToValueAtTime(40, t + 0.18);
+      g.gain.setValueAtTime(0.14, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      o.start(t); o.stop(t + 0.19);
+    } else if (type === 'head') {
+      o.type = 'triangle'; o.frequency.setValueAtTime(880, t);
+      o.frequency.exponentialRampToValueAtTime(220, t + 0.16);
+      g.gain.setValueAtTime(0.18, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      o.start(t); o.stop(t + 0.17);
+    } else if (type === 'hurt') {
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(140, t);
+      o.frequency.exponentialRampToValueAtTime(50, t + 0.4);
+      g.gain.setValueAtTime(0.22, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      o.start(t); o.stop(t + 0.41);
+    } else if (type === 'reload') {
+      o.type = 'square'; o.frequency.setValueAtTime(520, t);
+      g.gain.setValueAtTime(0.08, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      o.start(t); o.stop(t + 0.09);
+    } else if (type === 'warn') {
+      o.type = 'square'; o.frequency.setValueAtTime(1200, t);
+      g.gain.setValueAtTime(0.09, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+      o.start(t); o.stop(t + 0.13);
+    } else if (type === 'clear') {
+      o.type = 'triangle'; o.frequency.setValueAtTime(440, t);
+      o.frequency.setValueAtTime(660, t + 0.12);
+      o.frequency.setValueAtTime(880, t + 0.24);
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      o.start(t); o.stop(t + 0.51);
+    }
+  };
+
+  /* ----------------------------- input ----------------------------- */
+  const input = {
+    mx: W / 2, my: H / 2,
+    pedalL: false, pedalR: false,
+    fireQueued: 0,
+  };
+
+  const toCanvas = (clientX, clientY) => {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: clamp((clientX - r.left) / r.width * W, 0, W),
+      y: clamp((clientY - r.top) / r.height * H, 0, H),
+    };
+  };
+
+  canvas.addEventListener('mousemove', (e) => {
+    const p = toCanvas(e.clientX, e.clientY);
+    input.mx = p.x; input.my = p.y;
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    if (!actx) { actx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if (actx.state === 'suspended') actx.resume();
+    const p = toCanvas(e.clientX, e.clientY);
+    input.mx = p.x; input.my = p.y;
+    if (e.button === 0) input.fireQueued++;
+    // Right mouse doubles as the left pedal for anyone without a foot switch.
+    if (e.button === 2) input.pedalL = true;
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (e.button === 2) input.pedalL = false;
+  });
+
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  /*
+   * T and Y are the arcade cabinet's own USB foot-switch bindings, straight
+   * out of DefaultInput.ini:
+   *   .Bindings=(Name="t",Command="StartPedalL | OnRelease StopPedalL")
+   *   .Bindings=(Name="y",Command="StartPedalR | OnRelease StopPedalR")
+   * Shift/Space are added as reachable stand-ins on a normal keyboard.
+   */
+  const PEDAL_L_KEYS = ['t', 'shift', ' '];
+  const PEDAL_R_KEYS = ['y', 'control'];
+
+  const keyName = (e) => (e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase());
+
+  window.addEventListener('keydown', (e) => {
+    const k = keyName(e);
+    if (PEDAL_L_KEYS.includes(k)) { input.pedalL = true; e.preventDefault(); }
+    if (PEDAL_R_KEYS.includes(k)) { input.pedalR = true; e.preventDefault(); }
+    if (k === 'enter' || k === ' ') {
+      if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+    }
+    if (k === 'enter') game.confirm();
+    if (k === 'r') game.manualReload();
+    if (k === 'p' && game.state === 'play') game.paused = !game.paused;
+  });
+
+  window.addEventListener('keyup', (e) => {
+    const k = keyName(e);
+    if (PEDAL_L_KEYS.includes(k)) input.pedalL = false;
+    if (PEDAL_R_KEYS.includes(k)) input.pedalR = false;
+  });
+
+  window.addEventListener('blur', () => { input.pedalL = false; input.pedalR = false; });
+
+  /* --------------------------- weapons ----------------------------- */
+  /* Index order matches DropAmmoNums[] in the arcade config. */
+  const WEAPONS = [
+    { id: 0, name: 'SIDEARM',   dmg: 1,  rof: 0.11, pellets: 1, spread: 0,  auto: false, mag: TC.MAG },
+    { id: 1, name: 'MACHINEGUN',dmg: 1,  rof: 0.07, pellets: 1, spread: 14, auto: true,  mag: TC.DROP_AMMO[1] },
+    { id: 2, name: 'SHOTGUN',   dmg: 3,  rof: 0.5,  pellets: 5, spread: 62, auto: false, mag: TC.DROP_AMMO[2] },
+    { id: 3, name: 'GRENADE',   dmg: 25, rof: 0.8,  pellets: 1, spread: 0,  auto: false, mag: TC.DROP_AMMO[3], splash: 190 },
+  ];
+
+  /* --------------------------- enemy kinds -------------------------- */
+  const KINDS = {
+    grunt:   { hp: 1,   aim: 1.75, armor: 0,   color: '#7d8ba1', scale: 1.0,  score: 300 },
+    soldier: { hp: 2,   aim: 1.45, armor: 0,   color: '#5f7f6a', scale: 1.05, score: 500 },
+    heavy:   { hp: 6,   aim: 2.0,  armor: 0.6, color: '#6b5a45', scale: 1.2,  score: 900 },
+    crisis:  { hp: 1,   aim: 1.1,  armor: 0,   color: '#8b2233', scale: 1.0,  score: 1200, red: true },
+    boss:    { hp: 120, aim: 1.5,  armor: 0.5, color: '#4a3b6b', scale: 2.6,  score: 15000 },
+  };
+
+  /* ----------------------------- game ------------------------------ */
+  const game = {
+    state: 'title',      // title | brief | play | areaclear | dead | continue | gameover | ending
+    paused: false,
+    t: 0,
+    area: 0,
+    score: 0,
+    lives: 3,
+    credits: 4,
+    // Player cover model. side: -1 = left cover, 1 = right cover.
+    // exposure 0 = fully hidden, 1 = fully leaned out.
+    side: -1,
+    exposure: 0,
+    invuln: TC.INVINCIBLE_ON_ENTRY,
+    weapon: 0,
+    ammo: TC.MAG,
+    reserve: 0,
+    cooldown: 0,
+    lastRedShot: -99,
+    enemies: [],
+    shots: [],       // incoming enemy fire
+    fx: [],
+    holes: [],
+    pickups: [],
+    timeLeft: 0,
+    msg: '',
+    msgT: 0,
+    shake: 0,
+    combo: 0,
+    comboT: 0,
+    flash: 0,
+    hitFlash: 0,
+    stateT: 0,
+  };
+
+  /* Nine areas, three stages. Boss closes each stage. */
+  const AREAS = [
+    { stage: 1, name: 'DOCKSIDE',      time: 45, waves: [ ['grunt','grunt'], ['grunt','soldier'], ['grunt','grunt','soldier'] ] },
+    { stage: 1, name: 'CARGO YARD',    time: 48, waves: [ ['grunt','soldier'], ['soldier','soldier','crisis'], ['grunt','grunt','soldier','soldier'] ] },
+    { stage: 1, name: 'CRANE DECK',    time: 60, waves: [ ['soldier','soldier'], ['heavy','grunt'], ['boss'] ] },
+    { stage: 2, name: 'REFINERY',      time: 45, waves: [ ['soldier','crisis'], ['soldier','soldier','grunt'], ['heavy','soldier','crisis'] ] },
+    { stage: 2, name: 'PIPE GALLERY',  time: 48, waves: [ ['crisis','soldier'], ['heavy','heavy'], ['soldier','soldier','crisis','crisis'] ] },
+    { stage: 2, name: 'CONTROL ROOM',  time: 60, waves: [ ['soldier','crisis'], ['heavy','soldier','soldier'], ['boss'] ] },
+    { stage: 3, name: 'RAIL PLATFORM', time: 45, waves: [ ['soldier','soldier','crisis'], ['heavy','crisis'], ['heavy','soldier','crisis','soldier'] ] },
+    { stage: 3, name: 'SERVICE SPUR',  time: 48, waves: [ ['crisis','crisis'], ['heavy','heavy','soldier'], ['crisis','soldier','heavy','crisis'] ] },
+    { stage: 3, name: 'THE VAULT',     time: 70, waves: [ ['heavy','crisis','soldier'], ['crisis','crisis','heavy'], ['boss'] ] },
+  ];
+
+  /* --------------------------- spawning ---------------------------- */
+  let waveIndex = 0;
+  let spawnQueue = [];
+
+  const spawnEnemy = (kindName, lane, slot, count) => {
+    const k = KINDS[kindName];
+    const isBoss = kindName === 'boss';
+    // Slot enemies evenly across the lane's width so they never stack.
+    const spread = isBoss ? 0 : lerp(-0.62, 0.62, count <= 1 ? 0.5 : slot / (count - 1));
+    const depth = isBoss ? 0.35 : rand(0.35, 0.9);
+    game.enemies.push({
+      kind: kindName,
+      lane,                          // -1 left cover view, 1 right cover view, 0 = center (both)
+      wx: spread + rand(-0.05, 0.05),
+      depth,
+      hp: k.hp * (isBoss ? 1 : 1),
+      maxhp: k.hp,
+      state: 'entering',
+      t: 0,
+      aimT: 0,
+      red: !!k.red,
+      redPending: 0,
+      cooldown: rand(0.4, 1.6),
+      dead: false,
+      deadT: 0,
+      hitT: 0,
+      boss: isBoss,
+      bob: rand(0, Math.PI * 2),
+    });
+  };
+
+  const startWave = () => {
+    const area = AREAS[game.area];
+    const wave = area.waves[waveIndex];
+    // Split the wave across the two cover lanes. This is the whole point of
+    // the twin-pedal layout: neither side can be cleared from one position.
+    const n = wave.length;
+    let leftCount = 0, rightCount = 0;
+    wave.forEach((kind) => {
+      if (kind === 'boss') return;
+      if (leftCount <= rightCount) leftCount++; else rightCount++;
+    });
+    let li = 0, ri = 0;
+    wave.forEach((kind) => {
+      if (kind === 'boss') { spawnEnemy(kind, 0, 0, 1); return; }
+      if (li < leftCount && (li <= ri)) { spawnEnemy(kind, -1, li, leftCount); li++; }
+      else { spawnEnemy(kind, 1, ri, rightCount); ri++; }
+    });
+  };
+
+  const startArea = () => {
+    const area = AREAS[game.area];
+    game.enemies.length = 0;
+    game.shots.length = 0;
+    game.pickups.length = 0;
+    game.holes.length = 0;
+    waveIndex = 0;
+    game.timeLeft = area.time;
+    game.exposure = 0;
+    game.ammo = WEAPONS[game.weapon].mag;
+    game.invuln = TC.INVINCIBLE_ON_ENTRY;
+    startWave();
+    game.msg = 'AREA ' + (game.area + 1) + '  ' + area.name;
+    game.msgT = 2.2;
+  };
+
+  const resetRun = () => {
+    game.area = 0;
+    game.score = 0;
+    game.lives = 3;
+    game.weapon = 0;
+    game.reserve = 0;
+    game.combo = 0;
+    startArea();
+  };
+
+  game.confirm = () => {
+    if (game.state === 'title') { game.state = 'play'; game.stateT = 0; resetRun(); }
+    else if (game.state === 'areaclear') {
+      game.area++;
+      if (game.area >= AREAS.length) { game.state = 'ending'; game.stateT = 0; }
+      else { game.state = 'play'; game.stateT = 0; startArea(); }
+    }
+    else if (game.state === 'continue') {
+      if (game.credits > 0) {
+        game.credits--;
+        game.lives = 3;
+        game.state = 'play'; game.stateT = 0;
+        startArea();
+      }
+    }
+    else if (game.state === 'gameover' || game.state === 'ending') {
+      game.state = 'title'; game.stateT = 0; game.credits = 4;
+    }
+  };
+
+  game.manualReload = () => {
+    const w = WEAPONS[game.weapon];
+    if (game.ammo < w.mag) { game.ammo = w.mag; audio('reload'); }
+  };
+
+  /* --------------------------- projection -------------------------- */
+  /*
+   * Cheap pseudo-3D: depth 0 is the far wall, 1 is right in front of the
+   * player. Everything scales and drifts outward from the vanishing point.
+   */
+  const HORIZON = H * 0.46;
+  const project = (wx, depth, camSide) => {
+    const d = clamp(depth, 0.05, 1);
+    const scale = lerp(0.34, 1.25, d * d);
+    // Leaning out shifts the viewpoint, so the far geometry parallaxes.
+    const camShift = camSide * 150 * (1 - d) * game.exposure;
+    const x = W / 2 + wx * W * 0.46 * lerp(0.55, 1.25, d) - camShift;
+    const groundY = lerp(HORIZON + 26, H * 0.98, d * d);
+    return { x, groundY, scale };
+  };
+
+  /* Enemy is only engageable from the cover side it belongs to. */
+  const visibleFrom = (e, side) => e.lane === 0 || e.lane === side;
+
+  const enemyBoxes = (e) => {
+    const p = project(e.wx, e.depth, game.side);
+    const k = KINDS[e.kind];
+    const s = p.scale * k.scale;
+    const bodyH = 150 * s, bodyW = 62 * s;
+    const headR = 19 * s;
+    const bodyTop = p.groundY - bodyH;
+    return {
+      p, s,
+      head: { x: p.x - headR, y: bodyTop - headR * 2, w: headR * 2, h: headR * 2.05 },
+      body: { x: p.x - bodyW / 2, y: bodyTop, w: bodyW, h: bodyH },
+      bodyTop, bodyH, bodyW, headR,
+    };
+  };
+
+  const pointIn = (px, py, r) => px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+
+  /* ----------------------------- firing ---------------------------- */
+  const damageEnemy = (e, dmg, head) => {
+    const k = KINDS[e.kind];
+    let d = dmg;
+    // Headshots use the arcade's own multiplier and punch clean through armor.
+    if (head) d *= TC.HEADSHOT_MULT;
+    else d *= (1 - k.armor);
+    e.hp -= d;
+    e.hitT = 0.12;
+    if (e.hp <= 0 && !e.dead) {
+      e.dead = true; e.deadT = 0;
+      game.combo++; game.comboT = 2.6;
+      const mult = 1 + Math.min(game.combo, 20) * 0.1;
+      game.score += Math.round(k.score * mult * (head ? 2 : 1));
+      audio(head ? 'head' : 'hit');
+      // Drop weapon pickups the way the arcade config seeds them.
+      if (!e.boss && Math.random() < 0.22) {
+        const wid = pick([1, 2, 3]);
+        const b = enemyBoxes(e);
+        game.pickups.push({ x: b.p.x, y: b.bodyTop + b.bodyH * 0.4, wid, t: 0, life: 9 });
+      }
+      if (e.boss) { game.msg = 'TARGET DOWN'; game.msgT = 2.0; }
+    } else {
+      audio('hit');
+    }
+  };
+
+  const fire = () => {
+    const w = WEAPONS[game.weapon];
+    if (game.cooldown > 0) return;
+    // Firing is only possible while leaning out — same as needing the pedal down.
+    if (game.exposure < 0.55) return;
+    if (game.ammo <= 0) { audio('dry'); game.cooldown = 0.18; return; }
+
+    game.ammo--;
+    game.cooldown = w.rof;
+    game.flash = 0.06;
+    audio('shot');
+
+    for (let i = 0; i < w.pellets; i++) {
+      const ox = w.pellets === 1 ? 0 : rand(-w.spread, w.spread);
+      const oy = w.pellets === 1 ? 0 : rand(-w.spread, w.spread);
+      const ax = input.mx + ox + (w.spread && w.pellets === 1 ? rand(-w.spread, w.spread) : 0);
+      const ay = input.my + oy;
+
+      // Pickups are shot to collect them, TC-style.
+      let consumed = false;
+      for (const pu of game.pickups) {
+        if (pu.taken) continue;
+        if (Math.hypot(ax - pu.x, ay - pu.y) < 42) {
+          pu.taken = true;
+          game.weapon = pu.wid;
+          game.ammo = WEAPONS[pu.wid].mag;
+          game.msg = WEAPONS[pu.wid].name + ' ACQUIRED';
+          game.msgT = 1.4;
+          audio('reload');
+          consumed = true;
+          break;
+        }
+      }
+      if (consumed) continue;
+
+      // Nearest target first, so the front rank blocks the back rank.
+      const live = game.enemies
+        .filter((e) => !e.dead && visibleFrom(e, game.side))
+        .sort((a, b) => b.depth - a.depth);
+
+      let hit = null, head = false;
+      for (const e of live) {
+        const b = enemyBoxes(e);
+        if (pointIn(ax, ay, b.head)) { hit = e; head = true; break; }
+        if (pointIn(ax, ay, b.body)) { hit = e; head = false; break; }
+      }
+
+      if (hit) {
+        damageEnemy(hit, w.dmg, head);
+        const b = enemyBoxes(hit);
+        game.fx.push({ type: 'blood', x: ax, y: ay, t: 0, life: 0.35, s: b.s });
+        if (w.splash) {
+          for (const e of live) {
+            if (e === hit || e.dead) continue;
+            const eb = enemyBoxes(e);
+            if (Math.hypot(eb.p.x - ax, eb.bodyTop - ay) < w.splash) damageEnemy(e, w.dmg * 0.6, false);
+          }
+          game.fx.push({ type: 'boom', x: ax, y: ay, t: 0, life: 0.45 });
+          game.shake = Math.max(game.shake, 10);
+        }
+      } else {
+        // bDisplayScreenBulletHoles=TRUE — misses mark the scenery.
+        game.holes.push({ x: ax, y: ay, t: 0 });
+        if (game.holes.length > 40) game.holes.shift();
+        game.combo = 0;
+        if (w.splash) {
+          game.fx.push({ type: 'boom', x: ax, y: ay, t: 0, life: 0.45 });
+          game.shake = Math.max(game.shake, 8);
+        }
+      }
+    }
+
+    if (game.ammo <= 0 && game.weapon !== 0) {
+      // Special weapons revert to the sidearm when dry, as in the arcade.
+      game.weapon = 0;
+      game.ammo = 0;
+      game.msg = 'SIDEARM';
+      game.msgT = 1.0;
+    }
+  };
+
+  /* ------------------------- player damage ------------------------- */
+  const hurtPlayer = () => {
+    if (game.invuln > 0) return;
+    game.lives--;
+    game.invuln = TC.INVINCIBLE_AFTER_HIT;
+    game.combo = 0;
+    game.hitFlash = 0.5;
+    game.shake = 18;
+    audio('hurt');
+    if (game.lives <= 0) {
+      game.state = game.credits > 0 ? 'continue' : 'gameover';
+      game.stateT = 0;
+      if (game.state === 'continue') game.continueCount = 10;
+    }
+  };
+
+  /* ---------------------------- update ----------------------------- */
+  const update = (dt) => {
+    game.t += dt;
+    game.stateT += dt;
+    game.shake = Math.max(0, game.shake - dt * 60);
+    game.flash = Math.max(0, game.flash - dt);
+    game.hitFlash = Math.max(0, game.hitFlash - dt);
+    game.msgT = Math.max(0, game.msgT - dt);
+    game.comboT = Math.max(0, game.comboT - dt);
+    if (game.comboT <= 0) game.combo = 0;
+
+    if (game.state === 'continue') {
+      game.continueCount = Math.max(0, (game.continueCount ?? 10) - dt);
+      if (game.continueCount <= 0) { game.state = 'gameover'; game.stateT = 0; }
+      return;
+    }
+    if (game.state !== 'play' || game.paused) return;
+
+    /* --- cover / pedals ------------------------------------------- */
+    // bReversePlayerCoverInput: holding a pedal leans you OUT of that side.
+    const wantL = input.pedalL, wantR = input.pedalR;
+    let wantExposed = false;
+    if (wantL && !wantR) { game.side = -1; wantExposed = true; }
+    else if (wantR && !wantL) { game.side = 1; wantExposed = true; }
+    else if (wantL && wantR) { wantExposed = true; } // both held: keep current side
+    const target = wantExposed ? 1 : 0;
+    const rate = target > game.exposure ? (1 / T_UNCOVER) : (1 / T_COVER);
+    const before = game.exposure;
+    game.exposure = clamp(game.exposure + Math.sign(target - game.exposure) * rate * dt, 0, 1);
+    // Dropping fully into cover reloads — the series' core rhythm.
+    if (before > 0 && game.exposure === 0) {
+      const w = WEAPONS[game.weapon];
+      if (game.ammo < w.mag) { game.ammo = w.mag; audio('reload'); }
+    }
+
+    game.cooldown = Math.max(0, game.cooldown - dt);
+    game.invuln = Math.max(0, game.invuln - dt);
+
+    /* --- firing ---------------------------------------------------- */
+    const w = WEAPONS[game.weapon];
+    if (w.auto && input.fireQueued > 0) {
+      // Held autofire: keep the queue draining while the button is down.
+      fire();
+      if (game.cooldown > 0) input.fireQueued = Math.max(0, input.fireQueued - 1);
+    } else {
+      while (input.fireQueued > 0) { input.fireQueued--; fire(); }
+    }
+    input.fireQueued = 0;
+
+    /* --- timer ----------------------------------------------------- */
+    game.timeLeft -= dt;
+    if (game.timeLeft <= 0) {
+      game.timeLeft = 0;
+      hurtPlayer();
+      if (game.state === 'play') game.timeLeft = 12; // scraped back onto the clock
+    }
+
+    /* --- enemies --------------------------------------------------- */
+    for (const e of game.enemies) {
+      e.t += dt;
+      e.hitT = Math.max(0, e.hitT - dt);
+      if (e.dead) { e.deadT += dt; continue; }
+
+      const k = KINDS[e.kind];
+
+      if (e.state === 'entering') {
+        if (e.t > 0.55) { e.state = 'ready'; e.t = 0; }
+        continue;
+      }
+
+      // Only enemies you can actually see get to act on you. Popping to the
+      // other side genuinely takes you out of this one's line of fire.
+      const engaged = visibleFrom(e, game.side) && game.exposure > 0.35;
+
+      if (e.state === 'ready') {
+        e.cooldown -= dt * (engaged ? 1 : 0.25);
+        if (e.cooldown <= 0 && engaged) {
+          e.state = 'aiming';
+          e.aimT = 0;
+          // Crisis shooters telegraph for RedBulletShotWaitTime only.
+          e.aimDur = e.red ? TC.RED_SHOT_WAIT + 0.55 : k.aim;
+          if (e.boss) e.aimDur = k.aim * rand(0.7, 1.1);
+        }
+      } else if (e.state === 'aiming') {
+        e.aimT += dt;
+        if (e.aimT >= e.aimDur) {
+          const isRed = e.red || (e.boss && Math.random() < 0.35);
+          if (isRed && game.t - game.lastRedShot < TC.RED_MIN_INTERVAL) {
+            // Respect MinRedBulletInterval — no stacked crisis shots.
+          } else {
+            if (isRed) game.lastRedShot = game.t;
+            const b = enemyBoxes(e);
+            game.shots.push({
+              red: isRed,
+              // Red bullets give exactly RedBulletDamageWaitTime to reach cover.
+              ttl: isRed ? TC.RED_DAMAGE_WAIT : lerp(0.75, 0.45, e.depth),
+              life: 0,
+              lane: e.lane,
+              x: b.p.x, y: b.bodyTop + b.bodyH * 0.25,
+            });
+            audio('warn');
+          }
+          e.state = 'ready';
+          e.cooldown = e.boss ? rand(0.5, 1.1) : rand(1.4, 3.0);
+        }
+      }
+    }
+
+    game.enemies = game.enemies.filter((e) => !(e.dead && e.deadT > 1.2));
+
+    /* --- incoming fire --------------------------------------------- */
+    for (const s of game.shots) {
+      s.life += dt;
+      if (s.life >= s.ttl && !s.done) {
+        s.done = true;
+        // Safe if you are hidden, or if you swapped to the other cover side.
+        const inCover = game.exposure < 0.5;
+        const laneMatches = s.lane === 0 || s.lane === game.side;
+        if (!inCover && laneMatches) hurtPlayer();
+      }
+    }
+    game.shots = game.shots.filter((s) => s.life < s.ttl + 0.25);
+
+    /* --- pickups / fx ---------------------------------------------- */
+    for (const p of game.pickups) p.t += dt;
+    game.pickups = game.pickups.filter((p) => !p.taken && p.t < p.life);
+    for (const f of game.fx) f.t += dt;
+    game.fx = game.fx.filter((f) => f.t < f.life);
+    for (const h of game.holes) h.t += dt;
+
+    /* --- wave / area progression ----------------------------------- */
+    const anyAlive = game.enemies.some((e) => !e.dead);
+    if (!anyAlive) {
+      const area = AREAS[game.area];
+      if (waveIndex < area.waves.length - 1) {
+        waveIndex++;
+        startWave();
+        game.timeLeft = Math.min(area.time, game.timeLeft + 14); // area time bonus
+        game.msg = 'WAVE ' + (waveIndex + 1);
+        game.msgT = 1.2;
+      } else {
+        game.score += Math.round(game.timeLeft) * 100;
+        game.state = 'areaclear';
+        game.stateT = 0;
+        audio('clear');
+      }
+    }
+  };
+
+  /* ----------------------------- render ---------------------------- */
+  const roundRect = (x, y, w, h, r) => {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  };
+
+  const drawBackground = () => {
+    const area = AREAS[Math.min(game.area, AREAS.length - 1)];
+    const stage = area ? area.stage : 1;
+    const pal = [
+      ['#0a1424', '#132a3f', '#1d3b52'],
+      ['#1a1206', '#2c1e0a', '#402c10'],
+      ['#120a1c', '#1e1130', '#2c1a46'],
+    ][stage - 1];
+
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, pal[0]);
+    g.addColorStop(0.46, pal[1]);
+    g.addColorStop(1, '#05070d');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    // Parallax rails converging on the vanishing point.
+    const shift = game.side * 150 * game.exposure;
+    ctx.strokeStyle = pal[2];
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 2;
+    for (let i = -6; i <= 6; i++) {
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - shift, HORIZON);
+      ctx.lineTo(W / 2 + i * 260 - shift * 1.8, H);
+      ctx.stroke();
+    }
+    for (let i = 1; i <= 7; i++) {
+      const d = i / 7;
+      const y = lerp(HORIZON + 8, H, d * d);
+      ctx.globalAlpha = 0.22;
+      ctx.beginPath();
+      ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // Distant structures, offset per side so the two views read differently.
+    ctx.fillStyle = pal[2];
+    ctx.globalAlpha = 0.5;
+    for (let i = 0; i < 9; i++) {
+      const bx = ((i * 173) % W) - shift * 0.6;
+      const bh = 40 + ((i * 57) % 90);
+      ctx.fillRect(bx, HORIZON - bh, 92, bh);
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  const drawEnemy = (e) => {
+    const b = enemyBoxes(e);
+    const k = KINDS[e.kind];
+    const vis = visibleFrom(e, game.side);
+    if (!vis) return;
+
+    ctx.save();
+    if (e.dead) {
+      const t = clamp(e.deadT / 1.2, 0, 1);
+      ctx.globalAlpha = 1 - t;
+      ctx.translate(b.p.x, b.p.groundY);
+      ctx.rotate(t * 1.25);
+      ctx.translate(-b.p.x, -b.p.groundY);
+    }
+
+    const bob = Math.sin(game.t * 2.4 + e.bob) * 3 * b.s;
+
+    // Shadow
+    ctx.globalAlpha *= 0.45;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(b.p.x, b.p.groundY, b.bodyW * 0.75, b.bodyW * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = e.dead ? 1 - clamp(e.deadT / 1.2, 0, 1) : 1;
+
+    const flashing = e.state === 'aiming';
+    const redFlash = flashing && e.red;
+    const pulse = 0.5 + 0.5 * Math.sin(game.t * (redFlash ? 30 : 14));
+
+    // Body
+    let col = k.color;
+    if (e.hitT > 0) col = '#ffffff';
+    else if (flashing) col = redFlash
+      ? `rgb(255,${(40 + pulse * 60) | 0},${(60 + pulse * 40) | 0})`
+      : `rgb(${(200 + pulse * 55) | 0},${(150 + pulse * 60) | 0},60)`;
+
+    ctx.fillStyle = col;
+    roundRect(b.body.x, b.body.y + bob, b.bodyW, b.bodyH * 0.62, 8 * b.s);
+    ctx.fill();
+
+    // Legs
+    ctx.fillRect(b.p.x - b.bodyW * 0.32, b.body.y + b.bodyH * 0.6 + bob, b.bodyW * 0.26, b.bodyH * 0.42);
+    ctx.fillRect(b.p.x + b.bodyW * 0.06, b.body.y + b.bodyH * 0.6 + bob, b.bodyW * 0.26, b.bodyH * 0.42);
+
+    // Weapon arm, tracking the player while aiming
+    ctx.fillStyle = '#2a2f38';
+    const armLen = b.bodyW * (flashing ? 1.15 : 0.8);
+    ctx.fillRect(b.p.x + b.bodyW * 0.2, b.body.y + b.bodyH * 0.22 + bob, armLen, 9 * b.s);
+
+    // Head — the high-value target, per HeadShotDamageRate
+    ctx.fillStyle = e.hitT > 0 ? '#fff' : '#d9c3a6';
+    ctx.beginPath();
+    ctx.arc(b.p.x, b.head.y + b.headR + bob, b.headR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Aim telegraph ring
+    if (flashing) {
+      const prog = clamp(e.aimT / e.aimDur, 0, 1);
+      ctx.strokeStyle = redFlash ? '#ff2f4a' : '#ffb020';
+      ctx.lineWidth = 3.5 * b.s;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(b.p.x, b.body.y + b.bodyH * 0.3 + bob, b.bodyW * 1.0, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    if (e.boss) {
+      const bw = 360, bx = W / 2 - bw / 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(bx, 96, bw, 12);
+      ctx.fillStyle = '#ff2f4a';
+      ctx.fillRect(bx, 96, bw * clamp(e.hp / e.maxhp, 0, 1), 12);
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(bx, 96, bw, 12);
+    }
+
+    ctx.restore();
+  };
+
+  const drawCoverFrame = () => {
+    // The cover the player is tucked behind slides in as exposure drops.
+    const hide = 1 - game.exposure;
+    const wpx = W * 0.52 * hide;
+    ctx.fillStyle = '#0a0d14';
+    if (game.side === -1) {
+      ctx.fillRect(0, 0, wpx, H);
+      ctx.fillStyle = '#161c28';
+      ctx.fillRect(wpx - 14, 0, 14, H);
+    } else {
+      ctx.fillRect(W - wpx, 0, wpx, H);
+      ctx.fillStyle = '#161c28';
+      ctx.fillRect(W - wpx, 0, 14, H);
+    }
+    // Vignette
+    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.85);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+  };
+
+  const drawHUD = () => {
+    ctx.save();
+    ctx.font = 'bold 22px "Segoe UI", system-ui, sans-serif';
+    ctx.textBaseline = 'top';
+
+    // Score
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    roundRect(22, 20, 250, 78, 10); ctx.fill();
+    ctx.fillStyle = '#8fa6c4';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.fillText('SCORE', 38, 30);
+    ctx.fillStyle = '#e6f1ff';
+    ctx.font = 'bold 30px "Segoe UI", sans-serif';
+    ctx.fillText(String(game.score).padStart(7, '0'), 38, 50);
+
+    // Lives
+    for (let i = 0; i < 3; i++) {
+      const x = 300 + i * 34, y = 44;
+      ctx.strokeStyle = i < game.lives ? '#35e0ff' : 'rgba(120,140,170,0.35)';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI * 2); ctx.stroke();
+      if (i < game.lives) {
+        ctx.beginPath(); ctx.moveTo(x - 16, y); ctx.lineTo(x + 16, y);
+        ctx.moveTo(x, y - 16); ctx.lineTo(x, y + 16); ctx.stroke();
+      }
+    }
+
+    // Timer
+    const urgent = game.timeLeft <= 10;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    roundRect(W / 2 - 90, 20, 180, 68, 10); ctx.fill();
+    ctx.fillStyle = '#8fa6c4';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.fillText('TIME', W / 2, 28);
+    ctx.fillStyle = urgent && Math.sin(game.t * 14) > 0 ? '#ff2f4a' : '#ffb020';
+    ctx.font = 'bold 40px "Segoe UI", sans-serif';
+    ctx.fillText(Math.ceil(game.timeLeft).toString().padStart(2, '0'), W / 2, 44);
+    ctx.textAlign = 'left';
+
+    // Area label
+    const area = AREAS[game.area];
+    ctx.fillStyle = '#8fa6c4';
+    ctx.font = 'bold 14px "Segoe UI", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('STAGE ' + area.stage + ' — ' + area.name, W - 30, 30);
+    ctx.fillText('CREDITS ' + game.credits, W - 30, 52);
+    ctx.textAlign = 'left';
+
+    // Ammo
+    const w = WEAPONS[game.weapon];
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    roundRect(22, H - 96, 300, 74, 10); ctx.fill();
+    ctx.fillStyle = '#8fa6c4';
+    ctx.font = 'bold 13px "Segoe UI", sans-serif';
+    ctx.fillText(w.name, 38, H - 88);
+    const dots = Math.min(w.mag, 20);
+    for (let i = 0; i < dots; i++) {
+      const filled = i < game.ammo;
+      ctx.fillStyle = filled ? (game.ammo <= 2 ? '#ff2f4a' : '#35e0ff') : 'rgba(120,140,170,0.28)';
+      const cx = 40 + (i % 10) * 26, cy = H - 60 + ((i / 10) | 0) * 18;
+      roundRect(cx, cy, 7, 14, 3); ctx.fill();
+    }
+    if (game.ammo === 0) {
+      ctx.fillStyle = Math.sin(game.t * 12) > 0 ? '#ff2f4a' : 'rgba(255,47,74,0.4)';
+      ctx.font = 'bold 20px "Segoe UI", sans-serif';
+      ctx.fillText('RELEASE PEDAL TO RELOAD', 340, H - 66);
+    }
+
+    // Pedal / cover indicator — the twin-pedal readout
+    const pedW = 128, pedH = 46, py = H - 82;
+    const drawPedal = (x, label, active, isSide) => {
+      ctx.fillStyle = active ? 'rgba(53,224,255,0.22)' : 'rgba(0,0,0,0.4)';
+      roundRect(x, py, pedW, pedH, 8); ctx.fill();
+      ctx.strokeStyle = isSide ? '#35e0ff' : 'rgba(120,140,170,0.4)';
+      ctx.lineWidth = isSide ? 2.5 : 1.5;
+      roundRect(x, py, pedW, pedH, 8); ctx.stroke();
+      ctx.fillStyle = active ? '#35e0ff' : '#8fa6c4';
+      ctx.font = 'bold 15px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + pedW / 2, py + 14);
+      ctx.textAlign = 'left';
+    };
+    drawPedal(W - 300, 'PEDAL L  [T]', input.pedalL, game.side === -1);
+    drawPedal(W - 158, 'PEDAL R  [Y]', input.pedalR, game.side === 1);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = game.exposure > 0.5 ? '#ffb020' : '#35e0ff';
+    ctx.font = 'bold 16px "Segoe UI", sans-serif';
+    ctx.fillText(game.exposure > 0.5 ? 'EXPOSED' : 'IN COVER', W - 158, H - 116);
+    ctx.textAlign = 'left';
+
+    // Threat arrow for the side you are not watching
+    const otherSide = -game.side;
+    const otherThreat = game.enemies.some((e) => !e.dead && e.lane === otherSide);
+    if (otherThreat) {
+      const x = otherSide === -1 ? 60 : W - 60;
+      const a = 0.45 + 0.35 * Math.sin(game.t * 6);
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#ffb020';
+      ctx.beginPath();
+      const dir = otherSide === -1 ? -1 : 1;
+      ctx.moveTo(x + dir * 26, H / 2);
+      ctx.lineTo(x - dir * 12, H / 2 - 24);
+      ctx.lineTo(x - dir * 12, H / 2 + 24);
+      ctx.closePath(); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.font = 'bold 12px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('THREAT', x, H / 2 + 34);
+      ctx.textAlign = 'left';
+    }
+
+    // Combo
+    if (game.combo > 1) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffb020';
+      ctx.font = 'bold 26px "Segoe UI", sans-serif';
+      ctx.fillText(game.combo + ' HIT CHAIN', W / 2, 120);
+      ctx.textAlign = 'left';
+    }
+
+    // Message banner
+    if (game.msgT > 0) {
+      ctx.textAlign = 'center';
+      ctx.globalAlpha = clamp(game.msgT, 0, 1);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 40px "Segoe UI", sans-serif';
+      ctx.fillText(game.msg, W / 2, H * 0.28);
+      ctx.globalAlpha = 1;
+      ctx.textAlign = 'left';
+    }
+
+    ctx.restore();
+  };
+
+  const drawCrosshair = () => {
+    // bDisplayGunCrosshairs=true
+    const x = input.mx, y = input.my;
+    const hot = game.exposure > 0.55;
+    ctx.save();
+    ctx.strokeStyle = hot ? '#35e0ff' : 'rgba(140,160,190,0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 26, y); ctx.lineTo(x - 8, y);
+    ctx.moveTo(x + 8, y); ctx.lineTo(x + 26, y);
+    ctx.moveTo(x, y - 26); ctx.lineTo(x, y - 8);
+    ctx.moveTo(x, y + 8); ctx.lineTo(x, y + 26);
+    ctx.stroke();
+    ctx.fillStyle = hot ? '#35e0ff' : 'rgba(140,160,190,0.5)';
+    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+    ctx.restore();
+  };
+
+  const drawIncoming = () => {
+    for (const s of game.shots) {
+      if (s.done) continue;
+      const laneMatches = s.lane === 0 || s.lane === game.side;
+      if (!laneMatches) continue;
+      const p = clamp(s.life / s.ttl, 0, 1);
+      const x = lerp(s.x, W / 2, p);
+      const y = lerp(s.y, H * 0.62, p);
+      const r = lerp(3, 16, p);
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = s.red ? '#ff2f4a' : '#ffd27a';
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    // Full-screen crisis warning: the cue to get behind cover NOW.
+    const danger = game.shots.some((s) => !s.done && s.red && (s.lane === 0 || s.lane === game.side));
+    if (danger && game.exposure > 0.4) {
+      const a = 0.25 + 0.25 * Math.sin(game.t * 30);
+      ctx.fillStyle = `rgba(255,47,74,${a})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 54px "Segoe UI", sans-serif';
+      ctx.fillText('TAKE COVER', W / 2, H * 0.42);
+      ctx.restore();
+    }
+  };
+
+  const drawOverlayScreen = () => {
+    const dim = (a) => { ctx.fillStyle = `rgba(3,5,10,${a})`; ctx.fillRect(0, 0, W, H); };
+    ctx.save();
+    ctx.textAlign = 'center';
+
+    if (game.state === 'title') {
+      dim(0.72);
+      ctx.fillStyle = '#35e0ff';
+      ctx.font = 'bold 76px "Segoe UI", sans-serif';
+      ctx.fillText('CRISIS POINT', W / 2, 168);
+      ctx.fillStyle = '#8fa6c4';
+      ctx.font = '18px "Segoe UI", sans-serif';
+      ctx.fillText('Twin-pedal cover rail shooter', W / 2, 208);
+
+      const lines = [
+        ['AIM', 'Mouse'],
+        ['FIRE', 'Left click'],
+        ['PEDAL L — lean out left', 'T   /  Shift  /  Right-click'],
+        ['PEDAL R — lean out right', 'Y   /  Ctrl'],
+        ['RELOAD', 'Release both pedals (drop into cover)'],
+        ['PAUSE', 'P'],
+      ];
+      ctx.font = '17px "Segoe UI", sans-serif';
+      lines.forEach((l, i) => {
+        const y = 288 + i * 34;
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#e6f1ff';
+        ctx.fillText(l[0], W / 2 - 24, y);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffb020';
+        ctx.fillText(l[1], W / 2 + 24, y);
+      });
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#8fa6c4';
+      ctx.font = '16px "Segoe UI", sans-serif';
+      ctx.fillText('Hiding reloads. Each pedal covers one side of the field — neither side clears alone.', W / 2, 520);
+      ctx.fillStyle = Math.sin(game.t * 4) > 0 ? '#35e0ff' : '#1d6d82';
+      ctx.font = 'bold 26px "Segoe UI", sans-serif';
+      ctx.fillText('PRESS ENTER TO START', W / 2, 596);
+    }
+    else if (game.state === 'areaclear') {
+      dim(0.6);
+      ctx.fillStyle = '#ffb020';
+      ctx.font = 'bold 64px "Segoe UI", sans-serif';
+      ctx.fillText('AREA CLEAR', W / 2, H * 0.38);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 26px "Segoe UI", sans-serif';
+      ctx.fillText('TIME BONUS  ' + Math.round(game.timeLeft) * 100, W / 2, H * 0.48);
+      ctx.fillText('SCORE  ' + game.score, W / 2, H * 0.55);
+      ctx.fillStyle = Math.sin(game.t * 4) > 0 ? '#35e0ff' : '#1d6d82';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
+      ctx.fillText('PRESS ENTER', W / 2, H * 0.68);
+    }
+    else if (game.state === 'continue') {
+      dim(0.75);
+      ctx.fillStyle = '#ff2f4a';
+      ctx.font = 'bold 64px "Segoe UI", sans-serif';
+      ctx.fillText('CONTINUE?', W / 2, H * 0.34);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 110px "Segoe UI", sans-serif';
+      ctx.fillText(Math.ceil(game.continueCount ?? 0), W / 2, H * 0.56);
+      ctx.fillStyle = '#8fa6c4';
+      ctx.font = 'bold 22px "Segoe UI", sans-serif';
+      ctx.fillText('CREDITS ' + game.credits + ' — PRESS ENTER', W / 2, H * 0.7);
+    }
+    else if (game.state === 'gameover') {
+      dim(0.8);
+      ctx.fillStyle = '#ff2f4a';
+      ctx.font = 'bold 68px "Segoe UI", sans-serif';
+      ctx.fillText('GAME OVER', W / 2, H * 0.42);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 28px "Segoe UI", sans-serif';
+      ctx.fillText('FINAL SCORE  ' + game.score, W / 2, H * 0.53);
+      ctx.fillStyle = '#8fa6c4';
+      ctx.font = '20px "Segoe UI", sans-serif';
+      ctx.fillText('PRESS ENTER', W / 2, H * 0.66);
+    }
+    else if (game.state === 'ending') {
+      dim(0.8);
+      ctx.fillStyle = '#35e0ff';
+      ctx.font = 'bold 62px "Segoe UI", sans-serif';
+      ctx.fillText('MISSION COMPLETE', W / 2, H * 0.4);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 30px "Segoe UI", sans-serif';
+      ctx.fillText('FINAL SCORE  ' + game.score, W / 2, H * 0.52);
+      ctx.fillStyle = '#8fa6c4';
+      ctx.font = '20px "Segoe UI", sans-serif';
+      ctx.fillText('PRESS ENTER', W / 2, H * 0.64);
+    }
+
+    if (game.paused && game.state === 'play') {
+      dim(0.6);
+      ctx.fillStyle = '#e6f1ff';
+      ctx.font = 'bold 54px "Segoe UI", sans-serif';
+      ctx.fillText('PAUSED', W / 2, H / 2);
+    }
+
+    ctx.restore();
+  };
+
+  const render = () => {
+    ctx.save();
+    if (game.shake > 0) {
+      ctx.translate(rand(-game.shake, game.shake) * 0.5, rand(-game.shake, game.shake) * 0.5);
+    }
+
+    drawBackground();
+
+    if (game.state === 'play' || game.state === 'areaclear' || game.state === 'continue') {
+      const sorted = [...game.enemies].sort((a, b) => a.depth - b.depth);
+      for (const e of sorted) drawEnemy(e);
+
+      // Bullet holes
+      for (const h of game.holes) {
+        ctx.globalAlpha = clamp(1 - h.t / 8, 0, 1) * 0.8;
+        ctx.fillStyle = '#05070d';
+        ctx.beginPath(); ctx.arc(h.x, h.y, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(220,235,255,0.35)';
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // Pickups
+      for (const p of game.pickups) {
+        const a = p.t > p.life - 2 ? (Math.sin(p.t * 14) > 0 ? 1 : 0.3) : 1;
+        ctx.globalAlpha = a;
+        ctx.fillStyle = '#ffb020';
+        roundRect(p.x - 26, p.y - 18, 52, 36, 6); ctx.fill();
+        ctx.fillStyle = '#05070d';
+        ctx.font = 'bold 12px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(WEAPONS[p.wid].name.slice(0, 5), p.x, p.y + 4);
+        ctx.textAlign = 'left';
+        ctx.globalAlpha = 1;
+      }
+
+      // FX
+      for (const f of game.fx) {
+        const t = f.t / f.life;
+        ctx.globalAlpha = 1 - t;
+        if (f.type === 'blood') {
+          ctx.fillStyle = '#c0263c';
+          ctx.beginPath(); ctx.arc(f.x, f.y, lerp(6, 26, t) * (f.s || 1), 0, Math.PI * 2); ctx.fill();
+        } else if (f.type === 'boom') {
+          ctx.fillStyle = '#ffb020';
+          ctx.beginPath(); ctx.arc(f.x, f.y, lerp(20, 190, t), 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      drawIncoming();
+      drawCoverFrame();
+
+      // Muzzle flash
+      if (game.flash > 0) {
+        ctx.globalAlpha = game.flash / 0.06 * 0.35;
+        ctx.fillStyle = '#fff6d0';
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 1;
+      }
+
+      // Invulnerability shimmer
+      if (game.invuln > 0 && Math.sin(game.t * 24) > 0) {
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#35e0ff';
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 1;
+      }
+
+      if (game.hitFlash > 0) {
+        ctx.globalAlpha = game.hitFlash / 0.5 * 0.5;
+        ctx.fillStyle = '#ff2f4a';
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 1;
+      }
+
+      drawHUD();
+    }
+
+    ctx.restore();
+
+    drawOverlayScreen();
+
+    if (game.state === 'play' && !game.paused) drawCrosshair();
+    canvas.classList.toggle('showcursor', game.state !== 'play');
+  };
+
+  /* ----------------------------- loop ------------------------------ */
+  let last = performance.now();
+  const frame = (now) => {
+    // Clamp dt so an alt-tab does not teleport the simulation forward.
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    update(dt);
+    render();
+    requestAnimationFrame(frame);
+  };
+
+  /* --------------------------- self-check --------------------------- */
+  /* Open with ?selftest to assert the mechanics that are easy to break. */
+  if (location.search.includes('selftest')) {
+    const out = [];
+    const ok = (name, cond) => out.push((cond ? 'PASS  ' : 'FAIL  ') + name);
+
+    ok('cover transition is faster than uncover (COVER_MULT 2.0)', T_COVER < T_UNCOVER);
+    ok('headshot multiplier matches HeadShotDamageRate', TC.HEADSHOT_MULT === 20);
+    ok('red bullet window matches RedBulletDamageWaitTime', TC.RED_DAMAGE_WAIT === 0.4);
+    ok('drop ammo table matches DropAmmoNums', TC.DROP_AMMO.join() === '0,20,5,1');
+    ok('sidearm magazine is 9', WEAPONS[0].mag === 9);
+
+    // A left-lane enemy is engageable from left cover only.
+    const e = { lane: -1 };
+    ok('left-lane enemy visible from left cover', visibleFrom(e, -1) === true);
+    ok('left-lane enemy hidden from right cover', visibleFrom(e, 1) === false);
+    ok('center-lane enemy visible from both', visibleFrom({ lane: 0 }, -1) && visibleFrom({ lane: 0 }, 1));
+
+    // A headshot must drop a heavy outright despite its armor.
+    const heavy = { kind: 'heavy', hp: KINDS.heavy.hp, maxhp: KINDS.heavy.hp, dead: false, hitT: 0, boss: false, depth: 0.5, wx: 0 };
+    damageEnemy(heavy, 1, true);
+    ok('headshot kills an armored heavy in one', heavy.dead === true);
+
+    // A body shot must not.
+    const heavy2 = { kind: 'heavy', hp: KINDS.heavy.hp, maxhp: KINDS.heavy.hp, dead: false, hitT: 0, boss: false, depth: 0.5, wx: 0 };
+    damageEnemy(heavy2, 1, false);
+    ok('body shot leaves an armored heavy standing', heavy2.dead === false);
+
+    // Every wave must place enemies on both lanes, or an area could be
+    // cleared without ever touching the second pedal.
+    let bothLanes = true;
+    AREAS.forEach((a, ai) => {
+      a.waves.forEach((wv, wi) => {
+        if (wv.length < 2 || wv.includes('boss')) return;
+        game.enemies.length = 0;
+        game.area = ai; waveIndex = wi;
+        startWave();
+        const lanes = new Set(game.enemies.map((x) => x.lane));
+        if (!(lanes.has(-1) && lanes.has(1))) bothLanes = false;
+      });
+    });
+    ok('multi-enemy waves always span both cover lanes', bothLanes);
+    game.enemies.length = 0; game.area = 0; waveIndex = 0;
+
+    document.body.innerHTML = '<pre id="selftest">' + out.join('\n') +
+      '\n\n' + out.filter((l) => l.startsWith('FAIL')).length + ' failed, ' +
+      out.filter((l) => l.startsWith('PASS')).length + ' passed.</pre>';
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

@@ -19,6 +19,7 @@ import {
   writePlayerPrefs,
 } from '../lib/player';
 import { downloadBlob } from '../lib/saves';
+import { THEMES, readTheme, writeTheme, type Theme } from '../lib/theme';
 import { describe, exportEverything, importAnything } from '../lib/transfer';
 
 const setFavicon = (href: string) => {
@@ -27,7 +28,7 @@ const setFavicon = (href: string) => {
 };
 
 export default function Settings() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') ?? 'dark');
+  const [theme, setTheme] = useState<Theme>(readTheme);
   const [tabTitle, setTabTitle] = useState('');
   const [tabIcon, setTabIcon] = useState('');
   const [combo, setCombo] = useState(readCombo);
@@ -39,10 +40,7 @@ export default function Settings() {
   const [note, setNote] = useState('');
   const progressRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+  useEffect(() => writeTheme(theme), [theme]);
 
   useEffect(() => writeQualityPreference(quality), [quality]);
 
@@ -100,10 +98,20 @@ export default function Settings() {
 
       <div className="panels">
         <div className="panel">
-          <h3>Appearance</h3>
-          <button className="button ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-            Switch to {theme === 'dark' ? 'light' : 'dark'}
-          </button>
+          <h3>Theme</h3>
+          <div className="themes">
+            {THEMES.map((option) => (
+              <button
+                key={option.id}
+                className={`theme-chip ${theme === option.id ? 'is-active' : ''}`}
+                onClick={() => setTheme(option.id)}
+                aria-pressed={theme === option.id}
+              >
+                <span className="theme-swatch" style={{ background: option.swatch }} />
+                {option.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="panel">

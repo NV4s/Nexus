@@ -17,6 +17,7 @@ import {
 } from '../lib/ai';
 import { extractText, isImage, isPdf } from '../lib/archive';
 import AdSlot from './AdSlot';
+import Markdown from './Markdown';
 
 /** 4 MB each: base64 inflates by a third, and providers reject large payloads. */
 const MAX_FILE = 4 * 1024 * 1024;
@@ -54,6 +55,81 @@ const KEY_HELP: Partial<Record<EngineId, string>> = {
   openai: 'platform.openai.com → API keys',
   custom: 'Whatever your provider calls it',
 };
+
+/**
+ * Where each key comes from, step by step.
+ *
+ * Written out per provider because the flows genuinely differ — one is free,
+ * two need credit up front, and each hides the button somewhere else. `cost` is
+ * the part people are usually actually asking about.
+ */
+const KEY_GUIDE: Partial<Record<EngineId, { site: string; cost: string; steps: string[] }>> = {
+  anthropic: {
+    site: 'https://console.anthropic.com/settings/keys',
+    cost: 'Paid. Buy credit first — a new account has none, and the key returns a billing error until you do. $5 is the smallest top-up and lasts a long time at these sizes.',
+    steps: [
+      'Open console.anthropic.com and sign in, or make an account.',
+      'Go to Billing and add at least $5 of credit. Without this every request fails.',
+      'Go to Settings → API keys and press Create key.',
+      'Name it something like "nexus", then copy it. It starts with sk-ant- and is shown once — if you lose it, delete that key and make another.',
+      'Paste it in the box below and press Save.',
+    ],
+  },
+  google: {
+    site: 'https://aistudio.google.com/app/apikey',
+    cost: 'Free tier, no card needed. There are per-minute request limits, which for one person chatting is plenty.',
+    steps: [
+      'Open aistudio.google.com and sign in with a Google account.',
+      'Press Get API key, top left.',
+      'Press Create API key, and pick a project if it asks — a new one is fine.',
+      'Copy the key it shows you.',
+      'Paste it in the box below and press Save.',
+    ],
+  },
+  openai: {
+    site: 'https://platform.openai.com/api-keys',
+    cost: 'Paid, and separate from a ChatGPT Plus subscription — Plus does not include API access. Add credit in Billing before the key will work.',
+    steps: [
+      'Open platform.openai.com and sign in.',
+      'Go to Settings → Billing and add credit. $5 is the minimum.',
+      'Go to API keys and press Create new secret key.',
+      'Copy it. It starts with sk- and is only shown once.',
+      'Paste it in the box below and press Save.',
+    ],
+  },
+  custom: {
+    site: 'https://openrouter.ai/keys',
+    cost: 'Depends on the provider. OpenRouter has some free models and a $5 minimum for the rest.',
+    steps: [
+      'This works with anything that speaks the OpenAI chat format — OpenRouter, Groq, Together, DeepSeek, a local llama.cpp or Ollama server.',
+      'Get a key from that provider the way they describe it.',
+      'Put their base URL in the first box. It is the part before /chat/completions — for OpenRouter that is https://openrouter.ai/api/v1, for a local Ollama it is http://localhost:11434/v1.',
+      'Paste the key in the second box. A local server usually accepts any non-empty value.',
+      'Press Refresh list to see which models that key can actually use.',
+    ],
+  },
+};
+
+/** The setup steps, folded away until someone needs them. */
+function KeyGuide({ engineId, label }: { engineId: EngineId; label: string }) {
+  const guide = KEY_GUIDE[engineId];
+  if (!guide) return null;
+
+  return (
+    <details className="key-guide">
+      <summary>How to get a {label} key</summary>
+      <p className="key-cost">{guide.cost}</p>
+      <ol>
+        {guide.steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      <a className="button ghost" href={guide.site} target="_blank" rel="noopener noreferrer">
+        Open {new URL(guide.site).hostname}
+      </a>
+    </details>
+  );
+}
 
 
 /**
@@ -244,6 +320,7 @@ export default function Assistant() {
 
           {engine.keyed && (
             <>
+              <KeyGuide engineId={engineId} label={engine.label} />
               {availability?.state === 'ready' && (
                 <p className="key-set">
                   A key is saved for {engine.label}. Change or clear it below.
@@ -301,7 +378,11 @@ export default function Assistant() {
             {messages.length === 0 && !status && <p>Ask it something.</p>}
             {messages.map((message, index) => (
               <div className={`chat-turn is-${message.role}`} key={index}>
-                {message.content}
+                {message.role === 'assistant' ? (
+                  <Markdown source={message.content} />
+                ) : (
+                  message.content
+                )}
                 {message.files?.length ? (
                   <span className="chat-files">
                     {message.files

@@ -8,6 +8,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/n-gon': { target: 'https://landgreen.github.io', changeOrigin: true },
+      '/level13': { target: 'https://nroutasuo.github.io', changeOrigin: true },
+      '/adarkroom': {
+        target: 'https://adarkroom.doublespeakgames.com',
+        changeOrigin: true,
+        // Its own host serves the game at the root, unlike the github.io copies.
+        rewrite: (path: string) => path.replace(/^\/adarkroom/, '') || '/',
+      },
       '/swf/run-3.swf': {
         target: 'https://player03.com',
         changeOrigin: true,

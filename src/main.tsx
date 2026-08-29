@@ -5,9 +5,10 @@ import App from './App.tsx';
 // (for :root variables, @font-face and body) and by the shadow root below.
 import css from './index.css?inline';
 import { migrateSaveKeys } from './lib/saves';
+import { readTheme } from './lib/theme';
 
 // Applied before first paint so the page never flashes the wrong theme.
-document.documentElement.dataset.theme = localStorage.getItem('theme') ?? 'dark';
+document.documentElement.dataset.theme = readTheme();
 
 // Before anything can load a SWF, so a game never opens against a stale save key.
 migrateSaveKeys();

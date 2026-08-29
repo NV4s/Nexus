@@ -13,6 +13,11 @@ export type Game = {
   src: string;
   category: string;
   thumb?: string;
+  /**
+   * How the thumbnail fills the card. Study tiles are logos and are fitted
+   * whole; the few that are banners rather than marks crop like a game tile.
+   */
+  thumbFit?: 'cover';
   developer?: string;
   year?: string;
   blurb?: string;
@@ -316,7 +321,36 @@ const EXTRA: Game[] = [
     src: 'https://play.pokemonshowdown.com/',
     category: 'RPG',
     developer: 'Smogon',
+    // Its headers allow framing, but the client checks for itself and stops with
+    // "Please visit Showdown directly" — so this is a tab, not an embed.
+    newTab: true,
     blurb: 'Battle simulator with every Pokémon unlocked. Build a team and fight online.',
+  },
+  /*
+   * Both proxied through this origin by vercel.json, the same as n-gon: they are
+   * served from github.io, which school filters block wholesale, and proxying
+   * also means each game stays whatever its author last shipped.
+   */
+  {
+    slug: 'level-13',
+    title: 'Level 13',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/level13/',
+    category: 'Strategy',
+    developer: 'Nina Routasuo',
+    blurb:
+      'Survival roguelike in a derelict city of 15 levels. Scavenge, build a camp, work out why everyone left.',
+  },
+  {
+    slug: 'a-dark-room',
+    title: 'A Dark Room',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/adarkroom/',
+    category: 'Strategy',
+    developer: 'Doublespeak Games',
+    blurb: 'A fire, a stranger, and a room. Text at first, and then not.',
   },
   {
     slug: 'pokemon-infinite-fusion-calculator',
@@ -326,6 +360,32 @@ const EXTRA: Game[] = [
     src: 'https://aegide.pokemoninfinitefusion.io/',
     category: 'RPG',
     blurb: 'Sprite fusion calculator for Pokémon Infinite Fusion. A tool, not the game itself.',
+  },
+  /*
+   * Written for this site, served from public/time-crisis/. A rail shooter built
+   * around the twin-pedal cover system: each pedal leans you out of one side of
+   * the field, dropping back into cover is what reloads you, and a wave always
+   * spans both sides so neither pedal clears an area alone. The handling numbers
+   * — headshot multiplier, post-hit invulnerability, the window a red "crisis"
+   * shot gives you to reach cover, the magazine and ammo-drop counts — are the
+   * arcade cabinet's own tuning values rather than guesses. Mechanics only: no
+   * code or asset from that build is used or redistributed here.
+   */
+  {
+    slug: 'crisis-point',
+    title: 'Crisis Point',
+    section: 'arcade',
+    runtime: 'html5',
+    // The file, not the directory: a bare /time-crisis/ is caught by the SPA
+    // fallback and serves Nexus's own index.html, which loads the whole site
+    // inside the game frame instead of the game.
+    src: '/time-crisis/index.html',
+    category: 'Action',
+    thumb: '/thumbs/crisis-point.svg',
+    thumbFit: 'cover',
+    year: '2026',
+    blurb:
+      'Twin-pedal cover shooter. Lean out to fire, duck back to reload, and clear both sides before the clock runs out.',
   },
 ];
 
@@ -446,6 +506,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://www.onelook.com/',
     thumb: '/thumbs/study/onelook.png',
+    thumbFit: 'cover',
     category: 'Reference',
     developer: 'OneLook',
   },
@@ -487,6 +548,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://quizizz.com/',
     thumb: '/thumbs/study/quizizz.png',
+    thumbFit: 'cover',
     category: 'Flashcards',
     developer: 'Quizizz',
     blurb: 'Quizzes and flashcard sets. Loads in a frame, which Quizlet refuses to do.',
@@ -498,6 +560,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://openstax.org/',
     thumb: '/thumbs/study/openstax.webp',
+    thumbFit: 'cover',
     category: 'Courses',
     developer: 'Rice University',
   },
@@ -508,6 +571,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://excalidraw.com/',
     thumb: '/thumbs/study/excalidraw.png',
+    thumbFit: 'cover',
     category: 'Notes',
     developer: 'Excalidraw',
   },
@@ -579,6 +643,7 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://scratch.mit.edu/',
     thumb: '/thumbs/study/scratch.png',
+    thumbFit: 'cover',
     category: 'Coding',
     developer: 'MIT',
     newTab: true,

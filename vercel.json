@@ -7,7 +7,15 @@
     { "source": "/swf/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" },
     { "source": "/n-gon", "destination": "https://landgreen.github.io/n-gon/" },
     { "source": "/n-gon/", "destination": "https://landgreen.github.io/n-gon/" },
-    { "source": "/n-gon/:path*", "destination": "https://landgreen.github.io/n-gon/:path*" }
+    { "source": "/n-gon/:path*", "destination": "https://landgreen.github.io/n-gon/:path*" },
+
+    { "source": "/level13", "destination": "https://nroutasuo.github.io/level13/" },
+    { "source": "/level13/", "destination": "https://nroutasuo.github.io/level13/" },
+    { "source": "/level13/:path*", "destination": "https://nroutasuo.github.io/level13/:path*" },
+
+    { "source": "/adarkroom", "destination": "https://adarkroom.doublespeakgames.com/" },
+    { "source": "/adarkroom/", "destination": "https://adarkroom.doublespeakgames.com/" },
+    { "source": "/adarkroom/:path*", "destination": "https://adarkroom.doublespeakgames.com/:path*" }
   ],
   "headers": [
     {
