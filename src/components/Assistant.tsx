@@ -290,7 +290,7 @@ export default function Assistant() {
         </div>
       </header>
 
-      <div className="panels">
+      <div className="assistant-layout">
         <div className="panel">
           <h3>Where it runs</h3>
           <div className="row">

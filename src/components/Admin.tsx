@@ -303,7 +303,7 @@ export default function Admin() {
           </p>
         </div>
 
-        <div className="panel">
+        <div className="panel is-wide">
           <h3>Daily sessions</h3>
           {fortnight === 0 ? (
             <p>No visits recorded yet.</p>
@@ -323,7 +323,7 @@ export default function Admin() {
       </div>
 
       <div className="panels admin-panels">
-        <div className="panel">
+        <div className="panel is-wide">
           <h3>For you</h3>
           <p>
             Notes about running the site. Only shown here — none of this is on the public changelog,
@@ -345,7 +345,7 @@ export default function Admin() {
           </ol>
         </div>
 
-        <div className="panel">
+        <div className="panel is-wide">
           <h3>
             <Users size={15} /> Visitors
           </h3>

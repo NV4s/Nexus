@@ -57,6 +57,11 @@ export default function App() {
 
   const [head, param] = segments(route);
 
+  // Two URLs that render the same page share a key, so switching between them
+  // does not remount and replay the enter animation.
+  const pageKey = (name?: string) =>
+    name === 'saves' ? 'achievements' : name === 'changelog' ? 'settings' : name ?? 'home';
+
   // Bare player, no site chrome. Rendered before the shell so the blank-tab
   // launcher gets the game alone rather than the page around it.
   if (head === 'embed' && param) return <GameEmbed slug={param} />;
@@ -75,19 +80,23 @@ export default function App() {
       {/* Not mounted during the intro, so two WebGL contexts never render at once. */}
       <main className="content">
         {/* Keyed by route: React remounts, so the enter animation replays per page. */}
-        <div className="page" key={showIntro ? 'intro' : `${head ?? 'home'}/${param ?? ''}`}>
+        <div className="page" key={showIntro ? 'intro' : `${pageKey(head)}/${param ?? ''}`}>
         {showIntro ? null : head === 'game' && param ? (
           <GamePage slug={param} />
         ) : head === 'arcade' ? (
           <GameGrid section="arcade" title="Arcade" lede="Flash and browser games, playable here." />
         ) : head === 'study' ? (
           <GameGrid section="study" title="Study" lede="Calculators and note tools." />
-        ) : head === 'settings' ? (
-          <Settings />
-        ) : head === 'achievements' ? (
-          <Achievements />
-        ) : head === 'saves' ? (
-          <Saves />
+        ) : head === 'settings' || head === 'changelog' ? (
+          <>
+            <Settings />
+            <Changelog />
+          </>
+        ) : head === 'achievements' || head === 'saves' ? (
+          <>
+            <Achievements />
+            <Saves />
+          </>
         ) : head === 'emulators' ? (
           <Suspense fallback={<div className="empty">Loading…</div>}>
             <Consoles />
@@ -104,8 +113,6 @@ export default function App() {
           <Suspense fallback={<div className="empty">Loading…</div>}>
             <Admin />
           </Suspense>
-        ) : head === 'changelog' ? (
-          <Changelog />
         ) : (
           <Home />
         )}

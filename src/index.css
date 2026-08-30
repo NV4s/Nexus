@@ -722,21 +722,40 @@ select,
 /* ---------- settings and changelog ---------- */
 
 /*
- * Columns rather than a grid. As a grid every panel in a row was pinned to the
- * top of a row as tall as its tallest neighbour, so one long panel left a
- * column of dead space beside it — most visible on Settings, where the panic
- * key's explanation is four times the height of the theme switch. Columns let
- * each panel take only the height it needs and the next one close up behind it.
+ * A grid that stretches, not columns.
+ *
+ * This was multicol for a while, to stop a tall panel leaving dead space beside
+ * a short one. It did — but it also pinned every panel to a narrow column, so a
+ * page with one or two panels (the emulator, the assistant) got a tall thin box
+ * with two thirds of the row empty next to it. Stretching instead keeps the
+ * boxes level with each other and lets a lone panel take the full width, which
+ * is the horizontal shape these pages actually want.
+ *
+ * The tracks are wide — 24rem rather than 19 — because these panels hold prose
+ * and controls side by side, and at 19rem a sentence wraps every four words.
  */
 .panels {
-  columns: 19rem;
-  column-gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+  align-items: stretch;
+  gap: 1rem;
 }
 
-.panels > * {
-  /* Multicol will otherwise slice a panel across the column boundary. */
-  break-inside: avoid;
-  margin-bottom: 1rem;
+/* Stretch only sizes the grid item; the panel has to be told to fill it. */
+.panels > .panel {
+  height: 100%;
+}
+
+/* Panels holding a chart, a table or a conversation need two tracks. */
+.panel.is-wide {
+  grid-column: span 2;
+}
+
+/* One track means nothing to span, and the rule would create a phantom column. */
+@media (max-width: 62rem) {
+  .panel.is-wide {
+    grid-column: auto;
+  }
 }
 
 .panel {
@@ -1254,7 +1273,12 @@ select,
 }
 
 .admin-panels {
-  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(26rem, 100%), 1fr));
+}
+
+/* The tiles are a readout, not panels — they belong in one wide band. */
+.stat-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
 }
 
 .live-page {
@@ -2041,4 +2065,38 @@ select.field {
 
 .owner-note p:last-child {
   margin-bottom: 0;
+}
+
+/* ---------- assistant: settings beside the conversation ---------- */
+
+/*
+ * Not `.panels`: the two halves are not peers. The left column is a fixed-width
+ * control strip and the right is the conversation, which should take whatever
+ * is left rather than being handed an equal share and wrapping every sentence.
+ */
+.assistant-layout {
+  display: grid;
+  grid-template-columns: minmax(20rem, 25rem) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.assistant-layout > .panel {
+  height: 100%;
+}
+
+/* Below this the two columns would both be too narrow to be worth having. */
+@media (max-width: 60rem) {
+  .assistant-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The chat panel is the tall one, so its transcript grows to fill the column
+   instead of stopping at a fixed height and leaving the panel half empty. */
+.assistant-layout .chat {
+  max-height: none;
+  flex: 1;
+  min-height: 18rem;
+  align-content: start;
 }
