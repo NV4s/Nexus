@@ -110,6 +110,7 @@ const CATEGORIES: Record<string, string> = {
   'choose-your-weapon-4': 'Action',
   'color-switch': 'Action',
   commando: 'Shooter',
+  'commando-3': 'Shooter',
   'connect-4': 'Puzzle',
   'conquer-antarctica': 'Strategy',
   'crimson-room': 'Adventure',
@@ -192,6 +193,10 @@ const META: Record<string, Partial<Game>> = {
     blurb: 'Cursed treasure hunter brawls through the desert with whatever he picks up.',
   },
   'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012' },
+  'commando-3': {
+    developer: 'Macrojoy',
+    blurb: 'Side-scrolling run-and-gun. Pick a soldier, work the missions, upgrade the arsenal between them.',
+  },
   'crimson-room': {
     developer: 'Toshimitsu Takagi',
     year: '2004',
