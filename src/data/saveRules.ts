@@ -1,34 +1,16 @@
 import type { SolValue } from '../lib/sol.ts';
 
 /**
- * Achievements that unlock from a game's own save file rather than from playtime.
+ * Achievements that unlock from a game's own save rather than from playtime.
  *
- * HOW TO ADD A GAME
- * 1. `node scripts/scan-saves.mjs <name>` reads the field names straight out of
- *    the SWF's own bytecode — every `so.data.<field>` it touches.
- * 2. Better still, play it far enough to save, open the Saves page and expand
- *    "Inspect save": that shows the values too, not just the names.
+ * Find field names with `node scripts/scan-saves.mjs <name>`, which reads them
+ * out of the SWF's bytecode, or from a real save via the Saves page — that one
+ * shows values too. Never invent a path: a rule matching nothing fails silently.
  *
- * **Never invent a path.** A rule that matches nothing fails silently: no error,
- * no warning in production, just an achievement that never unlocks — worse than
- * the honest playtime one it replaced.
- *
- * The two sources are not equally strong, and the difference matters:
- *
- * - A real .sol proves the name, the type and a plausible range. Madness,
- *   Cubefield and Asteroids were checked this way.
- * - The scan proves only that the game reads or writes that name. Thresholds
- *   below are therefore deliberately low, and `passes` is type-checked, so a
- *   field that turns out to hold a string simply never matches rather than
- *   unlocking wrongly.
- *
- * Flags whose polarity is unclear are left out entirely. Endless War 3 stores
- * `LOCK_Vietnam` and friends, and nothing in the bytecode says whether true
- * means locked or unlocked — a rule on those had a one-in-two chance of
- * unlocking everything on a fresh save.
- *
- * Every id used here must already exist in data/achievements.ts. The dev check at
- * the bottom of this file shouts if it does not.
+ * A real .sol proves name, type and range; the scan proves only that the name is
+ * touched, so thresholds taken from it are deliberately low. Flags of unknown
+ * polarity are left out — Endless War 3's `LOCK_Vietnam` could mean either, and
+ * guessing wrong unlocks everything on a fresh save.
  */
 
 export type SaveTest =
@@ -103,9 +85,6 @@ const cubefield: Record<string, SaveRule> = {
 const asteroids: Record<string, SaveRule> = {
   'named': { path: 'playerName' },
 };
-
-
-/* ---------- from scripts/scan-saves.mjs ---------- */
 
 /**
  * Duck Life 1-3 keep every stat as a top-level number in `mydata`, one per

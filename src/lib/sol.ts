@@ -88,8 +88,6 @@ export function decodeSol(bytes: Uint8Array): SolFile {
   const traits: { dynamic: boolean; names: string[] }[] = [];
   const amf0Refs: SolValue[] = [];
 
-  /* ---------- AMF0 ---------- */
-
   function amf0Props(target: Record<string, SolValue>) {
     for (;;) {
       const key = utf8(u16());
@@ -161,8 +159,6 @@ export function decodeSol(bytes: Uint8Array): SolFile {
         throw new Error(`amf0 marker 0x${marker.toString(16)}`);
     }
   }
-
-  /* ---------- AMF3 ---------- */
 
   function u29() {
     let b = u8();
@@ -323,8 +319,6 @@ export function decodeSol(bytes: Uint8Array): SolFile {
         throw new Error(`amf3 marker 0x${marker.toString(16)}`);
     }
   }
-
-  /* ---------- container ---------- */
 
   try {
     if (u8() !== 0x00 || u8() !== 0xbf) throw new Error('not a .sol');

@@ -7,9 +7,11 @@ import css from './index.css?inline';
 import { migrateSaveKeys } from './lib/saves';
 import { rescanAll } from './lib/achievements';
 import { readTheme } from './lib/theme';
+import { applyAppearance, readAppearance } from './lib/appearance';
 
 // Applied before first paint so the page never flashes the wrong theme.
 document.documentElement.dataset.theme = readTheme();
+applyAppearance(readAppearance());
 
 // Before anything can load a SWF, so a game never opens against a stale save key.
 migrateSaveKeys();

@@ -2,16 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { SLOTS, adPreview, adTest, adsEnabled, loadAdsense, PUBLISHER_ID, type SlotName } from '../lib/ads';
 
 /**
- * One ad position.
- *
- * Renders nothing at all until a publisher id and a slot id are configured, so
- * an unconfigured site is not carrying holes where ads will one day go. Adding
- * `?adpreview=1` to the URL draws the outline instead, at the exact size the
- * real unit will take — the layout can be checked without an AdSense account,
- * and without anyone else ever seeing it.
- *
- * An ad that fails to fill leaves an empty frame behind, so a slot that reports
- * nothing rendered removes itself rather than holding open a gap.
+ * One ad position. Renders nothing until both ids are configured; `?adpreview=1`
+ * draws the outline at the real unit's size instead. A slot whose script is
+ * blocked removes itself rather than holding open an empty frame.
  */
 export default function AdSlot({ name, className = '' }: { name: SlotName; className?: string }) {
   const spec = SLOTS[name];

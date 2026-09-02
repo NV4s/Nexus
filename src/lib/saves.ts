@@ -36,8 +36,6 @@ export function migrateSaveKeys() {
   }
 }
 
-/* ---------- backup and restore ---------- */
-
 export type SaveEntry = { game: Game; bytes: number; keys: string[] };
 
 /** Ruffle's key embeds the SWF's own URL, so the filename inside it names the game. */
@@ -110,8 +108,6 @@ export function importSaves(json: string): number {
 }
 
 export const deleteSave = (entry: SaveEntry) => entry.keys.forEach((key) => localStorage.removeItem(key));
-
-/* ---------- reading what is inside a save ---------- */
 
 export type SaveFile = {
   key: string;
@@ -245,8 +241,6 @@ export function readSavePath(slug: string, path: string): SolValue | undefined {
   }
   return undefined;
 }
-
-/* ---------- downloading a single game's save ---------- */
 
 /** Kicks off a browser download without leaving a stray object URL behind. */
 export function downloadBlob(blob: Blob, filename: string) {

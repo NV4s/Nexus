@@ -80,21 +80,91 @@ export const MODELS: Record<string, { id: string; label: string }[]> = {
     { id: 'claude-opus-5', label: 'Claude Opus 5 — most capable' },
     { id: 'claude-sonnet-5', label: 'Claude Sonnet 5 — faster, cheaper' },
     { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 — fastest' },
+    { id: 'claude-opus-4-1', label: 'Claude Opus 4.1' },
+    { id: 'claude-opus-4-0', label: 'Claude Opus 4' },
+    { id: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+    { id: 'claude-sonnet-4-0', label: 'Claude Sonnet 4' },
+    { id: 'claude-3-7-sonnet-latest', label: 'Claude Sonnet 3.7' },
+    { id: 'claude-3-5-haiku-latest', label: 'Claude Haiku 3.5' },
   ],
   google: [
+    { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro — most capable' },
+    { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+    { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite — cheapest' },
     { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
     { id: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
     { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
     { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+    { id: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B' },
   ],
   openai: [
-    { id: 'gpt-4o-mini', label: 'GPT-4o mini — cheap' },
-    { id: 'gpt-4o', label: 'GPT-4o' },
-    { id: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
+    { id: 'gpt-5', label: 'GPT-5 — most capable' },
+    { id: 'gpt-5-mini', label: 'GPT-5 mini' },
+    { id: 'gpt-5-nano', label: 'GPT-5 nano — cheapest' },
     { id: 'gpt-4.1', label: 'GPT-4.1' },
+    { id: 'gpt-4.1-mini', label: 'GPT-4.1 mini' },
+    { id: 'gpt-4.1-nano', label: 'GPT-4.1 nano' },
+    { id: 'gpt-4o', label: 'GPT-4o' },
+    { id: 'gpt-4o-mini', label: 'GPT-4o mini' },
+    { id: 'o4-mini', label: 'o4-mini — reasoning' },
+    { id: 'o3', label: 'o3 — reasoning' },
+    { id: 'o3-mini', label: 'o3-mini — reasoning' },
   ],
   custom: [],
 };
+
+/** Beyond this a transcript is costing more storage than it is worth. */
+const HISTORY_LIMIT = 50;
+
+/**
+ * One conversation per engine *and* model.
+ *
+ * Sharing a transcript across models would send one model's words to another
+ * as if it had said them, which is both confusing to read and a waste of the
+ * context window it gets billed for.
+ */
+const chatKey = (engine: string, model: string) => `nexus:chat:${engine}:${model || 'default'}`;
+
+export function readChat(engine: string, model: string): Message[] {
+  try {
+    const raw = localStorage.getItem(chatKey(engine, model));
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as Message[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeChat(engine: string, model: string, messages: Message[]) {
+  try {
+    // Attachments are dropped: a base64 image would fill the quota in a couple
+    // of turns and take the game saves down with it. The filenames stay so the
+    // transcript still reads correctly.
+    const trimmed = messages.slice(-HISTORY_LIMIT).map(({ files, ...rest }) =>
+      files?.length ? { ...rest, files: files.map(({ name, type }) => ({ name, type })) } : rest,
+    );
+    localStorage.setItem(chatKey(engine, model), JSON.stringify(trimmed));
+  } catch {
+    /* out of quota — the conversation still works, it just will not survive */
+  }
+}
+
+export const clearChat = (engine: string, model: string) => {
+  try {
+    localStorage.removeItem(chatKey(engine, model));
+  } catch {
+    /* nothing to clear */
+  }
+};
+
+/** Which engine/model pairs have a saved conversation, for the Settings wipe. */
+export function listChats(): string[] {
+  try {
+    return Object.keys(localStorage).filter((key) => key.startsWith('nexus:chat:'));
+  } catch {
+    return [];
+  }
+}
 
 export const DEFAULT_MODEL: Record<string, string> = {
   anthropic: 'claude-opus-5',
@@ -142,8 +212,6 @@ const SYSTEM =
   'You are the assistant on Nexus, a browser games site. Be brief and concrete. ' +
   'If you are unsure of a fact, say so rather than inventing it.';
 
-/* ---------- local: WebLLM ---------- */
-
 // Small on purpose. The audience is school Chromebooks, where a 900 MB download
 // and 4 GB of RAM do not go together; this one is a few hundred MB.
 const LOCAL_MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
@@ -181,8 +249,6 @@ export const localModelCached = async () => {
   }
 };
 
-/* ---------- local: Chrome's built-in model ---------- */
-
 type PromptSession = { prompt(input: string): Promise<string> };
 type PromptApi = {
   availability?(): Promise<string>;
@@ -193,8 +259,6 @@ const chromeApi = (): PromptApi | null => {
   const scope = globalThis as unknown as { LanguageModel?: PromptApi; ai?: { languageModel?: PromptApi } };
   return scope.LanguageModel ?? scope.ai?.languageModel ?? null;
 };
-
-/* ---------- cloud ---------- */
 
 const toText = async (response: Response, pick: (body: never) => string | undefined) => {
   if (!response.ok) {
@@ -346,8 +410,6 @@ async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[])
     body.choices?.[0]?.message?.content,
   );
 }
-
-/* ---------- the engines ---------- */
 
 export type Engine = {
   id: EngineId;

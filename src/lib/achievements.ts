@@ -310,8 +310,6 @@ export function useGameSession(slug: string | null) {
   return { unlocked, setUnlocked };
 }
 
-/* ---------- moving progress between devices ---------- */
-
 const ACH_PREFIX = 'nexus:ach:';
 const PLAY_PREFIX = 'nexus:play:';
 

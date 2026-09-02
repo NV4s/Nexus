@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
 import {
   DEFAULT_LINK,
@@ -18,7 +18,15 @@ import {
   readPlayerPrefs,
   writePlayerPrefs,
 } from '../lib/player';
-import { downloadBlob } from '../lib/saves';
+import { deleteSave, downloadBlob, listSaves } from '../lib/saves';
+import { listChats } from '../lib/ai';
+import {
+  ACCENTS,
+  DEFAULT_APPEARANCE,
+  TEXT_SIZES,
+  readAppearance,
+  writeAppearance,
+} from '../lib/appearance';
 import { THEMES, readTheme, writeTheme, type Theme } from '../lib/theme';
 import { describe, exportEverything, importAnything } from '../lib/transfer';
 
@@ -26,6 +34,87 @@ const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
   if (icon) icon.href = href;
 };
+
+const size = (bytes: number) =>
+  bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
+
+/**
+ * What this site is keeping, and a way to remove it.
+ *
+ * Saves are the bulk of it and the only part worth listing per game: a browser
+ * gives a site somewhere around 5 MB, and a few of the bigger games take a real
+ * fraction of that.
+ */
+function StoragePanel({
+  pass,
+  onChange,
+  onNote,
+}: {
+  pass: number;
+  onChange: () => void;
+  onNote: (note: string) => void;
+}) {
+  const saves = useMemo(listSaves, [pass]);
+  const chats = useMemo(listChats, [pass]);
+  const total = saves.reduce((sum, entry) => sum + entry.bytes, 0);
+
+  const wipe = () => {
+    const warning =
+      'Delete every save, achievement, conversation and setting on this device? This cannot be undone.';
+    if (!confirm(warning)) return;
+    try {
+      localStorage.clear();
+    } catch {
+      /* nothing to clear */
+    }
+    onNote('Everything on this device has been deleted.');
+    onChange();
+  };
+
+  return (
+    <>
+      <p>
+        {saves.length
+          ? `${saves.length} ${saves.length === 1 ? 'game has' : 'games have'} saved progress, using ${size(total)}.`
+          : 'No game has saved anything yet.'}
+        {chats.length
+          ? ` ${chats.length} saved ${chats.length === 1 ? 'conversation' : 'conversations'}.`
+          : ''}
+      </p>
+
+      {saves.length > 0 && (
+        <ul className="storage-list">
+          {saves.map((entry) => (
+            <li className="storage-row" key={entry.game.slug}>
+              <span>{entry.game.title}</span>
+              <span className="bytes">{size(entry.bytes)}</span>
+              <button
+                className="button ghost"
+                title={`Delete the save for ${entry.game.title}`}
+                onClick={() => {
+                  if (!confirm(`Delete your saved progress in ${entry.game.title}?`)) return;
+                  deleteSave(entry);
+                  onNote(`${entry.game.title} save deleted.`);
+                  onChange();
+                }}
+              >
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <button className="button ghost danger" onClick={wipe}>
+        Delete everything on this device
+      </button>
+      <p>
+        Deleting one save leaves its achievements alone — they record that something happened,
+        and it did. The button above clears those too.
+      </p>
+    </>
+  );
+}
 
 export default function Settings() {
   const [theme, setTheme] = useState<Theme>(readTheme);
@@ -38,9 +127,13 @@ export default function Settings() {
   const [panicMode, setPanicMode] = useState<PanicMode>(readPanicMode);
   const [player, setPlayer] = useState(readPlayerPrefs);
   const [note, setNote] = useState('');
+  const [appearance, setAppearance] = useState(readAppearance);
+  // Bumped after a delete so the storage list re-reads localStorage.
+  const [storagePass, setStoragePass] = useState(0);
   const progressRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => writeTheme(theme), [theme]);
+  useEffect(() => writeAppearance(appearance), [appearance]);
 
   useEffect(() => writeQualityPreference(quality), [quality]);
 
@@ -68,6 +161,13 @@ export default function Settings() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [recording]);
+
+  const DISGUISES = [
+    ['Google Classroom', 'https://ssl.gstatic.com/classroom/favicon.png'],
+    ['Google Drive', 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png'],
+    ['Google Docs', 'https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico'],
+    ['Gmail', 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico'],
+  ] as const;
 
   const applyDisguise = () => {
     document.title = tabTitle || 'Google';
@@ -115,6 +215,63 @@ export default function Settings() {
         </div>
 
         <div className="panel">
+          <h3>Accent</h3>
+          <div className="themes">
+            {ACCENTS.map((option) => (
+              <button
+                key={option.id || 'theme'}
+                className={`theme-chip ${appearance.accent === option.id ? 'is-active' : ''}`}
+                onClick={() => setAppearance({ ...appearance, accent: option.id })}
+                aria-pressed={appearance.accent === option.id}
+              >
+                <span className="theme-swatch" style={{ background: option.id || 'var(--accent)' }} />
+                {option.name}
+              </button>
+            ))}
+          </div>
+          <p>Sits on top of the theme rather than replacing it.</p>
+        </div>
+
+        <div className="panel">
+          <h3>Text and motion</h3>
+          <label className="player-field">
+            Text size
+            <select
+              value={appearance.textSize}
+              onChange={(event) =>
+                setAppearance({ ...appearance, textSize: Number(event.target.value) })
+              }
+            >
+              {TEXT_SIZES.map((textSize) => (
+                <option key={textSize} value={textSize}>
+                  {textSize}px{textSize === DEFAULT_APPEARANCE.textSize ? ' — default' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="row">
+            <button
+              className={`button ${appearance.motion === 'reduced' ? '' : 'ghost'}`}
+              onClick={() =>
+                setAppearance({
+                  ...appearance,
+                  motion: appearance.motion === 'reduced' ? 'auto' : 'reduced',
+                })
+              }
+            >
+              Reduce motion {appearance.motion === 'reduced' ? 'on' : 'off'}
+            </button>
+            <button className="button ghost" onClick={() => setAppearance(DEFAULT_APPEARANCE)}>
+              Reset
+            </button>
+          </div>
+          <p>
+            Stops the arcade row drifting and the home page settling between sections. Left off, the
+            system setting decides.
+          </p>
+        </div>
+
+        <div className="panel">
           <h3>Graphics</h3>
           <p>
             Auto measures your frame rate and scales the background effects to match. Pick low if
@@ -148,6 +305,22 @@ export default function Settings() {
             value={tabIcon}
             onChange={(event) => setTabIcon(event.target.value)}
           />
+          <div className="row">
+            {DISGUISES.map(([name, icon]) => (
+              <button
+                key={name}
+                className="button ghost"
+                onClick={() => {
+                  setTabTitle(name);
+                  setTabIcon(icon);
+                  document.title = name;
+                  setFavicon(icon);
+                }}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
           <div className="row">
             <button className="button" onClick={applyDisguise}>
               Apply
@@ -312,6 +485,15 @@ export default function Settings() {
           />
           {note && <p>{note}</p>}
         </div>
+        <div className="panel is-wide">
+          <h3>Storage on this device</h3>
+          <StoragePanel
+            pass={storagePass}
+            onChange={() => setStoragePass((n) => n + 1)}
+            onNote={setNote}
+          />
+        </div>
+
         <div className="panel">
           <h3>about:blank</h3>
           <p>

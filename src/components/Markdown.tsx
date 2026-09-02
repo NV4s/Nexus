@@ -2,13 +2,10 @@ import { Fragment } from 'react';
 import { parse, type Block, type Span } from '../lib/markdown';
 
 /**
- * Renders a chat answer's Markdown.
- *
- * Everything here is React elements built from parsed structure — no HTML string
- * is ever assembled, so model output cannot inject markup no matter what it
- * contains. Links are additionally checked at render: the parser only matches
- * http(s), and this refuses anything else outright, because two places agreeing
- * is what stops a later parser change quietly opening a hole.
+ * Renders a chat answer's Markdown as React elements — no HTML string is ever
+ * assembled, so model output cannot inject markup. Links are re-checked here as
+ * well as in the parser: two places agreeing is what stops a later parser change
+ * quietly opening a hole.
  */
 function Spans({ spans }: { spans: Span[] }) {
   return (

@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { Paperclip, RefreshCw, Send, ShieldCheck, Cloud, X } from 'lucide-react';
+import { Paperclip, RefreshCw, Send, ShieldCheck, Cloud, Trash2, X } from 'lucide-react';
 import {
   DEFAULT_MODEL,
   ENGINES,
   MODELS,
   engineById,
   fetchModels,
+  clearChat,
+  readChat,
   readKey,
   readSetting,
+  writeChat,
   writeKey,
   writeSetting,
   type Attachment,
@@ -142,10 +145,13 @@ function ModelPicker({
   engineId,
   listed,
   onRefresh,
+  onChange,
 }: {
   engineId: EngineId;
   listed: string[];
   onRefresh: () => Promise<void>;
+  /** Reported upward because each model keeps its own conversation. */
+  onChange: (model: string) => void;
 }) {
   const known = MODELS[engineId] ?? [];
   const options = listed.length ? listed.map((id) => ({ id, label: id })) : known;
@@ -159,6 +165,7 @@ function ModelPicker({
     setCustom(false);
     setValue(next);
     writeSetting(`model:${engineId}`, next);
+    onChange(next);
   };
 
   return (
@@ -179,7 +186,10 @@ function ModelPicker({
           className="field"
           placeholder={`Model id (default ${DEFAULT_MODEL[engineId] ?? 'provider default'})`}
           defaultValue={saved}
-          onChange={(event) => writeSetting(`model:${engineId}`, event.target.value)}
+          onChange={(event) => {
+            writeSetting(`model:${engineId}`, event.target.value);
+            onChange(event.target.value);
+          }}
         />
       )}
 
@@ -213,6 +223,9 @@ export default function Assistant() {
     () => (readSetting('engine') as EngineId) || 'local',
   );
   const [availability, setAvailability] = useState<Availability | null>(null);
+  const [model, setModel] = useState(
+    () => readSetting(`model:${(readSetting('engine') as EngineId) || 'local'}`) || '',
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -229,8 +242,19 @@ export default function Assistant() {
 
   const engine = engineById(engineId);
 
+  // Each engine/model pair has its own transcript, so switching either one
+  // swaps the conversation rather than carrying one model's words into another.
+  useEffect(() => {
+    setMessages(readChat(engineId, model));
+  }, [engineId, model]);
+
+  useEffect(() => {
+    if (messages.length) writeChat(engineId, model, messages);
+  }, [engineId, model, messages]);
+
   useEffect(() => {
     writeSetting('engine', engineId);
+    setModel(readSetting(`model:${engineId}`) || DEFAULT_MODEL[engineId] || '');
     setAvailability(null);
     let cancelled = false;
     engine.check().then((result) => !cancelled && setAvailability(result));
@@ -348,6 +372,7 @@ export default function Assistant() {
                 engineId={engineId}
                 listed={models}
                 onRefresh={async () => setModels(await fetchModels(engineId))}
+                onChange={setModel}
               />
               <div className="row">
                 <button className="button" onClick={() => engine.check().then(setAvailability)}>
@@ -373,9 +398,26 @@ export default function Assistant() {
         </div>
 
         <div className="panel">
-          <h3>Chat</h3>
+          <div className="chat-head">
+            <h3>Chat</h3>
+            {messages.length > 0 && (
+              <button
+                className="button ghost"
+                title="Delete this model's saved conversation"
+                onClick={() => {
+                  clearChat(engineId, model);
+                  setMessages([]);
+                  setAnsweredBy('');
+                }}
+              >
+                <Trash2 size={14} /> Clear chat
+              </button>
+            )}
+          </div>
           <div className="chat">
-            {messages.length === 0 && !status && <p>Ask it something.</p>}
+            {messages.length === 0 && !status && (
+              <p>Ask it something. This conversation is kept on this device until you clear it.</p>
+            )}
             {messages.map((message, index) => (
               <div className={`chat-turn is-${message.role}`} key={index}>
                 {message.role === 'assistant' ? (

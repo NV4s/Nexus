@@ -1,5 +1,6 @@
 import { SWFDUMP_FILES } from './swfdump.ts';
 import { swfChunkBase, swfUrl } from '../lib/cdn.ts';
+import { siteConfig } from '../lib/siteConfig.ts';
 
 export type Runtime = 'flash' | 'html5';
 export type Section = 'arcade' | 'study' | 'courses';
@@ -1029,7 +1030,17 @@ if (import.meta.env?.DEV) {
   if (missing.length) console.warn(`starters: no game called ${missing.join(', ')}`);
 }
 
-export const gamesIn = (section: Section) => GAMES.filter((game) => game.section === section);
+/**
+ * The games in a section, minus anything the owner has hidden from the Admin
+ * page. Hiding is not security — the slug still resolves if someone types the
+ * URL — it is a way to pull a broken or unwanted game off the shelves without
+ * a redeploy.
+ */
+export const gamesIn = (section: Section) => {
+  const { hidden, hiddenSections } = siteConfig();
+  if (hiddenSections.includes(section)) return [];
+  return GAMES.filter((game) => game.section === section && !hidden.includes(game.slug));
+};
 
 export const categoriesIn = (section: Section) => [
   ...new Set(gamesIn(section).map((game) => game.category)),

@@ -1,12 +1,10 @@
 /**
- * The small slice of Markdown a chat answer actually uses.
+ * The small slice of Markdown a chat answer uses: bold, italics, code, links,
+ * headings, lists, quotes.
  *
- * Written out rather than pulled in as a dependency: a full parser is a large
- * download for a page that only ever renders bold, italics, code, links, headings
- * and lists, and every one of those is a few lines here. It returns structure
- * for React to render, never an HTML string — nothing model-written should
- * reach `dangerouslySetInnerHTML`, and returning nodes makes that impossible
- * rather than merely discouraged.
+ * It returns structure for React to render, never an HTML string — nothing
+ * model-written should reach `dangerouslySetInnerHTML`, and returning nodes
+ * makes that impossible rather than merely discouraged.
  */
 
 export type Span =

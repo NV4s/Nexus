@@ -35,8 +35,6 @@ export const isArchive = (type: string, name: string) =>
   type.includes('officedocument') ||
   type.includes('opendocument');
 
-/* ---------- zip ---------- */
-
 type ZipEntry = { name: string; bytes: Uint8Array };
 
 /** Reads a zip's central directory rather than scanning for local headers. */
@@ -96,8 +94,6 @@ async function inflateRaw(data: Uint8Array): Promise<Uint8Array> {
     .pipeThrough(new DecompressionStream('deflate-raw'));
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
-
-/* ---------- office documents ---------- */
 
 /** Strips XML tags, which is enough to read a .docx or .xlsx as prose. */
 const stripXml = (xml: string) =>

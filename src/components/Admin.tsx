@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LogOut, RefreshCw, Users } from 'lucide-react';
 import { OWNER_NOTES } from '../data/changelog';
 import { GAMES } from '../data/games';
+import { loadSiteConfig, saveSiteConfig, type SiteConfig } from '../lib/siteConfig';
+import { downloadBlob } from '../lib/saves';
 
 type Stats = {
   total: number;
@@ -79,6 +81,142 @@ function Chart({ days }: { days: { day: string; count: number }[] }) {
         );
       })}
     </svg>
+  );
+}
+
+
+/**
+ * Things the owner can change without a redeploy: a banner every visitor sees,
+ * and games or whole sections pulled off the shelves.
+ *
+ * Hiding is housekeeping, not access control — the slug still works if someone
+ * types the URL. It is for taking down something broken, not for locking it.
+ */
+function SiteControls() {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [note, setNote] = useState('');
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    void loadSiteConfig().then(setConfig);
+  }, []);
+
+  if (!config) return <p>Loading…</p>;
+
+  const commit = async (next: SiteConfig) => {
+    setConfig(next);
+    setSaving(true);
+    setNote('');
+    try {
+      setConfig(await saveSiteConfig(next));
+      setNote('Saved. Visitors pick it up on their next page load.');
+    } catch (cause) {
+      setNote(cause instanceof Error ? cause.message : 'Could not save.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleSection = (section: string) =>
+    commit({
+      ...config,
+      hiddenSections: config.hiddenSections.includes(section)
+        ? config.hiddenSections.filter((item) => item !== section)
+        : [...config.hiddenSections, section],
+    });
+
+  const matches = filter.trim().toLowerCase();
+  const shown = matches
+    ? GAMES.filter((game) => game.title.toLowerCase().includes(matches)).slice(0, 12)
+    : [];
+
+  return (
+    <>
+      <label className="player-field" style={{ width: '100%' }}>
+        Banner
+        <input
+          className="field"
+          placeholder="Shown at the top of every page. Empty for none."
+          defaultValue={config.banner}
+          onBlur={(event) => {
+            if (event.target.value !== config.banner) {
+              void commit({ ...config, banner: event.target.value });
+            }
+          }}
+        />
+      </label>
+
+      <div className="row">
+        {(['arcade', 'study', 'courses'] as const).map((section) => (
+          <button
+            key={section}
+            className={`button ${config.hiddenSections.includes(section) ? 'ghost danger' : 'ghost'}`}
+            disabled={saving}
+            onClick={() => void toggleSection(section)}
+          >
+            {section[0].toUpperCase() + section.slice(1)}{' '}
+            {config.hiddenSections.includes(section) ? 'hidden' : 'visible'}
+          </button>
+        ))}
+      </div>
+
+      <input
+        className="field"
+        placeholder="Find a game to hide…"
+        value={filter}
+        onChange={(event) => setFilter(event.target.value)}
+      />
+
+      {shown.length > 0 && (
+        <ul className="storage-list">
+          {shown.map((game) => (
+            <li className="storage-row" key={game.slug}>
+              <span>{game.title}</span>
+              <button
+                className="button ghost"
+                disabled={saving}
+                onClick={() =>
+                  void commit({
+                    ...config,
+                    hidden: config.hidden.includes(game.slug)
+                      ? config.hidden.filter((slug) => slug !== game.slug)
+                      : [...config.hidden, game.slug],
+                  })
+                }
+              >
+                {config.hidden.includes(game.slug) ? 'Show' : 'Hide'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {config.hidden.length > 0 && (
+        <>
+          <p>
+            {config.hidden.length} hidden {config.hidden.length === 1 ? 'game' : 'games'}.
+          </p>
+          <div className="row">
+            {config.hidden.map((slug) => (
+              <button
+                key={slug}
+                className="button ghost"
+                disabled={saving}
+                onClick={() =>
+                  void commit({ ...config, hidden: config.hidden.filter((item) => item !== slug) })
+                }
+                title="Put it back"
+              >
+                {GAMES.find((game) => game.slug === slug)?.title ?? slug} ✕
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {note && <p>{note}</p>}
+    </>
   );
 }
 
@@ -323,6 +461,75 @@ export default function Admin() {
       </div>
 
       <div className="panels admin-panels">
+        <div className="panel is-wide">
+          <h3>Most played</h3>
+          {visitors === null ? (
+            <p>Load the visitor list below and this fills in.</p>
+          ) : (
+            (() => {
+              const tally = new Map<string, number>();
+              for (const visitor of visitors) {
+                for (const slug of visitor.games) tally.set(slug, (tally.get(slug) ?? 0) + 1);
+              }
+              const ranked = [...tally].sort((a, b) => b[1] - a[1]).slice(0, 12);
+              const returning = visitors.filter((visitor) => visitor.visits > 1).length;
+
+              if (!ranked.length) return <p>No games opened yet.</p>;
+              return (
+                <>
+                  <p>
+                    {returning} of {visitors.length} visitors came back
+                    {visitors.length ? ` (${Math.round((returning / visitors.length) * 100)}%)` : ''}.
+                  </p>
+                  <ul className="storage-list">
+                    {ranked.map(([slug, count]) => (
+                      <li className="storage-row" key={slug}>
+                        <span>{GAMES.find((game) => game.slug === slug)?.title ?? slug}</span>
+                        <span className="bytes">{count}</span>
+                        <div className="storage-bar" style={{ maxWidth: '8rem' }}>
+                          <div style={{ width: `${(count / ranked[0][1]) * 100}%` }} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    className="button ghost"
+                    onClick={() => {
+                      // One row per visitor, with the daily totals appended —
+                      // a spreadsheet is the right tool for anything past this.
+                      const rows = [
+                        ['visitor', 'visits', 'first_seen', 'last_seen', 'place', 'games'],
+                        ...visitors.map((visitor) => [
+                          visitor.id,
+                          String(visitor.visits),
+                          new Date(visitor.first).toISOString(),
+                          new Date(visitor.last).toISOString(),
+                          visitor.place ?? '',
+                          visitor.games.join(' '),
+                        ]),
+                        [],
+                        ['day', 'sessions'],
+                        ...Object.entries(stats.daily).map(([day, count]) => [day, String(count)]),
+                      ];
+                      const csv = rows
+                        .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+                        .join('\r\n');
+                      downloadBlob(new Blob([csv], { type: 'text/csv' }), 'nexus-stats.csv');
+                    }}
+                  >
+                    Export CSV
+                  </button>
+                </>
+              );
+            })()
+          )}
+        </div>
+
+        <div className="panel is-wide">
+          <h3>Site controls</h3>
+          <SiteControls />
+        </div>
+
         <div className="panel is-wide">
           <h3>For you</h3>
           <p>

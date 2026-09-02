@@ -125,8 +125,6 @@ const madness = (): Achievement[] => [
 ];
 
 export const ACHIEVEMENTS: Record<string, Achievement[]> = {
-  /* ---------- puzzle and classics ---------- */
-
   // 33 stages; orange tiles are fragile, X switches need the block upright,
   // circle switches take any weight, and split switches break the block in two.
   bloxorz: [
@@ -176,8 +174,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  /* ---------- Henry Stickmin: endings are the whole game ---------- */
-
   'breaking-the-bank': [
     opened('The job', 'Start the heist.'),
     { id: 'fails', name: 'Every wrong turn', hint: 'See five different failures.' },
@@ -218,8 +214,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'fail', name: 'Not like that', hint: 'Fail the crossing.' },
     { id: 'cross', name: 'Across', hint: 'Get to the other side.' },
   ],
-
-  /* ---------- Duck Life: train four stats, win three leagues ---------- */
 
   'duck-life': [
     opened('Hatched', 'Start training your duck.'),
@@ -269,8 +263,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'champion', name: 'Champion', hint: 'Beat the final race.' },
     settled,
   ],
-
-  /* ---------- platform and action ---------- */
 
   // 12 areas, each with 5 treasures and 5 challenges; 59 usable weapons.
   'cactus-mccoy': [
@@ -356,8 +348,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  /* ---------- Papa's series ---------- */
-
   'papas-pizzeria': papas('pizza'),
   'papas-burgeria': papas('burger'),
   'papas-taco-mia': papas('taco'),
@@ -373,8 +363,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'papas-sushiria': papas('sushi platter'),
   'papas-scooperia': papas('sundae'),
 
-  /* ---------- Boxhead series ---------- */
-
   boxhead: boxhead(),
   'boxhead-2play-rooms': boxhead(),
   'boxhead-more-rooms': boxhead(),
@@ -383,8 +371,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'boxhead-the-nightmare-biever-and-baby': boxhead(),
   'boxhead-the-zombie-wars': boxhead(),
   'boxhead-the-christmas-nightmare': boxhead(),
-
-  /* ---------- Madness mods ---------- */
 
   'madness-project-nexus-classic-redux': madness(),
   'madness-project-nexus-mod-v9-5': madness(),
@@ -397,8 +383,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'madness-project-nexus-n-a-f-mod': madness(),
   'madness-project-nexus-story-expansion-reborn': madness(),
   'madness-project-nexus-tou-reborn-v1': madness(),
-
-  /* ---------- short arcade games with a clear goal ---------- */
 
   snake: [
     opened('Slither', 'Start a game.'),
@@ -453,8 +437,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     veteran,
   ],
 
-  /* ---------- Endless War ---------- */
-
   'endless-war': endlessWarInfantry(),
   'endless-war-2': endlessWarInfantry(),
   'endless-war-3': endlessWarInfantry(),
@@ -470,14 +452,10 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  /* ---------- Choose Your Weapon ---------- */
-
   'choose-your-weapon': chooseWeapon(),
   'choose-your-weapon-2': chooseWeapon(),
   'choose-your-weapon-3': chooseWeapon(),
   'choose-your-weapon-4': chooseWeapon(),
-
-  /* ---------- Kingsley's Customerpalooza ---------- */
 
   'kingsleys-customerpalooza-2013': customerpalooza(),
   'kingsleys-customerpalooza-2014': customerpalooza(),
@@ -487,8 +465,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'kingsleys-customerpalooza-2018': customerpalooza(),
   'kingsleys-customerpalooza-2019': customerpalooza(),
   'kingsleys-customerpalooza-2020': customerpalooza(),
-
-  /* ---------- Flipline oddments ---------- */
 
   // Steak the cow hauls milk, Jake the bird changes colour; 30 worlds of it.
   'steak-and-jake': [
@@ -526,8 +502,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'finish', name: 'Finished', hint: 'Complete the final level.' },
     settled,
   ],
-
-  /* ---------- one-offs with a documented goal ---------- */
 
   // Kill every stickman in the room, in an order where none of them sees it happen.
   causality: [
@@ -664,8 +638,6 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   // Astroflash and Hamu are deliberately absent: neither has any documentation I
   // could verify, and inventing objectives for them would read as authoritative
   // and be wrong. They fall back to the generic play-based list.
-
-  /* ---------- not Flash ---------- */
 
   'n-gon': [
     opened('Spawn in', 'Start a run.'),

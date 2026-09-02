@@ -1,14 +1,7 @@
 /**
- * Ad configuration.
- *
- * Every position the site will ever show an ad in is already wired up, but
- * nothing renders and no network request is made until PUBLISHER_ID is filled
- * in — a slot with no id occupies no space at all, so the pages look exactly as
- * they did before the slots existed.
- *
- * To see where they are without signing up for anything, add `?adpreview=1` to
- * any URL: each slot then draws a labelled outline at the size the real unit
- * will take. Setup is written up in docs/ads.md.
+ * Ad configuration. Every position is wired up, but nothing renders and no
+ * request is made until PUBLISHER_ID is set — an unconfigured slot takes no
+ * space. `?adpreview=1` outlines them. Setup is in docs/ads.md.
  */
 
 /** From AdSense: Account → Settings → Account information. Looks like `ca-pub-1234567890123456`. */

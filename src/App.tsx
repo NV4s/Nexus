@@ -13,6 +13,7 @@ import GameEmbed from './components/GameEmbed';
 import { segments, useRoute } from './lib/router';
 import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
+import { loadSiteConfig, onSiteConfig, siteConfig } from './lib/siteConfig';
 
 // three.js is ~300 kB gzipped. Only the intro and the home page need it, so the
 // arcade grid and the player never pay for it.
@@ -56,6 +57,15 @@ export default function App() {
 
   useEffect(startTracking, []);
 
+  // Owner-set banner and hidden games, fetched once per visit. The cached
+  // copy renders immediately, so a slow API never delays the page.
+  const [banner, setBanner] = useState(() => siteConfig().banner);
+  useEffect(() => {
+    const stop = onSiteConfig((config) => setBanner(config.banner));
+    void loadSiteConfig();
+    return stop;
+  }, []);
+
   const [head, param] = segments(route);
 
   // Two URLs that render the same page share a key, so switching between them
@@ -75,6 +85,8 @@ export default function App() {
           <VoidIntro onComplete={dismissIntro} />
         </Suspense>
       )}
+
+      {banner && <div className="site-banner">{banner}</div>}
 
       <Navbar route={route} />
 

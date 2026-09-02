@@ -27,8 +27,6 @@ export const label = (combo: string) =>
     .map((part) => (part.length === 1 ? part.toUpperCase() : part[0].toUpperCase() + part.slice(1)))
     .join(' + ');
 
-/* ---------- what the key actually does ---------- */
-
 export type PanicMode = 'replace' | 'newtab';
 
 export const readPanicMode = (): PanicMode =>
@@ -37,18 +35,13 @@ export const readPanicMode = (): PanicMode =>
 export const writePanicMode = (mode: PanicMode) => localStorage.setItem('panicMode', mode);
 
 /**
- * Closes the tab this page is running in, if the browser will allow it.
+ * Closes the tab, if the browser will allow it.
  *
- * A script may only close a window that a script opened. That is never true of
- * the tab the site is loaded into directly — but it is true of the one
- * `openCloaked` in lib/launch.ts makes: an about:blank tab opened with
- * window.open, with the app in an iframe inside it. That parent was
- * script-opened, so it can close, and because a script-created about:blank
- * inherits its opener's origin, this frame is allowed to reach it.
- *
- * So the call that matters is parent.close(), not close(). Anywhere else it
- * either throws (cross-origin) or does nothing (a tab the user opened), which
- * is why the caller still needs a fallback.
+ * A script may only close a window a script opened — never the tab the site is
+ * loaded into directly, but true of the about:blank tab `openCloaked` makes.
+ * The app runs in an iframe inside it, and a script-created about:blank inherits
+ * its opener's origin, so `parent.close()` is the call that works. Anywhere else
+ * it throws or does nothing, hence the caller's fallback.
  */
 function closeTab(): boolean {
   try {
@@ -63,14 +56,10 @@ function closeTab(): boolean {
 /**
  * Leaves the site.
  *
- * `replace` swaps this tab for the panic link. It leaves no forward history
- * entry, but the tab keeps its back history — pressing Back returns here.
- *
- * `newtab` opens the link in a fresh tab and gets rid of this one. Closing is
- * tried first and blanking is the fallback, in that order: the previous version
- * blanked before closing, which guaranteed a leftover blank tab even on the
- * path where the close would have worked. Launching through Settings → "Open
- * cloaked" is what makes the close succeed.
+ * `replace` swaps this tab for the link; the back history survives it.
+ * `newtab` opens the link elsewhere and gets rid of this tab — closing first,
+ * blanking only if that fails, since blanking first leaves a stray tab even
+ * when the close would have worked.
  */
 export function panic(link = readLink(), mode = readPanicMode()) {
   if (mode === 'newtab') {
