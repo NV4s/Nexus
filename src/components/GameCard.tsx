@@ -26,7 +26,7 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
             alt=""
             loading="lazy"
             decoding="async"
-            className={game.thumbFit === 'cover' ? 'is-cover' : undefined}
+            className={game.thumbFit === 'cover' ? 'is-cover' : game.thumbFit === 'contain' ? 'is-contain' : undefined}
           />
         ) : (
           <span

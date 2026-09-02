@@ -14,7 +14,7 @@ export default function Consoles() {
         </div>
       </header>
 
-      <div className="panels">
+      <div className="panels console-grid">
         {CONSOLES.map((console_) => (
           <button
             className="panel achievement-row"

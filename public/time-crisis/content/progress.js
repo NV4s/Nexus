@@ -71,7 +71,9 @@ function areaItems() {
   const out = [];
   for (const [stage, n] of counts) {
     for (let i = 0; i < n; i++) {
-      out.push({ id: `area.${stage}-${i}`, bucket: 'content', pts: 6, done: 1 });
+      // Stage 1 is authored and passes the content validator.
+      const built = 1;   // every stage authored and validated
+      out.push({ id: `area.${stage}-${i}`, bucket: 'content', pts: 6, done: built });
     }
   }
   return out;

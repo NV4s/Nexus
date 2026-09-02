@@ -15,7 +15,9 @@
 
     { "source": "/adarkroom", "destination": "https://adarkroom.doublespeakgames.com/" },
     { "source": "/adarkroom/", "destination": "https://adarkroom.doublespeakgames.com/" },
-    { "source": "/adarkroom/:path*", "destination": "https://adarkroom.doublespeakgames.com/:path*" }
+    { "source": "/adarkroom/:path*", "destination": "https://adarkroom.doublespeakgames.com/:path*" },
+
+    { "source": "/logos/:path*", "destination": "https://www.google.com/logos/:path*" }
   ],
   "headers": [
     {

@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import GameGrid from './components/GameGrid';
+import Study from './components/Study';
 import GamePage from './components/GamePage';
 import Settings from './components/Settings';
 import Changelog from './components/Changelog';
@@ -86,7 +87,7 @@ export default function App() {
         ) : head === 'arcade' ? (
           <GameGrid section="arcade" title="Arcade" lede="Flash and browser games, playable here." />
         ) : head === 'study' ? (
-          <GameGrid section="study" title="Study" lede="Calculators and note tools." />
+          <Study />
         ) : head === 'settings' || head === 'changelog' ? (
           <>
             <Settings />

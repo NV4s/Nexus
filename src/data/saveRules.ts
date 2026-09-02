@@ -1,4 +1,4 @@
-import type { SolValue } from '../lib/sol';
+import type { SolValue } from '../lib/sol.ts';
 
 /**
  * Achievements that unlock from a game's own save file rather than from playtime.

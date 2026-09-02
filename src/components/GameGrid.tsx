@@ -1,7 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { categoriesIn, featuredGames, gamesIn, type Section } from '../data/games';
+import { featuredGames, gamesIn, type Section } from '../data/games';
 import { openGame as open } from '../lib/launch';
 import { ROWS_BETWEEN_ADS } from '../lib/ads';
+import { SERIES, gamesInSeries } from '../data/series.ts';
 import GameCard from './GameCard';
 import AdSlot from './AdSlot';
 
@@ -38,10 +39,13 @@ export default function GameGrid({
   section,
   title,
   lede,
+  track,
 }: {
   section: Section;
   title: string;
   lede: string;
+  /** Narrows a section to one sub-tab. Only Courses uses it. */
+  track?: 'school' | 'extra';
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
@@ -51,8 +55,14 @@ export default function GameGrid({
   // under the pointer every time anything else on the page changed.
   const starters = useMemo(featuredGames, []);
 
-  const all = useMemo(() => gamesIn(section), [section]);
-  const categories = useMemo(() => ['All', ...categoriesIn(section)], [section]);
+  const all = useMemo(
+    () => gamesIn(section).filter((game) => !track || game.track === track),
+    [section, track],
+  );
+  const categories = useMemo(
+    () => ['All', ...[...new Set(all.map((game) => game.category))].sort()],
+    [all],
+  );
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -102,6 +112,32 @@ export default function GameGrid({
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {section === 'arcade' && !query && category === 'All' && (
+        <div className="series">
+          <h3>Series</h3>
+          {SERIES.map((series) => {
+            const games = gamesInSeries(series);
+            if (!games.length) return null;
+            return (
+              <div className="series-row" key={series.id}>
+                <div className="series-head">
+                  <h4>{series.title}</h4>
+                  <p>{series.blurb}</p>
+                  <span className="series-count">
+                    {games.length} {games.length === 1 ? 'game' : 'games'}
+                  </span>
+                </div>
+                <div className="series-scroller">
+                  {games.map((game) => (
+                    <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

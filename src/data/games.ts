@@ -1,8 +1,8 @@
-import { SWFDUMP_FILES } from './swfdump';
-import { swfChunkBase, swfUrl } from '../lib/cdn';
+import { SWFDUMP_FILES } from './swfdump.ts';
+import { swfChunkBase, swfUrl } from '../lib/cdn.ts';
 
 export type Runtime = 'flash' | 'html5';
-export type Section = 'arcade' | 'study';
+export type Section = 'arcade' | 'study' | 'courses';
 
 export type Game = {
   slug: string;
@@ -14,15 +14,19 @@ export type Game = {
   category: string;
   thumb?: string;
   /**
-   * How the thumbnail fills the card. Study tiles are logos and are fitted
-   * whole; the few that are banners rather than marks crop like a game tile.
+   * How the thumbnail fills the card. Study tiles are fitted whole by default
+   * and the few that are banners crop instead; arcade tiles are the other way
+   * round. Either can say so explicitly — an image too small to crop without
+   * blurring is better shown at its own size.
    */
-  thumbFit?: 'cover';
+  thumbFit?: 'cover' | 'contain';
   developer?: string;
   year?: string;
   blurb?: string;
   /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
   newTab?: boolean;
+  /** Which sub-tab a course belongs under. Only read for section 'courses'. */
+  track?: 'school' | 'extra';
   /**
    * Number of `.001`, `.002`, … chunks the SWF also ships as.
    *
@@ -162,6 +166,12 @@ const META: Record<string, Partial<Game>> = {
     developer: 'John Cooney (jmtb02)',
     year: '2008',
     blurb: 'A platformer with no goal except collecting all 100 achievements.',
+  },
+  'achievement-unlocked-3': {
+    developer: 'John Cooney (jmtb02)',
+    year: '2012',
+    thumb: '/thumbs/achievement-unlocked-3.png',
+    blurb: 'The elephant is back, and so are another hundred of them.',
   },
   'adrenaline-challenge': {
     thumb: '/thumbs/adrenaline-challenge.png',
@@ -354,6 +364,10 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/adarkroom/',
     category: 'Strategy',
+    thumb: '/thumbs/a-dark-room.png',
+    // The game's own 125px icon is all it publishes; cropping it to a 16:10
+    // tile would mean upscaling it past twice its size.
+    thumbFit: 'contain',
     developer: 'Doublespeak Games',
     blurb: 'A fire, a stranger, and a room. Text at first, and then not.',
   },
@@ -388,25 +402,273 @@ const EXTRA: Game[] = [
     category: 'Action',
     thumb: '/thumbs/crisis-point.svg',
     thumbFit: 'cover',
+    developer: 'Fan reimplementation',
     year: '2026',
     blurb:
-      'Twin-pedal cover shooter. Lean out to fire, duck back to reload, and clear both sides before the clock runs out.',
+      "A from-scratch browser reimplementation of Time Crisis 5's mechanics: the twin-pedal "
+      + 'cover system, 52 areas across 6 stages, and 8 bosses. Lean out to fire, duck back to '
+      + 'reload, and cross to the other cover before the clock runs out. Original art and audio.',
   },
 ];
+
+
+
+/**
+ * Free courses, split into the two sub-tabs the Courses page offers.
+ *
+ * `newTab` is set from each site's real headers, not guessed: most course
+ * platforms send X-Frame-Options SAMEORIGIN, so most of these open in a tab.
+ * The four that do embed are marked by their absence from that flag.
+ */
+const COURSES: Game[] = [
+  {
+    slug: 'comptia',
+    title: 'CompTIA',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://www.comptia.org/en-us/',
+    category: 'Certification',
+    developer: 'CompTIA',
+    newTab: true,
+    blurb: 'A+, Network+ and Security+ — the entry-level IT certifications. Free study material, paid exams.',
+  },
+  {
+    slug: 'professor-messer',
+    title: 'Professor Messer',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://www.professormesser.com/',
+    category: 'Certification',
+    developer: 'Professor Messer',
+    blurb: 'Free full video courses for every CompTIA exam. The ones people actually pass with.',
+  },
+  {
+    slug: 'cs50',
+    title: 'CS50',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://cs50.harvard.edu/x/',
+    category: 'Computer science',
+    developer: 'Harvard',
+    newTab: true,
+    blurb: "Harvard's introduction to computer science, free and self-paced. C, Python, SQL and a final project.",
+  },
+  {
+    slug: 'mit-ocw',
+    title: 'MIT OpenCourseWare',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://ocw.mit.edu/',
+    category: 'University',
+    developer: 'MIT',
+    blurb: 'Lecture notes, problem sets and exams from thousands of real MIT courses. No sign-up.',
+  },
+  {
+    slug: 'khan-test-prep',
+    title: 'Khan Academy Test Prep',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://www.khanacademy.org/test-prep',
+    category: 'Test prep',
+    developer: 'Khan Academy',
+    newTab: true,
+    blurb: 'Official SAT practice, plus LSAT, MCAT and AP courses. Free, and the SAT one is the College Board partner.',
+  },
+  {
+    slug: 'openstax-courses',
+    title: 'OpenStax Textbooks',
+    section: 'courses',
+    track: 'school',
+    runtime: 'html5',
+    src: 'https://openstax.org/subjects',
+    category: 'Textbooks',
+    developer: 'Rice University',
+    blurb: 'Peer-reviewed college textbooks, free to read online. Maths, sciences, humanities and business.',
+  },
+  {
+    slug: 'claude-courses',
+    title: 'Claude Courses',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://anthropic.skilljar.com/',
+    category: 'AI',
+    developer: 'Anthropic',
+    newTab: true,
+    blurb: "Anthropic's own free courses on working with Claude — prompting, tool use, building with the API.",
+  },
+  {
+    slug: 'freecodecamp',
+    title: 'freeCodeCamp',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.freecodecamp.org/learn/',
+    category: 'Programming',
+    developer: 'freeCodeCamp',
+    newTab: true,
+    blurb: 'Thousands of hours of coding curriculum with certifications at the end. Entirely free.',
+  },
+  {
+    slug: 'codecademy',
+    title: 'Codecademy',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.codecademy.com/catalog',
+    category: 'Programming',
+    developer: 'Codecademy',
+    blurb: 'Interactive programming lessons you type into the page. The basics of each track are free.',
+  },
+  {
+    slug: 'w3schools',
+    title: 'W3Schools',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.w3schools.com/',
+    category: 'Reference',
+    developer: 'W3Schools',
+    newTab: true,
+    blurb: 'Reference and short tutorials for every web language, with an editor to try each example in.',
+  },
+  {
+    slug: 'coursera',
+    title: 'Coursera',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.coursera.org/courses?query=free',
+    category: 'University',
+    developer: 'Coursera',
+    newTab: true,
+    blurb: 'University courses you can audit for nothing — the lectures and readings, without the certificate.',
+  },
+  {
+    slug: 'duolingo',
+    title: 'Duolingo',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.duolingo.com/',
+    category: 'Languages',
+    developer: 'Duolingo',
+    newTab: true,
+    blurb: 'Forty-odd languages in short daily lessons.',
+  },
+  {
+    slug: 'brilliant',
+    title: 'Brilliant',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://brilliant.org/courses/',
+    category: 'Maths',
+    developer: 'Brilliant',
+    newTab: true,
+    blurb: 'Maths and science taught as puzzles rather than lectures. The first lessons of each course are free.',
+  },
+  {
+    slug: 'sololearn',
+    title: 'SoloLearn',
+    section: 'courses',
+    track: 'extra',
+    runtime: 'html5',
+    src: 'https://www.sololearn.com/',
+    category: 'Programming',
+    developer: 'SoloLearn',
+    newTab: true,
+    blurb: 'Bite-sized programming courses built for a phone, with a compiler you can run in the browser.',
+  },
+];
+
+/**
+ * Google Doodle games.
+ *
+ * They refuse to be framed by anyone but Google — every one sends
+ * `frame-ancestors 'self' *.google.com …`, and this site is not on that list.
+ * But `'self'` is judged against whoever serves the *document*, so proxying
+ * /logos through this origin (see vercel.json) satisfies it. Their assets are
+ * root-relative, so they come through the same proxy.
+ *
+ * Only the interactive ones are here. There are thousands of doodles and about
+ * twenty that are games; each path below was loaded and checked rather than
+ * guessed from a naming pattern, because the archive moved and the old JSON
+ * index that used to list them returns a 404 now.
+ */
+const DOODLES: [slug: string, title: string, path: string, year: string, blurb: string][] = [
+  ['doodle-pacman', 'Pac-Man', '/logos/2010/pacman10-hp.html', '2010',
+    'The doodle that started it — a full Pac-Man built into the logo, 255 levels and all.'],
+  ['doodle-magic-cat-academy', 'Magic Cat Academy', '/logos/2016/halloween16/halloween16.html', '2016',
+    'Momo the cat draws symbols to banish ghosts through a haunted school. The best-loved one.'],
+  ['doodle-great-ghoul-duel', 'The Great Ghoul Duel', '/logos/2021/halloween18_reboot/r1025/halloween18_reboot.html', '2018',
+    'Multiplayer capture-the-flag with wisps, played as ghosts. Google rebuilt it in 2021.'],
+  ['doodle-halloween-2019', 'Halloween 2019', '/logos/2019/halloween19/rc1/halloween19.html', '2019',
+    'A wizard cat and a night of trick-or-treating.'],
+  ['doodle-magic-cat-academy-2', 'Magic Cat Academy 2', '/logos/2020/halloween20/rc1/halloween20.html', '2020',
+    'Momo returns, this time underwater. Same symbol-drawing, deeper trouble.'],
+  ['doodle-halloween-2021', 'Halloween 2021', '/logos/2021/halloween21/v81123/halloween21.html', '2021',
+    'The Great Ghoul Duel returns for another season of wisp-stealing.'],
+  ['doodle-champion-island', 'Champion Island Games', '/logos/2020/kitsune/rc6/kitsune20.html', '2021',
+    'The big one: an RPG island with seven sports minigames, side quests and a story.'],
+  ['doodle-garden-gnomes', 'Garden Gnomes', '/logos/2018/gnomes/gnomes18.html', '2018',
+    'Fling gnomes across a garden with a trebuchet and plant whatever they land on.'],
+  ['doodle-loteria', 'Lotería', '/logos/2019/loteria/r3/loteria19.html', '2019',
+    'The Mexican card game, played against three opponents online.'],
+  ['doodle-fischinger', 'Oskar Fischinger', '/logos/doodles/2017/fischinger/fischinger17.9.html', '2017',
+    'A visual music sequencer. Draw on the grid and watch the shapes play it back.'],
+  ['doodle-scoville', 'Scoville', '/logos/2016/scoville/scoville16.html', '2016',
+    'Throw ice cream at increasingly hot peppers. Named for the man who measured them.'],
+  ['doodle-pony-express', 'Pony Express', '/logos/2015/ponyexpress/ponyexpress15.html', '2015',
+    'Ride west collecting letters and dodging obstacles across the frontier.'],
+  ['doodle-pizza', 'Pizza', '/logos/2021/pizza/rc5/pizza.html', '2021',
+    'Eleven orders from around the world, each cut to the customer’s exact request.'],
+  ['doodle-bubble-tea', 'Bubble Tea', '/logos/2023/boba/rc3/boba.html', '2023',
+    'Build the drink to order, boba and all.'],
+  ['doodle-pani-puri', 'Pani Puri', '/logos/2023/panipuri/r3/panipuri.html', '2023',
+    'Fill each puri to the flavour and quantity the customer asked for, faster and faster.'],
+  ['doodle-cricket', 'Cricket', '/logos/2017/cricket17/cricket17.html', '2017',
+    'Crickets playing cricket. Time the shot, run the score up.'],
+  ['doodle-hip-hop', 'Hip Hop', '/logos/2017/hiphop/hiphop17.html', '2017',
+    'Learn to mix two turntables, with a crate of records to sample from.'],
+  ['doodle-basketball', 'Basketball', '/logos/2012/basketball-2012-hp.html', '2012',
+    'London 2012. Hold to charge, release to shoot, as many as you can in the time.'],
+  ['doodle-hurdles', 'Hurdles', '/logos/2012/hurdles-2012-hp.html', '2012',
+    'London 2012. Two keys to run, one to jump.'],
+  ['doodle-soccer', 'Soccer', '/logos/2012/football-2012-hp.html', '2012',
+    'London 2012. Keep the shots out of your net.'],
+];
+
+const DOODLE_GAMES: Game[] = DOODLES.map(([slug, title, src, year, blurb]) => ({
+  slug,
+  title,
+  section: 'arcade',
+  runtime: 'html5',
+  src,
+  category: 'Doodle',
+  developer: 'Google',
+  year,
+  blurb,
+}));
 
 /**
  * The Eaglercraft client is deployed separately (see deploy/eaglercraft-relay/README.md)
  * and its URL is baked in at build time. Unset means no card at all, which beats a
  * card that opens a blank frame.
  */
-const EAGLERCRAFT: Game[] = import.meta.env.VITE_EAGLERCRAFT_URL
+const EAGLERCRAFT: Game[] = import.meta.env?.VITE_EAGLERCRAFT_URL
   ? [
       {
         slug: 'eaglercraft',
         title: 'Eaglercraft',
         section: 'arcade',
         runtime: 'html5',
-        src: import.meta.env.VITE_EAGLERCRAFT_URL,
+        src: import.meta.env?.VITE_EAGLERCRAFT_URL,
         category: 'Sandbox',
         blurb:
           'Minecraft 1.8.8 in the browser. Singleplayer works immediately; shared worlds need a relay.',
@@ -490,7 +752,7 @@ const STUDY: Game[] = [
     section: 'study',
     runtime: 'html5',
     src: 'https://en.wikipedia.org/wiki/Main_Page',
-    thumb: '/thumbs/study/wikipedia.jpg',
+    thumb: '/thumbs/study/wikipedia.png',
     category: 'Reference',
     developer: 'Wikimedia',
   },
@@ -511,7 +773,6 @@ const STUDY: Game[] = [
     runtime: 'html5',
     src: 'https://www.onelook.com/',
     thumb: '/thumbs/study/onelook.png',
-    thumbFit: 'cover',
     category: 'Reference',
     developer: 'OneLook',
   },
@@ -688,10 +949,12 @@ const STUDY: Game[] = [
 ];
 
 export const GAMES: Game[] = [
+  ...DOODLE_GAMES,
   ...SWFDUMP_FILES.map(([path]) => fromSwf(path)),
   ...EXTRA,
   ...EAGLERCRAFT,
   ...STUDY,
+  ...COURSES,
 ].sort(
   (a, b) => a.title.localeCompare(b.title),
 );

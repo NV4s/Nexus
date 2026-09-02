@@ -1,4 +1,4 @@
-import { SWFDUMP_FILES, SWFDUMP_SHA } from '../data/swfdump';
+import { SWFDUMP_FILES, SWFDUMP_SHA } from '../data/swfdump.ts';
 
 /** jsDelivr refuses to serve GitHub files above ~20 MB; those fall back to raw. */
 const JSDELIVR_MAX = 20_000_000;

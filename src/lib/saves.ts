@@ -1,6 +1,6 @@
-import { SWFDUMP_SHA } from '../data/swfdump';
-import { GAMES, type Game } from '../data/games';
-import { decodeSol, type SolValue } from './sol';
+import { SWFDUMP_SHA } from '../data/swfdump.ts';
+import { GAMES, type Game } from '../data/games.ts';
+import { decodeSol, type SolValue } from './sol.ts';
 
 /**
  * Ruffle keys Flash SharedObjects by the SWF's URL, and every swfdump URL carries

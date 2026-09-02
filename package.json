@@ -10,7 +10,8 @@
     "lint": "tsc --noEmit",
     "check:secrets": "node scripts/check-secrets.mjs",
     "redis:stub": "node scripts/redis-stub.mjs",
-    "test": "node --test scripts/sol.test.ts scripts/markdown.test.ts"
+    "test": "node --localstorage-file=.localstorage-test --test scripts/sol.test.ts scripts/markdown.test.ts scripts/rescan.test.ts",
+    "test:crisis": "node scripts/crisis-selftest.mjs && node scripts/crisis-verify.mjs && node scripts/crisis-content.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",

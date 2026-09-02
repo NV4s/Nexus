@@ -2100,3 +2100,136 @@ select.field {
   min-height: 18rem;
   align-content: start;
 }
+
+/* Consoles are list tiles carrying a name and one line, not panels holding
+   prose, so they do not want the 24rem floor the rest of `.panels` uses —
+   thirteen of them at that width is a very tall, very sparse page. */
+.console-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+}
+
+/* An arcade tile whose art is a small mark rather than a screenshot: fit it
+   whole on the surface colour instead of upscaling it past legibility. */
+.card-art img.is-contain {
+  object-fit: contain;
+  padding: 10%;
+  background: linear-gradient(140deg, var(--surface-2), var(--surface));
+}
+
+/* ---------- arcade: franchise rows ---------- */
+
+.series {
+  margin-bottom: 2rem;
+}
+
+.series > h3 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  margin-bottom: 1rem;
+}
+
+.series-row {
+  margin-bottom: 1.75rem;
+}
+
+.series-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.series-head h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 620;
+}
+
+.series-head p {
+  flex: 1 1 20rem;
+  font-size: 0.85rem;
+}
+
+.series-count {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* One row per series, scrolled sideways. The fade at the right edge is what
+   says "there is more" — without it a cut-off card reads as a broken layout. */
+.series-scroller {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(11.5rem, 1fr);
+  gap: 0.85rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x proximity;
+  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+}
+
+.series-scroller > .card {
+  scroll-snap-align: start;
+}
+
+/* A series that fits entirely needs neither the fade nor the scrollbar. */
+@media (min-width: 90rem) {
+  .series-scroller:not(:hover) {
+    scrollbar-width: none;
+  }
+}
+
+/* ---------- sub-tabs (Study) ---------- */
+
+.subnav-wrap {
+  padding-bottom: 0;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+}
+
+.subnav {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.28rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* The second level is visually quieter, so the pair reads as a hierarchy
+   rather than two rows of equally important buttons. */
+.subnav.is-nested {
+  background: transparent;
+  border-color: transparent;
+  padding-left: 0;
+}
+
+.subnav-tab {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  transition: color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.subnav-tab:hover {
+  color: var(--text);
+}
+
+.subnav-tab.is-active {
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+
+.subnav.is-nested .subnav-tab.is-active {
+  color: var(--text);
+  background: var(--surface-2);
+}

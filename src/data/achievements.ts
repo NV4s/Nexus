@@ -1,4 +1,4 @@
-import type { Achievement } from '../lib/achievements';
+import type { Achievement } from '../lib/achievements.ts';
 
 /**
  * Researched objectives, keyed by game slug. Anything absent here falls back to

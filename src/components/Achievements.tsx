@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { Clock } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Clock, RefreshCw } from 'lucide-react';
 import { GAMES } from '../data/games';
-import { countsFor, readProgress } from '../lib/achievements';
+import { countsFor, readProgress, rescanAll } from '../lib/achievements';
 import { navigate } from '../lib/router';
 
 /** Rounded the way a person would say it, not to the second. */
@@ -15,7 +15,9 @@ const spell = (seconds: number) => {
 };
 
 export default function Achievements() {
-  // Read once per visit: progress only changes while a game is open, not here.
+  // Bumped by the re-check button to rebuild the rows below.
+  const [pass, setPass] = useState(0);
+
   const rows = useMemo(
     () =>
       GAMES.filter((game) => game.section === 'arcade')
@@ -27,7 +29,10 @@ export default function Achievements() {
             b.unlocked / b.total - a.unlocked / a.total ||
             a.game.title.localeCompare(b.game.title),
         ),
-    [],
+    // A fresh evaluation before reading, so a score set in the last session is
+    // already counted by the time the first row renders.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [(rescanAll(), pass)],
   );
 
   const unlocked = rows.reduce((sum, row) => sum + row.unlocked, 0);
@@ -47,6 +52,13 @@ export default function Achievements() {
               : 'Nothing yet. Open a game and its list appears under the player.'}
           </p>
         </div>
+        <button
+          className="button ghost"
+          onClick={() => setPass((n) => n + 1)}
+          title="Read every game's save again and tick anything it has earned"
+        >
+          <RefreshCw size={15} /> Re-check saves
+        </button>
       </header>
 
       {rows.length > 0 && (

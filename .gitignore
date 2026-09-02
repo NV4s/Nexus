@@ -6,3 +6,10 @@ dist/
 *.log
 # The Eaglercraft relay jar is exported from the client, not redistributed here.
 *.jar
+
+# Local asset packs for the Crisis Point port — never committed, never deployed.
+public/time-crisis/assets/*
+!public/time-crisis/assets/README.md
+
+# Scratch store for the achievement tests
+.localstorage-test

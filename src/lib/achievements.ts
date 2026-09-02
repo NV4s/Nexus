@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ACHIEVEMENTS } from '../data/achievements';
-import { SAVE_RULES, passes } from '../data/saveRules';
-import { readSavePath, saveRawFor } from './saves';
+import { ACHIEVEMENTS } from '../data/achievements.ts';
+import { SAVE_RULES, passes } from '../data/saveRules.ts';
+import { listSaves, readSavePath, saveRawFor } from './saves.ts';
 
 /**
  * What unlocks by itself.
@@ -167,6 +167,37 @@ function applyAuto(slug: string, progress = readProgress(slug)) {
 
 /** Call when the player opens a game: 'played' should land immediately, not on exit. */
 export const markPlayed = (slug: string) => applyAuto(slug);
+
+/**
+ * Re-evaluates every game the device holds anything for.
+ *
+ * Without this, a save is only ever checked while its own game page is mounted:
+ * `applyAuto` ran from `markPlayed` on open and from `commit` on exit, and
+ * nothing else. Beat a high score, close the tab, open the achievements page —
+ * and nothing had looked at the save since before the score existed. The
+ * objective was earned and simply unread.
+ *
+ * Run at boot and whenever the achievements page opens, so a save written by
+ * any route, at any time, is picked up by the next page load.
+ */
+export function rescanAll(): number {
+  const slugs = new Set<string>();
+
+  for (const entry of listSaves()) slugs.add(entry.game.slug);
+
+  // Progress without a save still matters: playtime and session rules live in
+  // the same pass, so they were stuck behind the same door.
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (key.startsWith(PLAY_PREFIX)) slugs.add(key.slice(PLAY_PREFIX.length));
+    }
+  } catch {
+    /* storage blocked — whatever listSaves found is still worth checking */
+  }
+
+  for (const slug of slugs) applyAuto(slug);
+  return slugs.size;
+}
 
 /**
  * Counts one play session. Call the returned function when the player leaves.

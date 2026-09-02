@@ -9,6 +9,9 @@ export default defineConfig({
     proxy: {
       '/n-gon': { target: 'https://landgreen.github.io', changeOrigin: true },
       '/level13': { target: 'https://nroutasuo.github.io', changeOrigin: true },
+      // Doodles refuse to be framed by anyone but Google. Serving them from this
+      // origin is what satisfies their own frame-ancestors 'self'.
+      '/logos': { target: 'https://www.google.com', changeOrigin: true },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,
