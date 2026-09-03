@@ -347,6 +347,43 @@ const EXTRA: Game[] = [
    * served from github.io, which school filters block wholesale, and proxying
    * also means each game stays whatever its author last shipped.
    */
+  /*
+   * Three modern browser games. None of their official hosts allow framing, and
+   * for Polytrack proxying cannot help either — kodub.com names its permitted
+   * ancestors explicitly rather than allowing 'self', so serving it from here
+   * would still be refused. These are self-hosted community builds, proxied the
+   * same way n-gon is, which also gets them past filters that block github.io.
+   */
+  {
+    slug: 'polytrack',
+    title: 'PolyTrack',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/polytrack/',
+    category: 'Racing',
+    developer: 'Kodub',
+    blurb: 'Low-poly time trials. Build a track, beat your own ghost, repeat.',
+  },
+  {
+    slug: 'basket-random',
+    title: 'Basket Random',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/basket-random/',
+    category: 'Sports',
+    developer: 'RHM Interactive',
+    blurb: 'One button, two ragdolls, and a court that changes every point.',
+  },
+  {
+    slug: 'basketball-stars',
+    title: 'Basketball Stars',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/basketball-stars/',
+    category: 'Sports',
+    developer: 'Madpuffers',
+    blurb: 'One-on-one street basketball. Dribble, shoot, block, dunk.',
+  },
   {
     slug: 'level-13',
     title: 'Level 13',
@@ -615,7 +652,7 @@ const DOODLES: [slug: string, title: string, path: string, year: string, blurb: 
     'Momo returns, this time underwater. Same symbol-drawing, deeper trouble.'],
   ['doodle-halloween-2021', 'Halloween 2021', '/logos/2021/halloween21/v81123/halloween21.html', '2021',
     'The Great Ghoul Duel returns for another season of wisp-stealing.'],
-  ['doodle-champion-island', 'Champion Island Games', '/logos/2020/kitsune/rc6/kitsune20.html', '2021',
+  ['doodle-champion-island', 'Champion Island Games', '/logos/2020/kitsune/rc7/kitsune20.html', '2021',
     'The big one: an RPG island with seven sports minigames, side quests and a story.'],
   ['doodle-garden-gnomes', 'Garden Gnomes', '/logos/2018/gnomes/gnomes18.html', '2018',
     'Fling gnomes across a garden with a trebuchet and plant whatever they land on.'],

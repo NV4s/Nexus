@@ -12,6 +12,18 @@ export default defineConfig({
       // Doodles refuse to be framed by anyone but Google. Serving them from this
       // origin is what satisfies their own frame-ancestors 'self'.
       '/logos': { target: 'https://www.google.com', changeOrigin: true },
+      '/polytrack': { target: 'https://joe-the-chicken.github.io', changeOrigin: true },
+      '/basket-random': {
+        target: 'https://colinthepanda.github.io',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/basket-random/, '/BasketballRandom'),
+      },
+      '/basketball-stars': {
+        target: 'https://basketballstarsunblocked.github.io',
+        changeOrigin: true,
+        // Served from that site's root, so the prefix is ours alone.
+        rewrite: (path: string) => path.replace(/^\/basketball-stars/, '') || '/',
+      },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,

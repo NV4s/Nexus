@@ -3,6 +3,23 @@
   "functions": {
     "api/**/*.ts": { "maxDuration": 10 }
   },
+  "redirects": [
+    {
+      "source": "/logos/:path(.*)\\.mp4",
+      "destination": "https://www.google.com/logos/:path.mp4",
+      "permanent": false
+    },
+    {
+      "source": "/logos/:path(.*)\\.mp3",
+      "destination": "https://www.google.com/logos/:path.mp3",
+      "permanent": false
+    },
+    {
+      "source": "/logos/:path(.*)\\.ogg",
+      "destination": "https://www.google.com/logos/:path.ogg",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     { "source": "/swf/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" },
     { "source": "/n-gon", "destination": "https://landgreen.github.io/n-gon/" },
@@ -17,7 +34,19 @@
     { "source": "/adarkroom/", "destination": "https://adarkroom.doublespeakgames.com/" },
     { "source": "/adarkroom/:path*", "destination": "https://adarkroom.doublespeakgames.com/:path*" },
 
-    { "source": "/logos/:path*", "destination": "https://www.google.com/logos/:path*" }
+    { "source": "/logos/:path*", "destination": "https://www.google.com/logos/:path*" },
+
+    { "source": "/polytrack", "destination": "https://joe-the-chicken.github.io/polytrack/" },
+    { "source": "/polytrack/", "destination": "https://joe-the-chicken.github.io/polytrack/" },
+    { "source": "/polytrack/:path*", "destination": "https://joe-the-chicken.github.io/polytrack/:path*" },
+
+    { "source": "/basket-random", "destination": "https://colinthepanda.github.io/BasketballRandom/" },
+    { "source": "/basket-random/", "destination": "https://colinthepanda.github.io/BasketballRandom/" },
+    { "source": "/basket-random/:path*", "destination": "https://colinthepanda.github.io/BasketballRandom/:path*" },
+
+    { "source": "/basketball-stars", "destination": "https://basketballstarsunblocked.github.io/" },
+    { "source": "/basketball-stars/", "destination": "https://basketballstarsunblocked.github.io/" },
+    { "source": "/basketball-stars/:path*", "destination": "https://basketballstarsunblocked.github.io/:path*" }
   ],
   "headers": [
     {
