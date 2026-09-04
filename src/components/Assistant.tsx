@@ -13,6 +13,7 @@ import {
   writeChat,
   writeKey,
   writeSetting,
+  LOCAL_VISION_SIZE,
   type Attachment,
   type Availability,
   type EngineId,
@@ -439,6 +440,14 @@ export default function Assistant() {
             <div ref={endRef} />
           </div>
 
+          {engine.private && files.some((file) => file.type.startsWith('image/')) && (
+            <p className="admin-error">
+              Reading a picture on this device needs a second model — {LOCAL_VISION_SIZE}. It
+              downloads the first time you send one, and stays cached afterwards. Text-only
+              messages keep using the small model.
+            </p>
+          )}
+
           {files.length > 0 && (
             <div className="attachments">
               {files.map((file, index) => (
@@ -486,11 +495,13 @@ export default function Assistant() {
             <button
               type="button"
               className="button ghost"
-              disabled={busy || engine.private}
+              disabled={busy || !engine.takesFiles}
               title={
-                engine.private
-                  ? 'On-device models read text only'
-                  : 'Attach an image or document'
+                !engine.takesFiles
+                  ? "Chrome's built-in model reads text only"
+                  : engine.private
+                    ? 'Attach an image — the on-device model reads pictures with a second, larger model'
+                    : 'Attach an image or document'
               }
               onClick={() => fileRef.current?.click()}
             >

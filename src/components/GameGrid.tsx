@@ -4,6 +4,7 @@ import { openGame as open } from '../lib/launch';
 import { ROWS_BETWEEN_ADS } from '../lib/ads';
 import { SERIES, gamesInSeries } from '../data/series.ts';
 import GameCard from './GameCard';
+import Scroller from './Scroller';
 import AdSlot from './AdSlot';
 
 /**
@@ -101,17 +102,15 @@ export default function GameGrid({
             The second copy is hidden from assistive tech and from tabbing, or
             every game would be announced and focusable twice.
           */}
-          <div className="marquee">
-            <div className="marquee-track">
-              {[0, 1].map((copy) => (
-                <div className="marquee-run" key={copy} aria-hidden={copy === 1} inert={copy === 1}>
-                  {starters.map((game) => (
-                    <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+          <Scroller loop speed={22} className="marquee" label="the starter row">
+            {[0, 1].map((copy) => (
+              <div className="marquee-run" key={copy} aria-hidden={copy === 1} inert={copy === 1}>
+                {starters.map((game) => (
+                  <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
+                ))}
+              </div>
+            ))}
+          </Scroller>
         </div>
       )}
 
@@ -130,11 +129,11 @@ export default function GameGrid({
                     {games.length} {games.length === 1 ? 'game' : 'games'}
                   </span>
                 </div>
-                <div className="series-scroller">
+                <Scroller className="series-scroller" label={series.title}>
                   {games.map((game) => (
                     <GameCard key={game.slug} game={game} onOpen={() => open(game)} />
                   ))}
-                </div>
+                </Scroller>
               </div>
             );
           })}

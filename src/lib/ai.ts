@@ -216,6 +216,18 @@ const SYSTEM =
 // and 4 GB of RAM do not go together; this one is a few hundred MB.
 const LOCAL_MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
 
+/**
+ * The only model WebLLM ships that can see an image.
+ *
+ * It is not a drop-in replacement for the one above: it wants about 4 GB of
+ * VRAM against that one's 350 MB, which is more than a school Chromebook has.
+ * So it is fetched only when someone actually attaches a picture, and the text
+ * model stays the default for everything else.
+ */
+const LOCAL_VISION_MODEL = 'Phi-3.5-vision-instruct-q4f16_1-MLC';
+
+export const LOCAL_VISION_SIZE = 'about 3.5 GB, and roughly 4 GB of video memory';
+
 type WebLLMEngine = {
   chat: {
     completions: {
@@ -224,19 +236,54 @@ type WebLLMEngine = {
   };
 };
 
-let localEngine: WebLLMEngine | null = null;
+/** Keyed by model id: the text and vision models are both worth keeping warm. */
+const localEngines = new Map<string, WebLLMEngine>();
 
 const hasWebGPU = () => typeof navigator !== 'undefined' && 'gpu' in navigator;
 
-async function loadLocal(onProgress: Progress): Promise<WebLLMEngine> {
-  if (localEngine) return localEngine;
+async function loadLocal(onProgress: Progress, model = LOCAL_MODEL): Promise<WebLLMEngine> {
+  const cached = localEngines.get(model);
+  if (cached) return cached;
   // Imported here rather than at module scope so the library is only fetched
   // when someone actually opts in to running a model locally.
   const webllm = await import('@mlc-ai/web-llm');
-  localEngine = (await webllm.CreateMLCEngine(LOCAL_MODEL, {
+  const engine = (await webllm.CreateMLCEngine(model, {
     initProgressCallback: (report: { text: string }) => onProgress(report.text),
   })) as unknown as WebLLMEngine;
-  return localEngine;
+  localEngines.set(model, engine);
+  return engine;
+}
+
+/**
+ * A turn in the shape WebLLM's vision models want.
+ *
+ * Images go as parts alongside the text rather than as a separate field, and
+ * the URL has to carry the `data:` prefix the attachment dropped when it was
+ * read. Anything that came in as extracted text is appended to the prompt,
+ * since only pictures can go through the image channel.
+ */
+function withImages(message: Message) {
+  const images = (message.files ?? []).filter((file) => file.data && isImage(file.type));
+  const text = (message.files ?? []).filter((file) => file.text);
+  if (!images.length) {
+    return {
+      role: message.role,
+      content: text.length
+        ? `${message.content}\n\n${text.map((file) => `${file.name}:\n${file.text}`).join('\n\n')}`
+        : message.content,
+    };
+  }
+
+  return {
+    role: message.role,
+    content: [
+      { type: 'text', text: message.content || 'Describe this image.' },
+      ...images.map((file) => ({
+        type: 'image_url',
+        image_url: { url: `data:${file.type};base64,${file.data}` },
+      })),
+    ],
+  };
 }
 
 /** True once the model is in the browser's cache, so it will start instantly. */
@@ -418,6 +465,12 @@ export type Engine = {
   private: boolean;
   /** Needs an API key, so its settings are always editable — not only while unset. */
   keyed?: boolean;
+  /**
+   * Whether this engine can take an attachment at all. Distinct from `private`:
+   * the on-device model reads images through a second, much larger model, while
+   * Chrome's built-in one is text and nothing else.
+   */
+  takesFiles?: boolean;
   note: string;
   check(): Promise<Availability>;
   ask(messages: Message[], onProgress: Progress): Promise<string>;
@@ -431,6 +484,7 @@ export const ENGINES: Engine[] = [
     id: 'local',
     label: 'On this device',
     private: true,
+    takesFiles: true,
     note: 'A small model runs in your browser. Nothing you type leaves the device. Slower, and the first use downloads the model.',
     async check() {
       if (!hasWebGPU()) {
@@ -439,12 +493,14 @@ export const ENGINES: Engine[] = [
       return (await localModelCached()) ? { state: 'ready' } : { state: 'needs-download', size: 'about 350 MB' };
     },
     async ask(messages, onProgress) {
-      if (messages.some((message) => message.files?.length)) {
-        throw new Error('The on-device model reads text only. Use a key-based engine for files.');
-      }
-      const engine = await loadLocal(onProgress);
+      // A picture needs the vision model, which is a much larger download, so it
+      // is only pulled in when one is actually attached.
+      const wantsVision = messages.some((message) =>
+        message.files?.some((file) => file.data && isImage(file.type)),
+      );
+      const engine = await loadLocal(onProgress, wantsVision ? LOCAL_VISION_MODEL : LOCAL_MODEL);
       const stream = await engine.chat.completions.create({
-        messages: [{ role: 'system', content: SYSTEM }, ...messages],
+        messages: [{ role: 'system', content: SYSTEM }, ...messages.map(withImages)],
         stream: true,
       });
       let answer = '';
@@ -491,6 +547,7 @@ export const ENGINES: Engine[] = [
   {
     id: 'anthropic',
     keyed: true,
+    takesFiles: true,
     label: 'Claude',
     private: false,
     note: 'Your Anthropic API key, from console.anthropic.com. The conversation goes to Anthropic.',
@@ -500,6 +557,7 @@ export const ENGINES: Engine[] = [
   {
     id: 'google',
     keyed: true,
+    takesFiles: true,
     label: 'Gemini',
     private: false,
     note: 'Your Google AI Studio key, from aistudio.google.com. The conversation goes to Google.',
@@ -509,6 +567,7 @@ export const ENGINES: Engine[] = [
   {
     id: 'openai',
     keyed: true,
+    takesFiles: true,
     label: 'ChatGPT',
     private: false,
     note: 'Your OpenAI key, from platform.openai.com. The conversation goes to OpenAI.',
@@ -518,6 +577,7 @@ export const ENGINES: Engine[] = [
   {
     id: 'custom',
     keyed: true,
+    takesFiles: true,
     label: 'Other (OpenAI-compatible)',
     private: false,
     // One field instead of one integration per service: OpenRouter, OpenClaw's

@@ -1921,18 +1921,96 @@ select.field {
   font-size: 0.85rem;
 }
 
-/* ---------- the auto-scrolling starter row ---------- */
+/* ---------- horizontal strips ----------
+   The drift is driven by scrollLeft in Scroller.tsx rather than a transform,
+   which is what lets the wheel, a drag and the arrows all move the same row.
+   A transformed track has no scroll position, so none of those could reach it. */
 
-.marquee {
-  overflow: hidden;
-  /* Fades both ends so cards enter and leave rather than being cut off. */
-  mask-image: linear-gradient(to right, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+.scroller {
+  position: relative;
 }
 
-.marquee-track {
+.scroller-track {
   display: flex;
-  width: max-content;
-  animation: marquee 90s linear infinite;
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  /* Horizontal overscroll must not turn into a page-level back gesture. */
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  /* Fades both ends so cards enter and leave rather than being cut off. */
+  mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+}
+
+.scroller-track:active {
+  cursor: grabbing;
+}
+
+/* Thin on the strips, where a full-height bar would crowd the cards. */
+.scroller-track {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.scroller-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scroller-track::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.scroller-arrow {
+  position: absolute;
+  top: calc(50% - 0.25rem);
+  transform: translateY(-50%);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 1px solid var(--glass-edge);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+/* Kept out of the way until the row is being used, but always reachable by
+   keyboard — an arrow that only exists on hover is unusable without a mouse. */
+.scroller:hover .scroller-arrow,
+.scroller:focus-within .scroller-arrow {
+  opacity: 1;
+}
+
+.scroller-arrow:hover {
+  background: var(--surface-2);
+}
+
+.scroller-arrow:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.scroller-arrow.is-prev {
+  left: -0.4rem;
+}
+
+.scroller-arrow.is-next {
+  right: -0.4rem;
+}
+
+@media (max-width: 40rem) {
+  /* Touch scrolls the strip directly; the arrows would only cover cards. */
+  .scroller-arrow {
+    display: none;
+  }
 }
 
 .marquee-run {
@@ -1944,31 +2022,6 @@ select.field {
 .marquee-run > .card {
   width: 15rem;
   flex: 0 0 15rem;
-}
-
-/* Pausing on hover is what makes the row usable: a card cannot be clicked
-   reliably while it is still moving away from the pointer. */
-.marquee:hover .marquee-track,
-.marquee:focus-within .marquee-track {
-  animation-play-state: paused;
-}
-
-@keyframes marquee {
-  to {
-    /* Exactly one copy's width, so the loop point is an identical frame. */
-    transform: translateX(-50%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-
-  /* Without the animation the row must still be reachable, so it scrolls by hand. */
-  .marquee {
-    overflow-x: auto;
-  }
 }
 
 /* ---------- home: one chapter per screen ----------
@@ -2159,28 +2212,17 @@ select.field {
   white-space: nowrap;
 }
 
-/* One row per series, scrolled sideways. The fade at the right edge is what
-   says "there is more" — without it a cut-off card reads as a broken layout. */
-.series-scroller {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(11.5rem, 1fr);
+/* One row per series. Cards are a fixed width so a two-game series does not
+   stretch each card across the page. */
+.series-scroller .scroller-track {
   gap: 0.85rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
   scroll-snap-type: x proximity;
-  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
 }
 
-.series-scroller > .card {
+.series-scroller .scroller-track > .card {
+  width: 11.5rem;
+  flex: 0 0 11.5rem;
   scroll-snap-align: start;
-}
-
-/* A series that fits entirely needs neither the fade nor the scrollbar. */
-@media (min-width: 90rem) {
-  .series-scroller:not(:hover) {
-    scrollbar-width: none;
-  }
 }
 
 /* ---------- sub-tabs (Study) ---------- */
@@ -2253,9 +2295,8 @@ select.field {
   scroll-behavior: auto !important;
 }
 
-:root[data-motion='reduced'] .marquee {
-  overflow-x: auto;
-}
+/* The strips are scroll containers now, so nothing needs undoing here — the
+   drift simply never starts. Scroller.tsx checks the same two signals. */
 
 /* ---------- settings: storage ---------- */
 
