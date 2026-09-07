@@ -447,6 +447,21 @@ const EXTRA: Game[] = [
       + 'cover system, 52 areas across 6 stages, and 8 bosses. Lean out to fire, duck back to '
       + 'reload, and cross to the other cover before the clock runs out. Original art and audio.',
   },
+  {
+    slug: 'shootout-reloaded',
+    title: 'Shootout Reloaded',
+    section: 'arcade',
+    runtime: 'html5',
+    // The file, not the directory, for the same reason as above.
+    src: '/shootout-reloaded/index.html',
+    category: 'Shooter',
+    // A frame captured from the running game; the export's own icon is the
+    // stock Construct logo, which says nothing about the game.
+    thumb: '/thumbs/shootout-reloaded.jpg',
+    developer: 'Nexus',
+    year: '2026',
+    blurb: 'Duelling gunners with a health bar and limited ammo. Built here in Construct 3.',
+  },
 ];
 
 

@@ -125,6 +125,20 @@ const madness = (): Achievement[] => [
 ];
 
 export const ACHIEVEMENTS: Record<string, Achievement[]> = {
+  // Built here in Construct 3. Its data.json touches no localStorage at all, so
+  // nothing it does can be read back — these are ticked by the player, and no
+  // rule for it belongs in data/saveRules.ts. The objectives name what the
+  // project actually contains: gunners, a gun, bullets, a health bar, an ammo
+  // count, and four score slots.
+  'shootout-reloaded': [
+    opened('Locked and loaded', 'Start a round.'),
+    { id: 'first-hit', name: 'First blood', hint: 'Land a shot on the other gunner.' },
+    { id: 'dry', name: 'Out', hint: 'Empty the magazine in a single round.' },
+    { id: 'untouched', name: 'Not a scratch', hint: 'Win a round with a full health bar.' },
+    { id: 'win-round', name: 'Last one standing', hint: 'Win a round.' },
+    settled,
+  ],
+
   // 33 stages; orange tiles are fragile, X switches need the block upright,
   // circle switches take any weight, and split switches break the block in two.
   bloxorz: [
