@@ -78,8 +78,33 @@ export function ruffleOptions(prefs: PlayerPrefs) {
     forceScale: prefs.stretch,
     // null is Ruffle's own "use the file's own rate"; a number overrides it.
     frameRate: prefs.frameRate > 0 ? prefs.frameRate : null,
+    urlRewriteRules: DEAD_SPONSOR_APIS,
   };
 }
+
+/**
+ * Sponsor SDKs whose back ends no longer exist, sent nowhere.
+ *
+ * A sponsored Flash game loads its portal's SDK at runtime and asks it about
+ * the player. The SDK files are often still served — Armor Games still returns
+ * AGI.swf and ABS.swf today — but the service behind them is gone, so the SDK
+ * loads, calls home, waits out its own timeout and puts a portal-branded error
+ * over the game. Achievement Unlocked 3 sat on "Armor Games Services are
+ * temporarily unavailable (Error 1)" for about forty seconds before it would
+ * start.
+ *
+ * Pointing the SDK at a path that is not a SWF makes the load fail at once, and
+ * the games treat that the way they were always meant to: they skip the portal
+ * features and start. Verified on Achievement Unlocked 3 — straight to its title
+ * screen, no dialog, and nothing requested from armorgames.com at all.
+ *
+ * This is deliberately a list of hosts known to be dead rather than a blanket
+ * block: a live SDK is still worth loading, and some sponsored builds check in
+ * before they will run.
+ */
+const DEAD_SPONSOR_APIS: [RegExp, string][] = [
+  [/^https?:\/\/agi\.armorgames\.com\/.*$/, '/sponsor-offline'],
+];
 
 export const FRAME_RATES = [0, 24, 30, 45, 60, 90, 120] as const;
 export const QUALITIES: Quality[] = ['low', 'medium', 'high', 'best'];
