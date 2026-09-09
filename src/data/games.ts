@@ -172,7 +172,8 @@ const META: Record<string, Partial<Game>> = {
     developer: 'John Cooney (jmtb02)',
     year: '2012',
     thumb: '/thumbs/achievement-unlocked-3.png',
-    blurb: 'The elephant is back, and so are another hundred of them.',
+    // 400, not another hundred — the game's own loading screen counts them out.
+    blurb: 'The elephant is back for 400 more achievements across ten rooms.',
   },
   'adrenaline-challenge': {
     thumb: '/thumbs/adrenaline-challenge.png',

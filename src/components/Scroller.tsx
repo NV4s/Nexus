@@ -36,7 +36,7 @@ export default function Scroller({
   // Set while a pointer is down, and briefly after any manual scroll, so the
   // drift does not fight the person using it.
   const paused = useRef(0);
-  const drag = useRef<{ x: number; from: number; moved: number } | null>(null);
+  const drag = useRef<{ x: number; from: number; moved: number; captured: boolean } | null>(null);
   /** When a drag last ended, so the click it produces can be ignored. */
   const draggedAt = useRef(0);
 
@@ -109,7 +109,13 @@ export default function Scroller({
         ref={ref}
         className="scroller-track"
         onMouseEnter={() => setHeld(true)}
-        onMouseLeave={() => setHeld(false)}
+        onMouseLeave={() => {
+          setHeld(false);
+          // A press that leaves before it became a drag never captured, so its
+          // pointerup lands elsewhere and would strand the drag state, which
+          // stops the drift for good.
+          if (drag.current && !drag.current.captured) drag.current = null;
+        }}
         onFocusCapture={() => setHeld(true)}
         onBlurCapture={() => setHeld(false)}
         onScroll={(event) => {
@@ -122,14 +128,27 @@ export default function Scroller({
         onPointerDown={(event) => {
           // Touch already drags natively; hijacking it would break momentum.
           if (event.pointerType === 'touch') return;
-          drag.current = { x: event.clientX, from: event.currentTarget.scrollLeft, moved: 0 };
-          event.currentTarget.setPointerCapture(event.pointerId);
+          drag.current = {
+            x: event.clientX,
+            from: event.currentTarget.scrollLeft,
+            moved: 0,
+            captured: false,
+          };
         }}
         onPointerMove={(event) => {
           const state = drag.current;
           if (!state) return;
           const dx = event.clientX - state.x;
           state.moved = Math.max(state.moved, Math.abs(dx));
+          // Capture only once this is unmistakably a drag. Capturing on
+          // pointerdown instead makes the whole strip unclickable: Chrome
+          // retargets the compatibility mouse events at the capturing element,
+          // so every click landed on the track and no card's button ever saw
+          // one. Past the threshold the click is unwanted anyway.
+          if (!state.captured && state.moved > 5) {
+            state.captured = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }
           event.currentTarget.scrollLeft = state.from - dx;
         }}
         onPointerUp={(event) => {
@@ -137,7 +156,7 @@ export default function Scroller({
           drag.current = null;
           paused.current = performance.now() + 2000;
           if (!state) return;
-          event.currentTarget.releasePointerCapture(event.pointerId);
+          if (state.captured) event.currentTarget.releasePointerCapture(event.pointerId);
           // A drag that moved is not a click. Recording when it ended and
           // checking that below beats adding a one-shot window listener: the
           // listener has to be torn down if no click follows, and any timer
