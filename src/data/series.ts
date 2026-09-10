@@ -117,7 +117,7 @@ export const SERIES: Series[] = [
     id: 'commando',
     title: 'Commando',
     blurb: 'Side-scrolling run-and-gun. Work the missions, spend what you earn on the next rifle.',
-    slugs: ['commando', 'commando-3'],
+    slugs: ['commando', 'commando-2', 'commando-3'],
   },
   {
     id: 'cactus-mccoy',
