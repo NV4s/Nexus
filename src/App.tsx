@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import GameGrid from './components/GameGrid';
 import Study from './components/Study';
+import Chat from './components/Chat';
 import GamePage from './components/GamePage';
 import Settings from './components/Settings';
 import Changelog from './components/Changelog';
@@ -100,6 +101,8 @@ export default function App() {
           <GameGrid section="arcade" title="Arcade" lede="Flash and browser games, playable here." />
         ) : head === 'study' ? (
           <Study />
+        ) : head === 'chat' ? (
+          <Chat />
         ) : head === 'settings' || head === 'changelog' ? (
           <>
             <Settings />

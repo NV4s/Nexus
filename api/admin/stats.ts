@@ -5,7 +5,7 @@ const STALE_AFTER_MS = 90_000;
 /** A client inventing session ids can only grow this hash; cap it. */
 const MAX_PRESENCE = 500;
 
-type Record = { p?: string; s?: number; t?: number };
+type Record = { p?: string; s?: number; t?: number; v?: string };
 
 export default async function handler(req: Req, res: Res) {
   // This doubles as the session check: the admin panel reads 401 as logged-out,
@@ -54,7 +54,7 @@ export default async function handler(req: Req, res: Res) {
   const places = Object.fromEntries(pairs(placesRaw).map(([place, count]) => [place, Number(count)]));
 
   const now = Date.now();
-  const live: { page: string; seconds: number }[] = [];
+  const live: { page: string; seconds: number; sid: string; vid?: string }[] = [];
   const stale: string[] = [];
 
   for (const [sid, json] of pairs(presenceRaw)) {
@@ -69,8 +69,14 @@ export default async function handler(req: Req, res: Res) {
       stale.push(sid);
       continue;
     }
-    // The session id is never returned — the admin has no use for it, so it stays here.
-    live.push({ page: record.p ?? '?', seconds: Math.max(0, Math.round((now - (record.s ?? now)) / 1000)) });
+    // The ids come back now so the owner can act on a row: a prank is aimed at
+    // the session, a block at the browser behind it.
+    live.push({
+      page: record.p ?? '?',
+      seconds: Math.max(0, Math.round((now - (record.s ?? now)) / 1000)),
+      sid,
+      ...(record.v ? { vid: record.v } : {}),
+    });
   }
 
   if (Number(size ?? 0) > MAX_PRESENCE) await redis([['DEL', 'presence']]);

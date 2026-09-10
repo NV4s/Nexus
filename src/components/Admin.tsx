@@ -8,7 +8,7 @@ import { downloadBlob } from '../lib/saves';
 type Stats = {
   total: number;
   daily: Record<string, number>;
-  live: { page: string; seconds: number }[];
+  live: { page: string; seconds: number; sid: string; vid?: string }[];
   visitors: number;
   visitorsToday: number;
   places?: Record<string, number>;
@@ -16,6 +16,23 @@ type Stats = {
 };
 
 type VisitorRow = { id: string; first: number; last: number; visits: number; games: string[]; place?: string };
+type ModState = { blocked: string[]; muted: string[]; chatOff: boolean };
+
+const PRANKS: { kind: string; label: string }[] = [
+  { kind: 'shake', label: 'Shake' },
+  { kind: 'flip', label: 'Flip' },
+  { kind: 'invert', label: 'Invert' },
+];
+
+async function moderate(body: Record<string, unknown>) {
+  const response = await fetch('/api/admin/moderate', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(String(response.status));
+  return response.json() as Promise<Record<string, unknown>>;
+}
 
 const POLL_MS = 5_000;
 
@@ -228,6 +245,27 @@ export default function Admin() {
   const [busy, setBusy] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(0);
   const [visitors, setVisitors] = useState<VisitorRow[] | null>(null);
+  const [mod, setMod] = useState<ModState | null>(null);
+  const [note, setNote] = useState('');
+
+  const loadMod = async () => {
+    try {
+      setMod((await moderate({ action: 'list', id: '' })) as unknown as ModState);
+    } catch {
+      /* the panel still works without it */
+    }
+  };
+
+  const act = async (body: Record<string, unknown>, said: string) => {
+    try {
+      await moderate(body);
+      setNote(said);
+      window.setTimeout(() => setNote(''), 2500);
+      if (body.action !== 'troll') loadMod();
+    } catch {
+      setNote('That did not go through.');
+    }
+  };
   const [loadingVisitors, setLoadingVisitors] = useState(false);
   const label = useRouteLabels();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -262,6 +300,12 @@ export default function Admin() {
     const timer = window.setInterval(load, POLL_MS);
     return () => window.clearInterval(timer);
   }, [stats, load]);
+
+  useEffect(() => {
+    if (stats) void loadMod();
+    // Only when the panel first has data; every later refresh comes from an action.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(stats)]);
 
   const signIn = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -410,15 +454,88 @@ export default function Admin() {
           {stats.live.length === 0 ? (
             <p>Nobody is here right now. Visitors appear within a minute of opening the site.</p>
           ) : (
+            <>
             <ul className="live-list">
-              {stats.live.map((visitor, index) => (
-                <li key={index}>
+              {stats.live.map((visitor) => (
+                <li key={visitor.sid}>
                   <span className="live-page">{label(visitor.page)}</span>
                   <span className="live-time">{dwell(visitor.seconds)}</span>
+                  <span className="live-actions">
+                    {PRANKS.map(({ kind, label: text }) => (
+                      <button
+                        key={kind}
+                        className="chip-button"
+                        onClick={() => act({ action: 'troll', id: visitor.sid, kind }, `${text} sent.`)}
+                      >
+                        {text}
+                      </button>
+                    ))}
+                    <button
+                      className="chip-button"
+                      onClick={() => {
+                        const text = window.prompt('Message to show them:');
+                        if (text) act({ action: 'troll', id: visitor.sid, kind: 'message', text }, 'Message sent.');
+                      }}
+                    >
+                      Message
+                    </button>
+                    {visitor.vid && (
+                      <button
+                        className="chip-button is-danger"
+                        onClick={() => act({ action: 'block', id: visitor.vid }, 'Blocked.')}
+                      >
+                        Block
+                      </button>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
+            <p className="admin-hint">
+              Pranks land on the next beacon, so up to a minute. A block stops that
+              browser using the site until you lift it; clearing site data makes a
+              fresh id, so treat it as a nuisance stopper rather than a lock.
+            </p>
+            </>
           )}
+        </div>
+
+        <div className="panel">
+          <h3>Chat room</h3>
+          <p>
+            One public room, filtered for slurs, swearing, links and contact
+            details before anything is stored. Muting is per browser.
+          </p>
+          <div className="admin-actions">
+            <button
+              className="button ghost"
+              onClick={() =>
+                act({ action: mod?.chatOff ? 'chatOn' : 'chatOff', id: '' }, mod?.chatOff ? 'Chat is on.' : 'Chat is off.')
+              }
+            >
+              {mod?.chatOff ? 'Turn chat on' : 'Turn chat off'}
+            </button>
+            <button
+              className="button ghost"
+              onClick={async () => {
+                if (!window.confirm('Delete every message in the room?')) return;
+                await fetch('/api/chat', {
+                  method: 'DELETE',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ id: '*' }),
+                });
+                setNote('Room cleared.');
+              }}
+            >
+              Clear the room
+            </button>
+          </div>
+          {mod && (mod.blocked.length > 0 || mod.muted.length > 0) && (
+            <p className="admin-hint">
+              {mod.blocked.length} blocked, {mod.muted.length} muted.
+            </p>
+          )}
+          {note && <p className="admin-hint">{note}</p>}
         </div>
 
         <div className="panel">
@@ -573,6 +690,30 @@ export default function Admin() {
                     <div className="visitor-head">
                       <code>{visitor.id}</code>
                       <span>{visitor.visits} {visitor.visits === 1 ? 'visit' : 'visits'}</span>
+                      <span className="live-actions">
+                        <button
+                          className="chip-button"
+                          onClick={() =>
+                            act(
+                              { action: mod?.muted.includes(visitor.id) ? 'unmute' : 'mute', id: visitor.id },
+                              mod?.muted.includes(visitor.id) ? 'Unmuted.' : 'Muted in chat.',
+                            )
+                          }
+                        >
+                          {mod?.muted.includes(visitor.id) ? 'Unmute' : 'Mute'}
+                        </button>
+                        <button
+                          className="chip-button is-danger"
+                          onClick={() =>
+                            act(
+                              { action: mod?.blocked.includes(visitor.id) ? 'unblock' : 'block', id: visitor.id },
+                              mod?.blocked.includes(visitor.id) ? 'Unblocked.' : 'Blocked.',
+                            )
+                          }
+                        >
+                          {mod?.blocked.includes(visitor.id) ? 'Unblock' : 'Block'}
+                        </button>
+                      </span>
                     </div>
                     <div className="visitor-meta">
                       first seen {ago(visitor.first)} · last seen {ago(visitor.last)}

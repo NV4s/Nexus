@@ -14,8 +14,12 @@
  * clearing site data makes a new one. The admin UI says exactly that.
  */
 
+import type { Directive } from './mod.ts';
+
 const BEAT_MS = 60_000;
 const VISITOR_KEY = 'nexus:vid';
+
+export const ids = () => ({ sid: sessionId(), vid: visitorId() });
 
 /** Persistent across visits. */
 const visitorId = () => {
@@ -80,7 +84,16 @@ export function startTracking() {
       headers: { 'content-type': 'application/json' },
       body: payload,
       keepalive: true,
-    }).catch(() => {});
+    })
+      .then(async (response) => {
+        // 204 is the ordinary answer. A body means the owner has aimed
+        // something at this browser — a block, or one of the pranks.
+        if (response.status !== 200) return;
+        const directive = (await response.json()) as Directive;
+        const { applyDirective } = await import('./mod.ts');
+        applyDirective(directive);
+      })
+      .catch(() => {});
   };
 
   beat();

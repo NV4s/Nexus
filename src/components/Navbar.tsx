@@ -16,6 +16,7 @@ const LINKS: { path: string; label: string; owns: string[] }[] = [
   { path: '/study', label: 'Study', owns: ['/study'] },
   { path: '/emulators', label: 'Emulators', owns: ['/emulators', '/emulator'] },
   { path: '/assistant', label: 'Assistant', owns: ['/assistant'] },
+  { path: '/chat', label: 'Chat', owns: ['/chat'] },
   { path: '/achievements', label: 'Progress', owns: ['/achievements', '/saves'] },
   { path: '/settings', label: 'Settings', owns: ['/settings', '/changelog'] },
 ];

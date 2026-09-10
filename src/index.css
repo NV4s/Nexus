@@ -2358,3 +2358,138 @@ select.field {
   color: var(--accent-ink);
   background: var(--accent);
 }
+
+/* ---------- chat ---------- */
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 14px;
+}
+
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: min(52vh, 26rem);
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.chat-empty {
+  margin: auto;
+  color: var(--muted);
+}
+
+.chat-line {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+  margin: 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.chat-when {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.chat-form {
+  display: grid;
+  grid-template-columns: 8rem 1fr auto;
+  gap: 0.5rem;
+}
+
+.chat-form input {
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 9px;
+  border: 1px solid var(--glass-edge);
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+}
+
+.chat-form button {
+  padding: 0.55rem 1.1rem;
+  border-radius: 9px;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.chat-error {
+  margin: 0;
+  color: #f08a8a;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .chat-form {
+    grid-template-columns: 1fr auto;
+  }
+  .chat-name-input {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- moderation controls ---------- */
+
+.live-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.chip-button {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-edge);
+  background: var(--surface-2);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.chip-button:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.chip-button.is-danger:hover {
+  color: #f08a8a;
+  border-color: #f08a8a;
+}
+
+.admin-hint {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

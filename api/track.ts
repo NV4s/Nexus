@@ -10,6 +10,8 @@ const VISITOR_TTL_S = 90 * 24 * 60 * 60;
 /** Keeps the recent-visitors list from growing without bound. */
 const RECENT_KEEP = 200;
 const DAY_MS = 86_400_000;
+/** A prank nobody was there to see stops being funny well before this. */
+const TROLL_TTL_MS = 10 * 60 * 1000;
 
 /**
  * Location from Vercel's own edge headers: city, region, country.
@@ -74,8 +76,11 @@ export default async function handler(req: Req, res: Res) {
   const claimed = typeof body.started === 'number' ? body.started : now;
   const started = claimed > now || now - claimed > DAY_MS ? now : claimed;
 
+  // First, so its result is always at index 0 however the rest of the pipeline
+  // grows. One command covers both lookups, which matters on a metered plan.
   const commands: (string | number)[][] = [
-    ['HSET', 'presence', sid, JSON.stringify({ p: page, s: started, t: now })],
+    ['HMGET', 'mod', `b:${vid ?? '-'}`, `t:${sid}`],
+    ['HSET', 'presence', sid, JSON.stringify({ p: page, s: started, t: now, v: vid ?? undefined })],
   ];
 
   if (body.first === true) {
@@ -122,6 +127,25 @@ export default async function handler(req: Req, res: Res) {
     );
   }
 
-  await redis(commands);
+  const results = await redis(commands);
+
+  const [blocked, trollRaw] = Array.isArray(results?.[0])
+    ? (results[0] as (string | null)[])
+    : [null, null];
+
+  if (blocked) return send(res, 200, { blocked: true });
+
+  if (trollRaw) {
+    // Delivered once. Clearing it here rather than on the admin's side means a
+    // prank aimed at a tab that never came back does not sit there for ever.
+    await redis([['HDEL', 'mod', `t:${sid}`]]);
+    try {
+      const troll = JSON.parse(String(trollRaw)) as { kind: string; text: string; at: number };
+      if (now - troll.at < TROLL_TTL_MS) return send(res, 200, { troll });
+    } catch {
+      /* unreadable directive — nothing to act on */
+    }
+  }
+
   return send(res, 204);
 }

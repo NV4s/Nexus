@@ -19,10 +19,15 @@ export default defineConfig({
         rewrite: (path: string) => path.replace(/^\/basket-random/, '/BasketballRandom'),
       },
       '/basketball-stars': {
-        target: 'https://basketballstarsunblocked.github.io',
+        target: 'https://ubg98.github.io',
         changeOrigin: true,
-        // Served from that site's root, so the prefix is ours alone.
-        rewrite: (path: string) => path.replace(/^\/basketball-stars/, '') || '/',
+        rewrite: (path: string) => path.replace(/^\/basketball-stars/, '/BasketballStars'),
+      },
+      '/bus-simulator': {
+        target: 'https://trafficjam3d.github.io',
+        changeOrigin: true,
+        rewrite: (path: string) =>
+          path.replace(/^\/bus-simulator/, '/indian-uphill-bus-simulator-3d'),
       },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
