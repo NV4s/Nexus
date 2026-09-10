@@ -7,7 +7,7 @@ const subscribe = (onChange: () => void) => {
 
 const read = () => window.location.hash.slice(1) || '/';
 
-/** Hash routing: deep links and the back button work, no router dependency. */
+
 export const useRoute = () => useSyncExternalStore(subscribe, read, () => '/');
 
 export function navigate(path: string) {
@@ -16,5 +16,5 @@ export function navigate(path: string) {
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-/** '/game/bloxorz' -> ['game', 'bloxorz'] */
+
 export const segments = (route: string) => route.split('/').filter(Boolean);

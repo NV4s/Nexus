@@ -13,8 +13,8 @@ const minutes = (seconds: number) =>
 export default function GameAchievements({ slug }: { slug: string }) {
   const list = achievementsFor(slug);
   const fromSave = saveDriven(slug);
-  // Opening the game is itself the first objective, so it lands immediately
-  // rather than making the player leave before anything happens.
+
+
   const { unlocked, setUnlocked } = useGameSession(slug);
 
   const progress = readProgress(slug);
@@ -33,8 +33,8 @@ export default function GameAchievements({ slug }: { slug: string }) {
       <ul className="achievement-list">
         {list.map((achievement) => {
           const isDone = unlocked.has(achievement.id);
-          // Save-driven ones are not tickable either: un-ticking would be undone
-          // the next time the save is read, which just looks broken.
+
+
           const isAuto = !!achievement.auto || achievement.id in fromSave;
           return (
             <li key={achievement.id} className={isDone ? 'is-done' : ''}>

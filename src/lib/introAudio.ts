@@ -1,8 +1,4 @@
-/**
- * The intro track outlives the intro overlay. Keeping the element in a module
- * singleton rather than in the component means unmounting the visuals does not
- * cut the audio off mid-phrase — it plays to its natural end.
- */
+
 let element: HTMLAudioElement | null = null;
 
 const create = () => {
@@ -11,7 +7,7 @@ const create = () => {
   return audio;
 };
 
-/** Buffer the track while the viewer is still looking at the Enter button. */
+
 export function preloadIntroAudio() {
   element ??= create();
   element.load();
@@ -20,7 +16,7 @@ export function preloadIntroAudio() {
 export function playIntroAudio() {
   element ??= create();
   element.volume = 0.55;
-  // Ignore a rejection: autoplay policy can refuse, and the visuals still run.
+
   return element.play().catch(() => {});
 }
 

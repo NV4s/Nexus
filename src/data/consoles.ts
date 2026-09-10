@@ -1,19 +1,4 @@
-/**
- * Consoles the browser can actually emulate, via EmulatorJS (RetroArch cores
- * compiled to WebAssembly).
- *
- * Not here, and not omissions:
- *
- * - **PS5** has no emulator at all, on any platform.
- * - **PS4** has only early native projects (shadPS4, fpPS4); nothing runs in a
- *   browser.
- * - **PS Vita** emulation (Vita3K) is desktop-only.
- * - **3DS** (Citra and its forks) is likewise desktop-only; the WebAssembly
- *   builds that exist are experiments, not something to put in front of people.
- *
- * Those four need native hardware access and far more memory than a browser tab
- * gets, so listing them would be four dead pages.
- */
+
 
 export type ConsoleId =
   | 'nes'
@@ -33,7 +18,7 @@ export type ConsoleId =
 export type Console = {
   id: ConsoleId;
   title: string;
-  /** EmulatorJS core name. */
+
   core: string;
   extensions: string[];
   note: string;

@@ -1,11 +1,4 @@
-/**
- * The small slice of Markdown a chat answer uses: bold, italics, code, links,
- * headings, lists, quotes.
- *
- * It returns structure for React to render, never an HTML string — nothing
- * model-written should reach `dangerouslySetInnerHTML`, and returning nodes
- * makes that impossible rather than merely discouraged.
- */
+
 
 export type Span =
   | { kind: 'text'; text: string }
@@ -24,11 +17,7 @@ export type Block =
   | { kind: 'code'; text: string; language: string }
   | { kind: 'rule' };
 
-/**
- * Inline markers, longest first so `***` is not eaten by the `*` rule and `**`
- * is not read as two emphases. Code is matched before everything else because
- * markup inside a span of code is not markup.
- */
+
 const INLINE: { re: RegExp; make: (m: RegExpExecArray) => Span }[] = [
   { re: /`([^`\n]+)`/, make: (m) => ({ kind: 'code', text: m[1] }) },
   {
@@ -39,13 +28,13 @@ const INLINE: { re: RegExp; make: (m: RegExpExecArray) => Span }[] = [
   { re: /\*\*([^\n]+?)\*\*/, make: (m) => ({ kind: 'bold', text: m[1] }) },
   { re: /__([^\n]+?)__/, make: (m) => ({ kind: 'bold', text: m[1] }) },
   { re: /~~([^\n]+?)~~/, make: (m) => ({ kind: 'strike', text: m[1] }) },
-  // A lone `*` must not match across a bullet list or inside a word, so the
-  // opening marker may not be followed by a space and the run may not be empty.
+
+
   { re: /\*(?!\s)([^*\n]+?)(?<!\s)\*/, make: (m) => ({ kind: 'italic', text: m[1] }) },
   { re: /(?<![A-Za-z0-9_])_(?!\s)([^_\n]+?)(?<!\s)_(?![A-Za-z0-9_])/, make: (m) => ({ kind: 'italic', text: m[1] }) },
 ];
 
-/** Splits one line into styled runs, leaving anything unmatched as plain text. */
+
 export function inline(source: string): Span[] {
   const spans: Span[] = [];
   let rest = source;
@@ -57,7 +46,7 @@ export function inline(source: string): Span[] {
     for (const rule of INLINE) {
       const match = rule.re.exec(rest);
       if (!match) continue;
-      // Earliest wins; on a tie the earlier rule does, which is the ordering above.
+
       if (at < 0 || match.index < at) {
         at = match.index;
         chosen = { match, make: rule.make };
@@ -85,13 +74,7 @@ const HEADING = /^(#{1,6})\s+(.*)$/;
 const QUOTE = /^\s{0,3}>\s?(.*)$/;
 const RULE = /^\s{0,3}(?:---+|\*\*\*+|___+)\s*$/;
 
-/**
- * Splits an answer into blocks.
- *
- * Fenced code is handled first and taken verbatim, including an unterminated
- * fence — that is the normal state of a reply that is still streaming, and
- * suddenly reinterpreting half a code block as prose looks like a bug.
- */
+
 export function parse(source: string): Block[] {
   const lines = source.replace(/\r\n?/g, '\n').split('\n');
   const blocks: Block[] = [];
@@ -147,7 +130,7 @@ export function parse(source: string): Block[] {
       flush();
       const ordered = Boolean(numbered);
       const items: Span[][] = [];
-      // Consume the whole run so consecutive bullets are one list, not many.
+
       while (i < lines.length) {
         const next = (ordered ? NUMBER : BULLET).exec(lines[i]);
         if (!next) break;

@@ -10,7 +10,7 @@ const MAX_TEXT = 200;
 const clock = (at: number) =>
   new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-/** Same rules the server enforces, run here only so a refusal is instant. */
+
 function localCheck(text: string): string | null {
   if (!text.trim()) return 'Type something first.';
   if (text.length > MAX_TEXT) return `Keep it under ${MAX_TEXT} characters.`;
@@ -41,15 +41,13 @@ export default function Chat() {
       const data = (await response.json()) as { messages: Message[]; off?: boolean };
       setOff(Boolean(data.off));
       setMessages(data.messages ?? []);
-    } catch {
-      /* a missed poll corrects itself on the next one */
-    }
+    } catch {}
   }, []);
 
   useEffect(() => {
     load();
-    // Polling stops while the tab is hidden. On a school Chromebook most tabs
-    // are, and a room nobody is looking at should not cost anything.
+
+
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') load();
     }, POLL_MS);
@@ -90,9 +88,7 @@ export default function Chat() {
       }
       try {
         localStorage.setItem(NAME_KEY, name.trim());
-      } catch {
-        /* the name just will not be remembered next visit */
-      }
+      } catch {}
       setDraft('');
       if (data.message) setMessages((current) => [...current, data.message!]);
     } catch {

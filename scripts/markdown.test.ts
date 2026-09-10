@@ -1,11 +1,4 @@
-/**
- * Markdown check:  node --test scripts/markdown.test.ts
- *
- * The parser only has to cover what a chat answer uses, so the cases here are
- * the ones a model actually produces — and the traps that make a naive
- * implementation look broken: a bullet list read as italics, a nested marker
- * eaten by the wrong rule, markup inside a code span.
- */
+
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { inline, parse, type Span } from '../src/lib/markdown.ts';
@@ -28,13 +21,13 @@ test('markers mixed into a sentence keep the text around them', () => {
 });
 
 test('nothing inside a code span is markup', () => {
-  // The classic failure: `**` inside backticks rendered as bold, mangling code.
+
   assert.deepEqual(kinds(inline('use `a ** b` here')), ['text:use ', 'code:a ** b', 'text: here']);
   assert.deepEqual(kinds(inline('`*not italic*`')), ['code:*not italic*']);
 });
 
 test('underscores inside identifiers are left alone', () => {
-  // snake_case_name would otherwise come out as snake<em>case</em>name.
+
   assert.deepEqual(kinds(inline('snake_case_name')), ['text:snake_case_name']);
 });
 
@@ -49,7 +42,7 @@ test('links keep their text and href separate', () => {
 });
 
 test('only http links are linkified', () => {
-  // javascript: and data: URLs must never become an href.
+
   assert.deepEqual(kinds(inline('[x](javascript:alert(1))')), ['text:[x](javascript:alert(1))']);
   assert.deepEqual(kinds(inline('[x](data:text/html,hi)')), ['text:[x](data:text/html,hi)']);
 });
@@ -84,8 +77,8 @@ test('fenced code is taken verbatim, language and all', () => {
 });
 
 test('an unclosed fence still renders as code', () => {
-  // This is every streaming answer mid-flight; reflowing it as prose would look
-  // like the parser breaking rather than the reply still arriving.
+
+
   const blocks = parse('```\nhalf a block');
   assert.equal(blocks.length, 1);
   assert.equal(blocks[0].kind, 'code');

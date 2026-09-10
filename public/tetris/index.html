@@ -115,8 +115,6 @@ const COLOURS = {
   O: '#e0c93c', S: '#4fbf62', T: '#a860d8', Z: '#df4f5e',
 };
 
-// Super Rotation System kick tables. Listed with y positive upward, the way the
-// spec writes them; applied against screen rows, which count downward.
 const KICKS_JLSTZ = {
   '0>1': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
   '1>0': [[0,0],[1,0],[1,-1],[0,2],[1,2]],
@@ -280,7 +278,6 @@ function rotate(dir) {
 
   const table = current.type === 'I' ? KICKS_I : KICKS_JLSTZ;
   for (const [kx, ky] of table[`${from}>${to}`]) {
-    // The table's y counts upward; rows count downward.
     if (!collides(current, current.x + kx, current.y - ky, shape)) {
       current.x += kx;
       current.y -= ky;

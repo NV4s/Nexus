@@ -1,9 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-/**
- * Minimal request/response shapes. Vercel's Node runtime parses a JSON body onto
- * `body` for us; typing it here avoids pulling in @vercel/node just for types.
- */
+
 export type Req = IncomingMessage & { body?: unknown; method?: string };
 export type Res = ServerResponse;
 
@@ -12,13 +9,7 @@ const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 export const configured = () => Boolean(REDIS_URL && REDIS_TOKEN);
 
-/**
- * Runs commands through Upstash's REST pipeline — one round trip for the whole
- * batch. Upstash bills per command, so batching saves latency, not quota.
- *
- * Returns null on any failure: tracking is best-effort and must never surface
- * as an error to a player who only wants to load a game.
- */
+
 export async function redis(commands: (string | number)[][]): Promise<unknown[] | null> {
   if (!configured()) return null;
   try {
@@ -35,15 +26,11 @@ export async function redis(commands: (string | number)[][]): Promise<unknown[] 
   }
 }
 
-/* ---------- crypto ---------- */
+
 
 const encoder = new TextEncoder();
 
-/**
- * Both admin variables must be present. Web Crypto refuses a zero-length HMAC
- * key, so without this guard a half-configured deploy answers 500 to every
- * admin request instead of saying what is actually wrong.
- */
+
 export const authConfigured = () =>
   Boolean(process.env.ADMIN_PASSWORD && process.env.ADMIN_SESSION_SECRET);
 
@@ -60,11 +47,7 @@ async function hmac(message: string): Promise<string> {
   return Buffer.from(signature).toString('base64url');
 }
 
-/**
- * Compares by digest rather than by string. Web Crypto has no timingSafeEqual,
- * and an attacker cannot steer a digest without the key, so comparing the two
- * HMACs leaks neither the password nor its length.
- */
+
 export async function secretEquals(submitted: string, expected: string) {
   if (!expected) return false;
   return (await hmac(submitted)) === (await hmac(expected));
@@ -72,7 +55,7 @@ export async function secretEquals(submitted: string, expected: string) {
 
 const TWELVE_HOURS = 12 * 60 * 60;
 
-/** Token is `<expiry>.<signature>` — one claim, so no JWT library is needed. */
+
 export async function issueToken() {
   const expires = Math.floor(Date.now() / 1000) + TWELVE_HOURS;
   return `${expires}.${await hmac(String(expires))}`;
@@ -86,14 +69,14 @@ export async function tokenValid(token: string | undefined) {
   try {
     return (await hmac(expires)) === signature;
   } catch {
-    return false; // a malformed secret must read as "not signed in", not as a crash
+    return false;
   }
 }
 
-/** Rate-limit buckets are keyed by a digest, so no raw IP is ever stored. */
+
 export const ipKey = async (ip: string) => (await hmac(`ip:${ip}`)).slice(0, 16);
 
-/* ---------- http ---------- */
+
 
 export const COOKIE = 'nx_admin';
 
@@ -123,7 +106,7 @@ export function send(res: Res, status: number, body?: unknown) {
   res.end(JSON.stringify(body));
 }
 
-/** Authenticates an admin request, replying 401 itself when it fails. */
+
 export async function requireAdmin(req: Req, res: Res) {
   if (await tokenValid(readCookie(req, COOKIE))) return true;
   send(res, 401);

@@ -7,13 +7,7 @@ import GameCard from './GameCard';
 import Scroller from './Scroller';
 import AdSlot from './AdSlot';
 
-/**
- * How many cards the grid is currently fitting per row.
- *
- * The count is read back from the resolved `grid-template-columns` rather than
- * derived from the breakpoint, because the grid is `auto-fill` — the browser is
- * the only thing that knows how the tracks came out at this width.
- */
+
 function useColumns(ref: React.RefObject<HTMLDivElement | null>) {
   const [columns, setColumns] = useState(0);
 
@@ -24,10 +18,10 @@ function useColumns(ref: React.RefObject<HTMLDivElement | null>) {
       setColumns(getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length);
     };
 
-    // A resize listener rather than a ResizeObserver: the grid is full-width, so
-    // the window is the only thing that changes it, and an observer's callbacks
-    // are delivered at frame time — which never arrives in a tab that is not
-    // painting, leaving the count stuck at whatever it was on mount.
+
+
+
+
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -45,15 +39,15 @@ export default function GameGrid({
   section: Section;
   title: string;
   lede: string;
-  /** Narrows a section to one sub-tab. Only Courses uses it. */
+
   track?: 'school' | 'extra';
 }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const gridRef = useRef<HTMLDivElement>(null);
   const perBreak = useColumns(gridRef) * ROWS_BETWEEN_ADS;
-  // Sampled once per mount: re-rolling on each render would reshuffle the row
-  // under the pointer every time anything else on the page changed.
+
+
   const starters = useMemo(featuredGames, []);
 
   const all = useMemo(
@@ -93,15 +87,7 @@ export default function GameGrid({
       {section === 'arcade' && !query && category === 'All' && (
         <div className="featured">
           <h3>Start here</h3>
-          {/*
-            The list is rendered twice and the track slides exactly half its own
-            width before repeating, so the seam lands on an identical frame and
-            the loop is invisible. Duplicating is what makes it seamless — one
-            copy would snap back to the start in full view.
 
-            The second copy is hidden from assistive tech and from tabbing, or
-            every game would be announced and focusable twice.
-          */}
           <Scroller loop speed={22} className="marquee" label="the starter row">
             {[0, 1].map((copy) => (
               <div className="marquee-run" key={copy} aria-hidden={copy === 1} inert={copy === 1}>
@@ -164,15 +150,14 @@ export default function GameGrid({
             <Fragment key={game.slug}>
               <div
                 className="grid-item"
-                // Deliberate, Apple-paced stagger across the first couple of rows;
-                // browsers with scroll-driven timelines replace this per-card.
+
+
                 style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
               >
                 <GameCard game={game} onOpen={() => open(game)} />
               </div>
 
-              {/* After every third full row, never after the last card — a slot
-                  dangling under a half-empty row reads as a broken grid. */}
+
               {perBreak > 0 &&
                 (index + 1) % perBreak === 0 &&
                 index + 1 < visible.length && <AdSlot name="grid-inline" className="grid-ad" />}

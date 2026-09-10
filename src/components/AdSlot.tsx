@@ -1,11 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SLOTS, adPreview, adTest, adsEnabled, loadAdsense, PUBLISHER_ID, type SlotName } from '../lib/ads';
 
-/**
- * One ad position. Renders nothing until both ids are configured; `?adpreview=1`
- * draws the outline at the real unit's size instead. A slot whose script is
- * blocked removes itself rather than holding open an empty frame.
- */
+
 export default function AdSlot({ name, className = '' }: { name: SlotName; className?: string }) {
   const spec = SLOTS[name];
   const ref = useRef<HTMLModElement>(null);
@@ -30,7 +26,7 @@ export default function AdSlot({ name, className = '' }: { name: SlotName; class
   if (failed) return null;
 
   const style = {
-    // A fluid slot takes the width it is given; a fixed one reserves its own.
+
     width: spec.width === 'fluid' ? '100%' : spec.width,
     height: spec.height,
   };

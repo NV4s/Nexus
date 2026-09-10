@@ -1,6 +1,6 @@
 import { redis, requireAdmin, send, type Req, type Res } from '../_lib.js';
 
-/** One screenful. The recent list is capped server-side; this caps it again. */
+
 const PAGE_SIZE = 25;
 
 export type VisitorRow = {
@@ -9,18 +9,15 @@ export type VisitorRow = {
   last: number;
   visits: number;
   games: string[];
-  /** Country, or country-region. Never a precise position. */
+
   place?: string;
 };
 
-/**
- * Per-visitor detail, fetched on demand rather than on the dashboard's 5s poll —
- * it costs two commands per visitor, which is fine once and wasteful every tick.
- */
+
 export default async function handler(req: Req, res: Res) {
   if (!(await requireAdmin(req, res))) return;
 
-  // Most recently seen first; never enumerates the whole visitor set.
+
   const recent = await redis([['ZREVRANGE', 'visitors:recent', 0, PAGE_SIZE - 1]]);
   const ids = Array.isArray(recent?.[0]) ? (recent[0] as string[]) : [];
   if (!ids.length) return send(res, 200, { visitors: [] });
@@ -43,7 +40,7 @@ export default async function handler(req: Req, res: Res) {
     const record = pairs(details?.[index * 2]);
     const games = details?.[index * 2 + 1];
     return {
-      // Shortened: the admin needs to tell rows apart, not to re-identify anyone.
+
       id: id.slice(0, 8),
       first: Number(record.first ?? 0),
       last: Number(record.last ?? 0),

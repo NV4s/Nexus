@@ -16,14 +16,7 @@ import { navigate } from '../lib/router';
 const size = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
 
-/**
- * What a game actually stored. Decoding is gated behind opening the panel so a
- * large save is never parsed on the render path.
- *
- * The paths listed here are exactly what a rule in data/saveRules.ts takes, so
- * turning a game into real achievements is copying a line rather than
- * reverse-engineering its save format blind.
- */
+
 function Inspector({ slug }: { slug: string }) {
   const [open, setOpen] = useState(false);
   const fields = open ? saveFields(slug) : [];
@@ -75,8 +68,8 @@ export default function Saves() {
 
   const restore = async (file: File) => {
     try {
-      // Accepts a saves file, an achievements file or a full backup, so it does
-      // not matter which page the export came from.
+
+
       const summary = importAnything(await file.text());
       setEntries(listSaves());
       setNote(describe(summary));
@@ -126,7 +119,7 @@ export default function Saves() {
             onChange={(event) => {
               const file = event.target.files?.[0];
               if (file) restore(file);
-              event.target.value = ''; // let the same file be picked twice
+              event.target.value = '';
             }}
           />
           {note && <p>{note}</p>}

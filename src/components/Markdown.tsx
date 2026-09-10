@@ -1,12 +1,7 @@
 import { Fragment } from 'react';
 import { parse, type Block, type Span } from '../lib/markdown';
 
-/**
- * Renders a chat answer's Markdown as React elements — no HTML string is ever
- * assembled, so model output cannot inject markup. Links are re-checked here as
- * well as in the parser: two places agreeing is what stops a later parser change
- * quietly opening a hole.
- */
+
 function Spans({ spans }: { spans: Span[] }) {
   return (
     <>
@@ -45,7 +40,7 @@ function Spans({ spans }: { spans: Span[] }) {
 function Node({ block }: { block: Block }) {
   switch (block.kind) {
     case 'heading': {
-      // Chat headings sit inside a panel, so h1 would outrank the page itself.
+
       const Tag = (['h4', 'h4', 'h5', 'h5', 'h6', 'h6'] as const)[block.level - 1];
       return (
         <Tag>

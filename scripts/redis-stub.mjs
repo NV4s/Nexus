@@ -1,12 +1,12 @@
-// Minimal in-memory stand-in for the Upstash REST pipeline endpoint, so the API
-// can be exercised without real credentials — and so a rotated token never
-// invalidates the tests.
-//
-//   node scripts/redis-stub.mjs
-//   UPSTASH_REDIS_REST_URL=http://127.0.0.1:6390 UPSTASH_REDIS_REST_TOKEN=stub vercel dev
-//
-// Not a Redis: no persistence, no TTLs (EXPIRE returns 1 and forgets), and
-// ZREMRANGEBYRANK is a no-op. It implements exactly the commands api/ sends.
+
+
+
+
+
+
+
+
+
 import { createServer } from 'node:http';
 
 const str = new Map(), hash = new Map(), set = new Map(), zset = new Map(), list = new Map();
@@ -63,7 +63,7 @@ export const reset = () => {
   for (const store of [str, hash, set, zset, list]) store.clear();
 };
 
-// Only listens when run directly, so a test can import it and pick its own port.
+
 if (process.argv[1] && process.argv[1].endsWith('redis-stub.mjs')) {
   server.listen(6390, () => console.log('stub listening on 6390'));
 }

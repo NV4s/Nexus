@@ -1,30 +1,11 @@
-/**
- * Reports which Flash games save anything, and what they call it.
- *
- *   node scripts/scan-saves.mjs            # every game in the dump
- *   node scripts/scan-saves.mjs bloxorz    # just the files whose name matches
- *
- * Why this exists: data/saveRules.ts refuses entries that were guessed, because
- * a rule pointing at a field the game never writes does not fail — it silently
- * never unlocks. This reads names out of the SWF's own ActionScript constant
- * pools, which is evidence rather than a guess.
- *
- * How it gets them: SWF tags are walked properly (including into sprites), each
- * DoAction block's AVM1 bytecode is scanned for ActionConstantPool, and a pool
- * is reported only when that same script also calls getLocal. A constant pool
- * belongs to one script, so its strings are that script's own identifiers —
- * which is what makes the output short enough to read, unlike grepping the file.
- *
- * What it cannot tell you is a field's type or range. The output is the
- * shortlist to check against a real .sol, not rules ready to paste.
- */
+
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { inflateSync } from 'node:zlib';
 import { SWFDUMP_FILES, SWFDUMP_SHA } from '../src/data/swfdump.ts';
 
 const CACHE = 'node_modules/.cache/swf-scan';
 
-/** SWF bodies are usually zlib-compressed; LZMA ones are skipped, not guessed at. */
+
 function body(buf) {
   const sig = buf.subarray(0, 3).toString('latin1');
   if (sig === 'FWS') return buf.subarray(8);
@@ -35,20 +16,20 @@ function body(buf) {
       return null;
     }
   }
-  return null; // ZWS (LZMA), or not a SWF at all
+  return null;
 }
 
-/** The frame size is a bit-packed RECT, so the tag list does not start at a fixed offset. */
+
 function tagsStart(buf) {
   const nbits = buf[0] >> 3;
-  return Math.ceil((5 + 4 * nbits) / 8) + 4; // RECT, then frame rate and frame count
+  return Math.ceil((5 + 4 * nbits) / 8) + 4;
 }
 
 const DO_ACTION = 12;
 const DO_INIT_ACTION = 59;
 const DEFINE_SPRITE = 39;
 
-/** Yields every DoAction/DoInitAction bytecode block, including inside sprites. */
+
 function* actionBlocks(buf, start, end, depth = 0) {
   let at = start;
   while (at + 2 <= end) {
@@ -61,11 +42,11 @@ function* actionBlocks(buf, start, end, depth = 0) {
       length = buf.readUInt32LE(at);
       at += 4;
     }
-    if (code === 0 || at + length > end) return; // End tag, or a length that overruns
+    if (code === 0 || at + length > end) return;
     if (code === DO_ACTION) yield buf.subarray(at, at + length);
     else if (code === DO_INIT_ACTION) yield buf.subarray(at + 2, at + length);
     else if (code === DEFINE_SPRITE && depth < 4) {
-      // A sprite's body is a nested tag list after its id and frame count.
+
       yield* actionBlocks(buf, at + 4, at + length, depth + 1);
     }
     at += length;
@@ -77,7 +58,7 @@ const PUSH = 0x96;
 const GET_MEMBER = 0x4e;
 const SET_MEMBER = 0x4f;
 
-/** Decodes one ActionPush payload into the values it puts on the stack. */
+
 function pushValues(payload, pool) {
   const values = [];
   let at = 0;
@@ -95,14 +76,14 @@ function pushValues(payload, pool) {
     else if (type === 7) (values.push(payload.readInt32LE(at)), (at += 4));
     else if (type === 8) (values.push(pool[payload[at]]), at++);
     else if (type === 9) (values.push(pool[payload.readUInt16LE(at)]), (at += 2));
-    else break; // unknown type: the rest of this payload cannot be trusted
+    else break;
   }
   return values;
 }
 
 const IDENT = /^[A-Za-z_][A-Za-z0-9_]{1,31}$/;
 
-/** Splits one AVM1 block into its constant pool and a flat token stream. */
+
 function disassemble(actions) {
   let pool = [];
   const tokens = [];
@@ -146,14 +127,7 @@ function disassemble(actions) {
   return { tokens, names };
 }
 
-/**
- * `SharedObject.getLocal("name")` assigned to a variable.
- *
- * It compiles to one push holding the variable, the argument, the argument
- * count and the class — `[game_so, neaveAsteroids, 1, SharedObject]` — then a
- * push of "getLocal" and a CallMethod. Both halves matter: the argument is the
- * .sol's filename, and the variable is how *other* scripts reach the save.
- */
+
 function sharedObjects(tokens) {
   const vars = new Set();
   const names = new Set();
@@ -162,8 +136,8 @@ function sharedObjects(tokens) {
     const push = tokens[i];
     if (push.op !== PUSH || !push.values?.length) continue;
 
-    // A GetVariable or two sits between the arguments and the method name, so
-    // the "getLocal" push is nearby rather than immediately next.
+
+
     let call = null;
     for (let j = i + 1; j <= i + 3 && j < tokens.length; j++) {
       if (tokens[j].op !== PUSH) continue;
@@ -182,13 +156,7 @@ function sharedObjects(tokens) {
   return { vars, names };
 }
 
-/**
- * Field names read or written on `<something>.data`.
- *
- * `so.data.field` is a push of "data", a GetMember, a push of the field, and a
- * GetMember or SetMember. Older code sets the whole path as one string instead,
- * so that form is matched too.
- */
+
 function dataFields(tokens) {
   const fields = new Set();
 
@@ -217,22 +185,13 @@ function dataFields(tokens) {
   return fields;
 }
 
-/**
- * Every SharedObject name and stored field in one file.
- *
- * Two passes, because the script that opens the save is usually not the script
- * that writes to it — Asteroids calls getLocal in one place and sets
- * `game_so.data.playerName` in two others. The first pass learns which variable
- * holds the save; the second reads fields from any script that mentions it.
- */
+
 function scanFile(buf) {
   const scripts = [];
   for (const actions of actionBlocks(buf, tagsStart(buf), buf.length)) {
     try {
       scripts.push(disassemble(actions));
-    } catch {
-      /* a malformed block is not worth failing the whole file over */
-    }
+    } catch {}
   }
 
   const vars = new Set();
@@ -254,14 +213,14 @@ function scanFile(buf) {
   return { scripts: saving.length, names: [...fields], objects: [...names] };
 }
 
-/* ---------- run ---------- */
+
 
 const files = SWFDUMP_FILES.map(([file, size]) => ({ file, size }));
 const filter = process.argv[2]?.toLowerCase();
 const wanted = files.filter((f) => !filter || f.file.toLowerCase().includes(filter));
 
-// Past this a file is mostly artwork; the ones that big here are the Madness
-// mods, whose save is already mapped.
+
+
 const MAX_BYTES = 25 * 1024 * 1024;
 
 mkdirSync(CACHE, { recursive: true });

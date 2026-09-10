@@ -22,9 +22,7 @@ export type Game = {
    */
   thumbFit?: 'cover' | 'contain';
   developer?: string;
-  year?: string;
-  blurb?: string;
-  /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
+  year?: string;  /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
   newTab?: boolean;
   /** Which sub-tab a course belongs under. Only read for section 'courses'. */
   track?: 'school' | 'extra';
@@ -167,93 +165,65 @@ const META: Record<string, Partial<Game>> = {
   'achievement-unlocked': {
     developer: 'John Cooney (jmtb02)',
     year: '2008',
-    thumb: '/thumbs/achievement-unlocked.png',
-    blurb: 'A platformer with no goal except collecting all 100 achievements.',
-  },
+    thumb: '/thumbs/achievement-unlocked.png',  },
   'achievement-unlocked-2': {
     developer: 'John Cooney (jmtb02)',
     year: '2010',
-    thumb: '/thumbs/achievement-unlocked-2.png',
-    blurb: 'A sequel about sequels, with co-op and a four-minute time trial.',
-  },
+    thumb: '/thumbs/achievement-unlocked-2.png',  },
   'achievement-unlocked-3': {
     developer: 'John Cooney (jmtb02)',
     year: '2012',
-    thumb: '/thumbs/achievement-unlocked-3.png',
-    // 400, not another hundred — the game's own loading screen counts them out.
-    blurb: 'The elephant is back for 400 more achievements across ten rooms.',
-  },
+    thumb: '/thumbs/achievement-unlocked-3.png',  },
   'adrenaline-challenge': {
-    thumb: '/thumbs/adrenaline-challenge.png',
-    blurb: 'Physics-based motorbike trials over increasingly unfair terrain.',
-  },
+    thumb: '/thumbs/adrenaline-challenge.png',  },
   'alien-hominid': {
     developer: 'The Behemoth',
     year: '2002',
-    thumb: '/thumbs/alien-hominid.png',
-    blurb: 'The original Flash run-and-gun that became a console game.',
-  },
-  asteroids: { thumb: '/thumbs/asteroids.jpg', blurb: 'Flash take on the 1979 vector shooter.' },
+    thumb: '/thumbs/alien-hominid.png',  },
+  asteroids: { thumb: '/thumbs/asteroids.jpg',},
   astroflash: { thumb: '/thumbs/astroflash.png' },
-  avalanche: { thumb: '/thumbs/avalanche.png', blurb: 'Stay on the falling blocks. That is the whole game.' },
+  avalanche: { thumb: '/thumbs/avalanche.png',},
   'battle-pong': { thumb: '/thumbs/battle-pong.png' },
   battleships: { thumb: '/thumbs/battleships.png' },
   bloxorz: {
     developer: 'Damien Clarke',
     year: '2007',
-    thumb: '/thumbs/bloxorz.jpg',
-    blurb: 'Roll a 1x1x2 block into a hole across 33 levels of tile puzzles.',
-  },
-  bowman: { thumb: '/thumbs/bowman.png', blurb: 'Angle, power, fire. Turn-based archery duels.' },
-  boxhead: { developer: 'Sean Cooper', blurb: 'Top-down zombie survival with barrels and a lot of ammo.' },
+    thumb: '/thumbs/bloxorz.jpg',  },
+  bowman: { thumb: '/thumbs/bowman.png',},
+  boxhead: { developer: 'Sean Cooper',},
   'bubble-tanks-2': { developer: 'Hero Interactive', year: '2008' },
   'cactus-mccoy': {
     developer: 'Flipline Studios',
-    year: '2011',
-    blurb: 'Cursed treasure hunter brawls through the desert with whatever he picks up.',
-  },
+    year: '2011',  },
   'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012' },
   'commando-2': {
-    developer: 'Macrojoy',
-    blurb:
-      'Battle of Asia. Name a soldier, pick a loadout, and fight the missions from left to right.',
-  },
+    developer: 'Macrojoy',  },
   'commando-3': {
-    developer: 'Macrojoy',
-    blurb: 'Side-scrolling run-and-gun. Pick a soldier, work the missions, upgrade the arsenal between them.',
-  },
+    developer: 'Macrojoy',  },
   'crimson-room': {
     developer: 'Toshimitsu Takagi',
-    year: '2004',
-    blurb: 'The escape-room game that started the genre.',
-  },
+    year: '2004',  },
   'cursor-10': {
     developer: 'Nekogames',
-    year: '2008',
-    blurb: 'Ten cursors, one tower. Each run cooperates with the ghosts of your previous ones.',
-  },
-  doom: { developer: 'id Software', blurb: 'Flash port of the 1993 shooter.' },
-  'duck-life': { developer: 'Wix Games', blurb: 'Train a duck. Race the duck. Repeat.' },
+    year: '2008',  },
+  doom: { developer: 'id Software',},
+  'duck-life': { developer: 'Wix Games',},
   'duck-life-2': { developer: 'Wix Games' },
   'duck-life-3': { developer: 'Wix Games' },
   'duck-life-4': { developer: 'Wix Games' },
   'gun-mayhem-2': {
-    thumb: '/thumbs/gun-mayhem-2.jpg',
-    blurb: 'Knock the other hats off the platform. Local multiplayer up to four.',
-  },
-  jacksmith: { developer: 'Flipline Studios', year: '2012', blurb: 'Forge weapons to spec, then watch your army use them.' },
-  'breaking-the-bank': { developer: 'PuffballsUnited', year: '2008', blurb: 'Chapter 1 of the Henry Stickmin series.' },
-  'escaping-the-prison': { developer: 'PuffballsUnited', year: '2010', blurb: 'Chapter 2. Three endings, all of them stupid.' },
-  'stealing-the-diamond': { developer: 'PuffballsUnited', year: '2011', blurb: 'Chapter 3.' },
-  'infiltrating-the-airship': { developer: 'PuffballsUnited', year: '2013', blurb: 'Chapter 4.' },
-  'fleeing-the-complex': { developer: 'PuffballsUnited', year: '2015', blurb: 'Chapter 5.' },
-  'crossing-the-pit': { developer: 'PuffballsUnited', blurb: 'The short one that started it.' },
+    thumb: '/thumbs/gun-mayhem-2.jpg',  },
+  jacksmith: { developer: 'Flipline Studios', year: '2012',},
+  'breaking-the-bank': { developer: 'PuffballsUnited', year: '2008',},
+  'escaping-the-prison': { developer: 'PuffballsUnited', year: '2010',},
+  'stealing-the-diamond': { developer: 'PuffballsUnited', year: '2011',},
+  'infiltrating-the-airship': { developer: 'PuffballsUnited', year: '2013',},
+  'fleeing-the-complex': { developer: 'PuffballsUnited', year: '2015',},
+  'crossing-the-pit': { developer: 'PuffballsUnited',},
   'madness-project-nexus-classic': {
     developer: 'Krinkels & Swain',
-    year: '2012',
-    blurb: 'Arena and story mode built on the Madness Combat animations.',
-  },
-  'warfare-1917': { developer: 'Con Artist Games', year: '2008', blurb: 'WWI trench warfare as a lane-based strategy game.' },
+    year: '2012',  },
+  'warfare-1917': { developer: 'Con Artist Games', year: '2008',},
   'color-switch': { developer: 'Fortafy Games', year: '2015' },
 };
 
@@ -298,9 +268,7 @@ const EXTRA: Game[] = [
     category: 'Platformer',
     thumb: '/thumbs/run-3.jpg',
     developer: 'Player 03',
-    year: '2014',
-    blurb: 'Endless runner through broken space tunnels. Falling off is a mechanic, not a failure.',
-  },
+    year: '2014',  },
   {
     slug: 'n-gon',
     title: 'n-gon',
@@ -311,18 +279,14 @@ const EXTRA: Game[] = [
     // rather than a copy that goes stale.
     src: '/n-gon/',
     category: 'Action',
-    developer: 'Ross Landgreen',
-    blurb: 'Physics-driven side-scrolling shooter. Hundreds of tech upgrades, no two runs alike.',
-  },
+    developer: 'Ross Landgreen',  },
   {
     slug: 'gba-emulator',
     title: 'GBA Emulator',
     section: 'arcade',
     runtime: 'html5',
     src: 'https://gba.ninja/',
-    category: 'Emulator',
-    blurb: 'Game Boy Advance emulator. Bring your own ROM file.',
-  },
+    category: 'Emulator',  },
 
   /*
    * Pokémon. Both of these send no X-Frame-Options and no frame-ancestors, so
@@ -340,9 +304,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: 'https://pokerogue.net/',
     category: 'RPG',
-    developer: 'pagefaultgames',
-    blurb: 'Pokémon as a roguelike: endless biomes, permadeath, a new team every run.',
-  },
+    developer: 'pagefaultgames',  },
   {
     slug: 'pokemon-showdown',
     title: 'Pokémon Showdown',
@@ -353,9 +315,7 @@ const EXTRA: Game[] = [
     developer: 'Smogon',
     // Its headers allow framing, but the client checks for itself and stops with
     // "Please visit Showdown directly" — so this is a tab, not an embed.
-    newTab: true,
-    blurb: 'Battle simulator with every Pokémon unlocked. Build a team and fight online.',
-  },
+    newTab: true,  },
   /*
    * Both proxied through this origin by vercel.json, the same as n-gon: they are
    * served from github.io, which school filters block wholesale, and proxying
@@ -375,9 +335,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/polytrack/',
     category: 'Racing',
-    developer: 'Kodub',
-    blurb: 'Low-poly time trials. Build a track, beat your own ghost, repeat.',
-  },
+    developer: 'Kodub',  },
   {
     slug: 'basket-random',
     title: 'Basket Random',
@@ -385,9 +343,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/basket-random/',
     category: 'Sports',
-    developer: 'RHM Interactive',
-    blurb: 'One button, two ragdolls, and a court that changes every point.',
-  },
+    developer: 'RHM Interactive',  },
   {
     slug: 'basketball-stars',
     title: 'Basketball Stars',
@@ -395,9 +351,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/basketball-stars/',
     category: 'Sports',
-    developer: 'Madpuffers',
-    blurb: 'One-on-one street basketball. Dribble, shoot, block, dunk.',
-  },
+    developer: 'Madpuffers',  },
   {
     slug: 'indian-uphill-bus-simulator',
     title: 'Indian Uphill Bus Simulator 3D',
@@ -407,9 +361,7 @@ const EXTRA: Game[] = [
     category: 'Racing',
     thumb: '/thumbs/indian-uphill-bus-simulator.jpg',
     developer: 'Mageeks Apps & Games',
-    year: '2019',
-    blurb: 'Haul a coach up mountain switchbacks without losing it over the edge.',
-  },
+    year: '2019',  },
   {
     slug: 'tetris',
     title: 'Tetris',
@@ -419,9 +371,7 @@ const EXTRA: Game[] = [
     category: 'Puzzle',
     thumb: '/thumbs/tetris.png',
     developer: 'Nexus',
-    year: '2026',
-    blurb: 'Seven-bag randomiser, wall kicks, hold and ghost piece. Built here.',
-  },
+    year: '2026',  },
   {
     slug: 'level-13',
     title: 'Level 13',
@@ -429,10 +379,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/level13/',
     category: 'Strategy',
-    developer: 'Nina Routasuo',
-    blurb:
-      'Survival roguelike in a derelict city of 15 levels. Scavenge, build a camp, work out why everyone left.',
-  },
+    developer: 'Nina Routasuo',  },
   {
     slug: 'a-dark-room',
     title: 'A Dark Room',
@@ -444,18 +391,14 @@ const EXTRA: Game[] = [
     // The game's own 125px icon is all it publishes; cropping it to a 16:10
     // tile would mean upscaling it past twice its size.
     thumbFit: 'contain',
-    developer: 'Doublespeak Games',
-    blurb: 'A fire, a stranger, and a room. Text at first, and then not.',
-  },
+    developer: 'Doublespeak Games',  },
   {
     slug: 'pokemon-infinite-fusion-calculator',
     title: 'Infinite Fusion Calculator',
     section: 'arcade',
     runtime: 'html5',
     src: 'https://aegide.pokemoninfinitefusion.io/',
-    category: 'RPG',
-    blurb: 'Sprite fusion calculator for Pokémon Infinite Fusion. A tool, not the game itself.',
-  },
+    category: 'RPG',  },
   /*
    * Written for this site, served from public/time-crisis/. A rail shooter built
    * around the twin-pedal cover system: each pedal leans you out of one side of
@@ -479,12 +422,7 @@ const EXTRA: Game[] = [
     thumb: '/thumbs/crisis-point.svg',
     thumbFit: 'cover',
     developer: 'Fan reimplementation',
-    year: '2026',
-    blurb:
-      "A from-scratch browser reimplementation of Time Crisis 5's mechanics: the twin-pedal "
-      + 'cover system, 52 areas across 6 stages, and 8 bosses. Lean out to fire, duck back to '
-      + 'reload, and cross to the other cover before the clock runs out. Original art and audio.',
-  },
+    year: '2026',  },
   {
     slug: 'shootout-reloaded',
     title: 'Shootout Reloaded',
@@ -497,9 +435,7 @@ const EXTRA: Game[] = [
     // stock Construct logo, which says nothing about the game.
     thumb: '/thumbs/shootout-reloaded.jpg',
     developer: 'Nexus',
-    year: '2026',
-    blurb: 'Duelling gunners with a health bar and limited ammo. Built here in Construct 3.',
-  },
+    year: '2026',  },
 ];
 
 
@@ -521,9 +457,7 @@ const COURSES: Game[] = [
     src: 'https://www.comptia.org/en-us/',
     category: 'Certification',
     developer: 'CompTIA',
-    newTab: true,
-    blurb: 'A+, Network+ and Security+ — the entry-level IT certifications. Free study material, paid exams.',
-  },
+    newTab: true,  },
   {
     slug: 'professor-messer',
     title: 'Professor Messer',
@@ -532,9 +466,7 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://www.professormesser.com/',
     category: 'Certification',
-    developer: 'Professor Messer',
-    blurb: 'Free full video courses for every CompTIA exam. The ones people actually pass with.',
-  },
+    developer: 'Professor Messer',  },
   {
     slug: 'cs50',
     title: 'CS50',
@@ -544,9 +476,7 @@ const COURSES: Game[] = [
     src: 'https://cs50.harvard.edu/x/',
     category: 'Computer science',
     developer: 'Harvard',
-    newTab: true,
-    blurb: "Harvard's introduction to computer science, free and self-paced. C, Python, SQL and a final project.",
-  },
+    newTab: true,  },
   {
     slug: 'mit-ocw',
     title: 'MIT OpenCourseWare',
@@ -555,9 +485,7 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://ocw.mit.edu/',
     category: 'University',
-    developer: 'MIT',
-    blurb: 'Lecture notes, problem sets and exams from thousands of real MIT courses. No sign-up.',
-  },
+    developer: 'MIT',  },
   {
     slug: 'khan-test-prep',
     title: 'Khan Academy Test Prep',
@@ -567,9 +495,7 @@ const COURSES: Game[] = [
     src: 'https://www.khanacademy.org/test-prep',
     category: 'Test prep',
     developer: 'Khan Academy',
-    newTab: true,
-    blurb: 'Official SAT practice, plus LSAT, MCAT and AP courses. Free, and the SAT one is the College Board partner.',
-  },
+    newTab: true,  },
   {
     slug: 'openstax-courses',
     title: 'OpenStax Textbooks',
@@ -578,9 +504,7 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://openstax.org/subjects',
     category: 'Textbooks',
-    developer: 'Rice University',
-    blurb: 'Peer-reviewed college textbooks, free to read online. Maths, sciences, humanities and business.',
-  },
+    developer: 'Rice University',  },
   {
     slug: 'claude-courses',
     title: 'Claude Courses',
@@ -590,9 +514,7 @@ const COURSES: Game[] = [
     src: 'https://anthropic.skilljar.com/',
     category: 'AI',
     developer: 'Anthropic',
-    newTab: true,
-    blurb: "Anthropic's own free courses on working with Claude — prompting, tool use, building with the API.",
-  },
+    newTab: true,  },
   {
     slug: 'freecodecamp',
     title: 'freeCodeCamp',
@@ -602,9 +524,7 @@ const COURSES: Game[] = [
     src: 'https://www.freecodecamp.org/learn/',
     category: 'Programming',
     developer: 'freeCodeCamp',
-    newTab: true,
-    blurb: 'Thousands of hours of coding curriculum with certifications at the end. Entirely free.',
-  },
+    newTab: true,  },
   {
     slug: 'codecademy',
     title: 'Codecademy',
@@ -613,9 +533,7 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://www.codecademy.com/catalog',
     category: 'Programming',
-    developer: 'Codecademy',
-    blurb: 'Interactive programming lessons you type into the page. The basics of each track are free.',
-  },
+    developer: 'Codecademy',  },
   {
     slug: 'w3schools',
     title: 'W3Schools',
@@ -625,9 +543,7 @@ const COURSES: Game[] = [
     src: 'https://www.w3schools.com/',
     category: 'Reference',
     developer: 'W3Schools',
-    newTab: true,
-    blurb: 'Reference and short tutorials for every web language, with an editor to try each example in.',
-  },
+    newTab: true,  },
   {
     slug: 'coursera',
     title: 'Coursera',
@@ -637,9 +553,7 @@ const COURSES: Game[] = [
     src: 'https://www.coursera.org/courses?query=free',
     category: 'University',
     developer: 'Coursera',
-    newTab: true,
-    blurb: 'University courses you can audit for nothing — the lectures and readings, without the certificate.',
-  },
+    newTab: true,  },
   {
     slug: 'duolingo',
     title: 'Duolingo',
@@ -649,9 +563,7 @@ const COURSES: Game[] = [
     src: 'https://www.duolingo.com/',
     category: 'Languages',
     developer: 'Duolingo',
-    newTab: true,
-    blurb: 'Forty-odd languages in short daily lessons.',
-  },
+    newTab: true,  },
   {
     slug: 'brilliant',
     title: 'Brilliant',
@@ -661,9 +573,7 @@ const COURSES: Game[] = [
     src: 'https://brilliant.org/courses/',
     category: 'Maths',
     developer: 'Brilliant',
-    newTab: true,
-    blurb: 'Maths and science taught as puzzles rather than lectures. The first lessons of each course are free.',
-  },
+    newTab: true,  },
   {
     slug: 'sololearn',
     title: 'SoloLearn',
@@ -673,9 +583,7 @@ const COURSES: Game[] = [
     src: 'https://www.sololearn.com/',
     category: 'Programming',
     developer: 'SoloLearn',
-    newTab: true,
-    blurb: 'Bite-sized programming courses built for a phone, with a compiler you can run in the browser.',
-  },
+    newTab: true,  },
 ];
 
 /**
@@ -692,50 +600,30 @@ const COURSES: Game[] = [
  * guessed from a naming pattern, because the archive moved and the old JSON
  * index that used to list them returns a 404 now.
  */
-const DOODLES: [slug: string, title: string, path: string, year: string, blurb: string][] = [
-  ['doodle-pacman', 'Pac-Man', '/logos/2010/pacman10-hp.html', '2010',
-    'The doodle that started it — a full Pac-Man built into the logo, 255 levels and all.'],
-  ['doodle-magic-cat-academy', 'Magic Cat Academy', '/logos/2016/halloween16/halloween16.html', '2016',
-    'Momo the cat draws symbols to banish ghosts through a haunted school. The best-loved one.'],
-  ['doodle-great-ghoul-duel', 'The Great Ghoul Duel', '/logos/2021/halloween18_reboot/r1025/halloween18_reboot.html', '2018',
-    'Multiplayer capture-the-flag with wisps, played as ghosts. Google rebuilt it in 2021.'],
-  ['doodle-halloween-2019', 'Halloween 2019', '/logos/2019/halloween19/rc1/halloween19.html', '2019',
-    'A wizard cat and a night of trick-or-treating.'],
-  ['doodle-magic-cat-academy-2', 'Magic Cat Academy 2', '/logos/2020/halloween20/rc1/halloween20.html', '2020',
-    'Momo returns, this time underwater. Same symbol-drawing, deeper trouble.'],
-  ['doodle-halloween-2021', 'Halloween 2021', '/logos/2021/halloween21/v81123/halloween21.html', '2021',
-    'The Great Ghoul Duel returns for another season of wisp-stealing.'],
-  ['doodle-champion-island', 'Champion Island Games', '/logos/2020/kitsune/rc7/kitsune20.html', '2021',
-    'The big one: an RPG island with seven sports minigames, side quests and a story.'],
-  ['doodle-garden-gnomes', 'Garden Gnomes', '/logos/2018/gnomes/gnomes18.html', '2018',
-    'Fling gnomes across a garden with a trebuchet and plant whatever they land on.'],
-  ['doodle-loteria', 'Lotería', '/logos/2019/loteria/r3/loteria19.html', '2019',
-    'The Mexican card game, played against three opponents online.'],
-  ['doodle-fischinger', 'Oskar Fischinger', '/logos/doodles/2017/fischinger/fischinger17.9.html', '2017',
-    'A visual music sequencer. Draw on the grid and watch the shapes play it back.'],
-  ['doodle-scoville', 'Scoville', '/logos/2016/scoville/scoville16.html', '2016',
-    'Throw ice cream at increasingly hot peppers. Named for the man who measured them.'],
-  ['doodle-pony-express', 'Pony Express', '/logos/2015/ponyexpress/ponyexpress15.html', '2015',
-    'Ride west collecting letters and dodging obstacles across the frontier.'],
-  ['doodle-pizza', 'Pizza', '/logos/2021/pizza/rc5/pizza.html', '2021',
-    'Eleven orders from around the world, each cut to the customer’s exact request.'],
-  ['doodle-bubble-tea', 'Bubble Tea', '/logos/2023/boba/rc3/boba.html', '2023',
-    'Build the drink to order, boba and all.'],
-  ['doodle-pani-puri', 'Pani Puri', '/logos/2023/panipuri/r3/panipuri.html', '2023',
-    'Fill each puri to the flavour and quantity the customer asked for, faster and faster.'],
-  ['doodle-cricket', 'Cricket', '/logos/2017/cricket17/cricket17.html', '2017',
-    'Crickets playing cricket. Time the shot, run the score up.'],
-  ['doodle-hip-hop', 'Hip Hop', '/logos/2017/hiphop/hiphop17.html', '2017',
-    'Learn to mix two turntables, with a crate of records to sample from.'],
-  ['doodle-basketball', 'Basketball', '/logos/2012/basketball-2012-hp.html', '2012',
-    'London 2012. Hold to charge, release to shoot, as many as you can in the time.'],
-  ['doodle-hurdles', 'Hurdles', '/logos/2012/hurdles-2012-hp.html', '2012',
-    'London 2012. Two keys to run, one to jump.'],
-  ['doodle-soccer', 'Soccer', '/logos/2012/football-2012-hp.html', '2012',
-    'London 2012. Keep the shots out of your net.'],
+const DOODLES: [slug: string, title: string, path: string, year: string][] = [
+  ['doodle-pacman', 'Pac-Man', '/logos/2010/pacman10-hp.html', '2010'],
+  ['doodle-magic-cat-academy', 'Magic Cat Academy', '/logos/2016/halloween16/halloween16.html', '2016'],
+  ['doodle-great-ghoul-duel', 'The Great Ghoul Duel', '/logos/2021/halloween18_reboot/r1025/halloween18_reboot.html', '2018'],
+  ['doodle-halloween-2019', 'Halloween 2019', '/logos/2019/halloween19/rc1/halloween19.html', '2019'],
+  ['doodle-magic-cat-academy-2', 'Magic Cat Academy 2', '/logos/2020/halloween20/rc1/halloween20.html', '2020'],
+  ['doodle-halloween-2021', 'Halloween 2021', '/logos/2021/halloween21/v81123/halloween21.html', '2021'],
+  ['doodle-champion-island', 'Champion Island Games', '/logos/2020/kitsune/rc7/kitsune20.html', '2021'],
+  ['doodle-garden-gnomes', 'Garden Gnomes', '/logos/2018/gnomes/gnomes18.html', '2018'],
+  ['doodle-loteria', 'Lotería', '/logos/2019/loteria/r3/loteria19.html', '2019'],
+  ['doodle-fischinger', 'Oskar Fischinger', '/logos/doodles/2017/fischinger/fischinger17.9.html', '2017'],
+  ['doodle-scoville', 'Scoville', '/logos/2016/scoville/scoville16.html', '2016'],
+  ['doodle-pony-express', 'Pony Express', '/logos/2015/ponyexpress/ponyexpress15.html', '2015'],
+  ['doodle-pizza', 'Pizza', '/logos/2021/pizza/rc5/pizza.html', '2021'],
+  ['doodle-bubble-tea', 'Bubble Tea', '/logos/2023/boba/rc3/boba.html', '2023'],
+  ['doodle-pani-puri', 'Pani Puri', '/logos/2023/panipuri/r3/panipuri.html', '2023'],
+  ['doodle-cricket', 'Cricket', '/logos/2017/cricket17/cricket17.html', '2017'],
+  ['doodle-hip-hop', 'Hip Hop', '/logos/2017/hiphop/hiphop17.html', '2017'],
+  ['doodle-basketball', 'Basketball', '/logos/2012/basketball-2012-hp.html', '2012'],
+  ['doodle-hurdles', 'Hurdles', '/logos/2012/hurdles-2012-hp.html', '2012'],
+  ['doodle-soccer', 'Soccer', '/logos/2012/football-2012-hp.html', '2012'],
 ];
 
-const DOODLE_GAMES: Game[] = DOODLES.map(([slug, title, src, year, blurb]) => ({
+const DOODLE_GAMES: Game[] = DOODLES.map(([slug, title, src, year]) => ({
   slug,
   title,
   section: 'arcade',
@@ -743,9 +631,7 @@ const DOODLE_GAMES: Game[] = DOODLES.map(([slug, title, src, year, blurb]) => ({
   src,
   category: 'Doodle',
   developer: 'Google',
-  year,
-  blurb,
-}));
+  year,}));
 
 /**
  * The Eaglercraft client is deployed separately (see deploy/eaglercraft-relay/README.md)
@@ -760,10 +646,7 @@ const EAGLERCRAFT: Game[] = import.meta.env?.VITE_EAGLERCRAFT_URL
         section: 'arcade',
         runtime: 'html5',
         src: import.meta.env?.VITE_EAGLERCRAFT_URL,
-        category: 'Sandbox',
-        blurb:
-          'Minecraft 1.8.8 in the browser. Singleplayer works immediately; shared worlds need a relay.',
-      },
+        category: 'Sandbox',      },
     ]
   : [];
 
@@ -875,9 +758,7 @@ const STUDY: Game[] = [
     src: 'https://turbowarp.org/',
     thumb: '/thumbs/study/turbowarp.png',
     category: 'Coding',
-    developer: 'TurboWarp',
-    blurb: 'Runs Scratch projects, and unlike scratch.mit.edu it loads in a frame here.',
-  },
+    developer: 'TurboWarp',  },
   {
     slug: 'snap',
     title: 'Snap!',
@@ -907,9 +788,7 @@ const STUDY: Game[] = [
     thumb: '/thumbs/study/quizizz.png',
     thumbFit: 'cover',
     category: 'Flashcards',
-    developer: 'Quizizz',
-    blurb: 'Quizzes and flashcard sets. Loads in a frame, which Quizlet refuses to do.',
-  },
+    developer: 'Quizizz',  },
   {
     slug: 'openstax',
     title: 'OpenStax Textbooks',

@@ -9,16 +9,16 @@ import {
 
 const KEY = 'site:config';
 
-/** Guards against an accidental paste turning into a page-wide banner. */
+
 const MAX_BANNER = 280;
 const MAX_HIDDEN = 400;
 
 export type SiteConfig = {
-  /** Shown across the top of every page. Empty means no banner. */
+
   banner: string;
-  /** Slugs to withhold from the catalogue. */
+
   hidden: string[];
-  /** Sections to withhold entirely. */
+
   hiddenSections: string[];
 };
 
@@ -38,14 +38,7 @@ function clean(input: unknown): SiteConfig {
   };
 }
 
-/**
- * Reading is public and writing is not.
- *
- * Every visitor needs the banner and the hidden list on boot, so a GET cannot
- * require the admin cookie. Nothing sensitive is in here — it is a message and
- * two lists of slugs — but the write path still goes through `requireAdmin`,
- * which is the same session check the rest of the panel uses.
- */
+
 export default async function handler(req: Req, res: Res) {
   if (!configured()) return send(res, 200, EMPTY);
 
@@ -54,7 +47,7 @@ export default async function handler(req: Req, res: Res) {
     try {
       return send(res, 200, stored ? clean(JSON.parse(String(stored))) : EMPTY);
     } catch {
-      // A corrupt value must not take the whole site down with it.
+
       return send(res, 200, EMPTY);
     }
   }

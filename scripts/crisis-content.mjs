@@ -1,22 +1,4 @@
-/**
- * Content validator and headless area harness.
- *
- * Two checks that unit asserts cannot make, because they are about whether the
- * *data* is coherent rather than whether the code is:
- *
- *   validate   every route, archetype, weapon, boss and group referenced by an
- *              area actually exists, every cover graph is connected, and every
- *              spawn group is visible from a reachable slot. An area whose
- *              enemies cannot be seen from anywhere is unclearable, and that is
- *              invisible until someone plays forty minutes to reach it.
- *
- *   simulate   run each area headlessly with a scripted input policy and a
- *              fixed seed, and assert it terminates. Soft-locks are the number
- *              one bug in data-driven content and this is the cheap way to find
- *              them.
- *
- *   node scripts/crisis-content.mjs [areaId]
- */
+
 
 import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
@@ -32,11 +14,11 @@ const script = await load('sim/script.js');
 const { BOSSES } = await load('content/bosses.js');
 const { DIALOGUE } = await load('content/dialogue.js');
 
-/** Areas live in content/stage*.js; none are authored yet. */
+
 async function loadAreas() {
-  // Stage files export both a named array and a default that points at the same
-  // array, so collect into a Map keyed by id — otherwise every area is counted
-  // twice and the totals lie.
+
+
+
   const byId = new Map();
   const take = (a) => { if (a && a.script && a.id) byId.set(a.id, a); };
   for (let s = 0; s <= 6; s++) {
@@ -65,7 +47,7 @@ function validateArea(area, routes) {
   const route = routes[area.route];
   if (!route) { fail(area.id, `route '${area.route}' does not exist`); return; }
 
-  // Every edge must name slots the route actually defines.
+
   for (const edge of route.edges) {
     const [from, to] = cover.splitEdge(edge);
     for (const slot of [from, to]) {
@@ -74,7 +56,7 @@ function validateArea(area, routes) {
   }
   if (!cover.slotExists(route, route.entry)) fail(area.id, `entry slot ${route.entry} does not exist`);
 
-  // Every slot must be reachable, or content authored there is dead.
+
   const reachable = cover.reachableSlots(route);
   for (let n = 0; n < route.nodes.length; n++) {
     for (const side of ['L', 'R']) {
@@ -84,7 +66,7 @@ function validateArea(area, routes) {
     }
   }
 
-  // Which groups any reachable slot can see.
+
   const visible = new Set();
   for (const slot of reachable) {
     for (const g of cover.getSlot(route, slot).sees || []) visible.add(g);
@@ -93,10 +75,10 @@ function validateArea(area, routes) {
   let terminates = false;
   for (const beat of area.script) {
     if (beat.done || beat.boss) terminates = true;
-    // An area that hands off to a boss that does not exist blocks forever.
+
     if (beat.boss && !BOSSES[beat.boss]) fail(area.id, `hands off to unknown boss '${beat.boss}'`);
-    // A missing line shows in play as a blank info bar, which is silent and easy
-    // to miss — so it fails here instead.
+
+
     if (beat.say && !DIALOGUE[beat.say]) fail(area.id, `says unknown line '${beat.say}'`);
 
     for (const entry of beat.spawn || []) {
@@ -110,8 +92,8 @@ function validateArea(area, routes) {
       if (!route.groups || !route.groups[group]) {
         fail(area.id, `spawns into unknown group '${group}'`);
       } else if (!visible.has(group)) {
-        // The check that matters: enemies nothing can see make the area
-        // impossible to clear.
+
+
         fail(area.id, `group '${group}' is not visible from any reachable slot`);
       }
     }
@@ -134,7 +116,7 @@ if (!areas.length) {
 
 for (const a of areas) validateArea(a, routes);
 
-// Boss phase scripts carry their own beats, so they need the same check.
+
 for (const [id, b] of Object.entries(BOSSES)) {
   for (const phase of b.phases || []) {
     for (const beat of phase.script || []) {

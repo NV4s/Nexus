@@ -1,37 +1,21 @@
-/**
- * Assistant back ends.
- *
- * Two kinds, and the difference matters to whoever is typing: a local engine
- * answers on the device and nothing leaves it, while a key-based one sends the
- * conversation to that company's servers. The UI names which one replied.
- *
- * Keys live in this browser's localStorage and go only to the provider they
- * belong to. Nothing is ever sent to this site's own backend, and no key is in
- * the repo — `npm run check:secrets` fails the build if one appears in a bundle.
- */
+
 
 export type EngineId = 'local' | 'chrome' | 'anthropic' | 'google' | 'openai' | 'custom';
 
 export type Attachment = {
   name: string;
-  /** MIME type, e.g. image/png or application/pdf. */
+
   type: string;
-  /** Base64 without the data: prefix. Only set for images and PDFs. */
+
   data?: string;
-  /**
-   * Text pulled out of the file in the browser.
-   *
-   * The API accepts images, PDFs and plain text and nothing else — a .zip or a
-   * .docx sent as a document block is rejected. Anything else is therefore
-   * unpacked here and sent as text, which is what the docs recommend.
-   */
+
   text?: string;
 };
 
 export type Message = {
   role: 'user' | 'assistant';
   content: string;
-  /** Images and documents sent with this turn. Local engines ignore them. */
+
   files?: Attachment[];
 };
 
@@ -55,9 +39,7 @@ const store = {
     try {
       if (value) localStorage.setItem(`nexus:ai:${key}`, value);
       else localStorage.removeItem(`nexus:ai:${key}`);
-    } catch {
-      /* private mode — the assistant just will not remember the key */
-    }
+    } catch {}
   },
 };
 
@@ -66,15 +48,7 @@ export const writeKey = (id: EngineId, value: string) => store.set(`key:${id}`, 
 export const readSetting = (name: string) => store.get(name);
 export const writeSetting = (name: string, value: string) => store.set(name, value.trim());
 
-/**
- * Models offered per provider. Presented as a list because typing an exact id is
- * where this goes wrong, and left editable because provider names move and a
- * hard-coded list goes stale — "Other" reveals a free-text box.
- *
- * The Anthropic ids are the current family. For the other providers these are the
- * commonly available ids at time of writing rather than a live catalogue; the
- * list can also be refreshed from the provider itself where the API allows it.
- */
+
 export const MODELS: Record<string, { id: string; label: string }[]> = {
   anthropic: [
     { id: 'claude-opus-5', label: 'Claude Opus 5 — most capable' },
@@ -113,16 +87,10 @@ export const MODELS: Record<string, { id: string; label: string }[]> = {
   custom: [],
 };
 
-/** Beyond this a transcript is costing more storage than it is worth. */
+
 const HISTORY_LIMIT = 50;
 
-/**
- * One conversation per engine *and* model.
- *
- * Sharing a transcript across models would send one model's words to another
- * as if it had said them, which is both confusing to read and a waste of the
- * context window it gets billed for.
- */
+
 const chatKey = (engine: string, model: string) => `nexus:chat:${engine}:${model || 'default'}`;
 
 export function readChat(engine: string, model: string): Message[] {
@@ -137,27 +105,23 @@ export function readChat(engine: string, model: string): Message[] {
 
 export function writeChat(engine: string, model: string, messages: Message[]) {
   try {
-    // Attachments are dropped: a base64 image would fill the quota in a couple
-    // of turns and take the game saves down with it. The filenames stay so the
-    // transcript still reads correctly.
+
+
+
     const trimmed = messages.slice(-HISTORY_LIMIT).map(({ files, ...rest }) =>
       files?.length ? { ...rest, files: files.map(({ name, type }) => ({ name, type })) } : rest,
     );
     localStorage.setItem(chatKey(engine, model), JSON.stringify(trimmed));
-  } catch {
-    /* out of quota — the conversation still works, it just will not survive */
-  }
+  } catch {}
 }
 
 export const clearChat = (engine: string, model: string) => {
   try {
     localStorage.removeItem(chatKey(engine, model));
-  } catch {
-    /* nothing to clear */
-  }
+  } catch {}
 };
 
-/** Which engine/model pairs have a saved conversation, for the Settings wipe. */
+
 export function listChats(): string[] {
   try {
     return Object.keys(localStorage).filter((key) => key.startsWith('nexus:chat:'));
@@ -173,11 +137,7 @@ export const DEFAULT_MODEL: Record<string, string> = {
   custom: 'gpt-4o-mini',
 };
 
-/**
- * Asks the provider what it actually offers, where that is possible without a
- * server. Google and OpenAI-compatible endpoints both list models over CORS with
- * the user's own key; Anthropic's does not, so its list stays the one above.
- */
+
 export async function fetchModels(id: EngineId): Promise<string[]> {
   const key = readKey(id);
   if (!key) return [];
@@ -202,9 +162,7 @@ export async function fetchModels(id: EngineId): Promise<string[]> {
       const body = (await response.json()) as { data?: { id?: string }[] };
       return (body.data ?? []).map((model) => model.id ?? '').filter(Boolean).sort();
     }
-  } catch {
-    /* listing is a convenience; the typed-in model still works */
-  }
+  } catch {}
   return [];
 }
 
@@ -212,18 +170,11 @@ const SYSTEM =
   'You are the assistant on Nexus, a browser games site. Be brief and concrete. ' +
   'If you are unsure of a fact, say so rather than inventing it.';
 
-// Small on purpose. The audience is school Chromebooks, where a 900 MB download
-// and 4 GB of RAM do not go together; this one is a few hundred MB.
+
+
 const LOCAL_MODEL = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
 
-/**
- * The only model WebLLM ships that can see an image.
- *
- * It is not a drop-in replacement for the one above: it wants about 4 GB of
- * VRAM against that one's 350 MB, which is more than a school Chromebook has.
- * So it is fetched only when someone actually attaches a picture, and the text
- * model stays the default for everything else.
- */
+
 const LOCAL_VISION_MODEL = 'Phi-3.5-vision-instruct-q4f16_1-MLC';
 
 export const LOCAL_VISION_SIZE = 'about 3.5 GB, and roughly 4 GB of video memory';
@@ -236,7 +187,7 @@ type WebLLMEngine = {
   };
 };
 
-/** Keyed by model id: the text and vision models are both worth keeping warm. */
+
 const localEngines = new Map<string, WebLLMEngine>();
 
 const hasWebGPU = () => typeof navigator !== 'undefined' && 'gpu' in navigator;
@@ -244,8 +195,8 @@ const hasWebGPU = () => typeof navigator !== 'undefined' && 'gpu' in navigator;
 async function loadLocal(onProgress: Progress, model = LOCAL_MODEL): Promise<WebLLMEngine> {
   const cached = localEngines.get(model);
   if (cached) return cached;
-  // Imported here rather than at module scope so the library is only fetched
-  // when someone actually opts in to running a model locally.
+
+
   const webllm = await import('@mlc-ai/web-llm');
   const engine = (await webllm.CreateMLCEngine(model, {
     initProgressCallback: (report: { text: string }) => onProgress(report.text),
@@ -254,14 +205,7 @@ async function loadLocal(onProgress: Progress, model = LOCAL_MODEL): Promise<Web
   return engine;
 }
 
-/**
- * A turn in the shape WebLLM's vision models want.
- *
- * Images go as parts alongside the text rather than as a separate field, and
- * the URL has to carry the `data:` prefix the attachment dropped when it was
- * read. Anything that came in as extracted text is appended to the prompt,
- * since only pictures can go through the image channel.
- */
+
 function withImages(message: Message) {
   const images = (message.files ?? []).filter((file) => file.data && isImage(file.type));
   const text = (message.files ?? []).filter((file) => file.text);
@@ -286,7 +230,7 @@ function withImages(message: Message) {
   };
 }
 
-/** True once the model is in the browser's cache, so it will start instantly. */
+
 export const localModelCached = async () => {
   try {
     const cache = await caches.open('webllm/model');
@@ -315,15 +259,10 @@ const toText = async (response: Response, pick: (body: never) => string | undefi
   return pick((await response.json()) as never) ?? '(no answer)';
 };
 
-/** Every provider takes attachments in its own shape; these build each one. */
+
 const isImage = (type: string) => type.startsWith('image/');
 
-/**
- * Folds extracted text into the message body.
- *
- * Text pulled from a zip or a spreadsheet has no content-block of its own on any
- * of these APIs, so it rides along with the question, labelled by filename.
- */
+
 function withText(message: Message): string {
   const extracted = (message.files ?? []).filter((file) => file.text);
   if (!extracted.length) return message.content;
@@ -334,13 +273,13 @@ function withText(message: Message): string {
 }
 
 async function askAnthropic(messages: Message[]): Promise<string> {
-  // The official SDK rather than hand-rolled fetch, and loaded on demand so it
-  // is not in the bundle for people who never open the assistant.
+
+
   const { default: Anthropic } = await import('@anthropic-ai/sdk');
   const client = new Anthropic({
     apiKey: readKey('anthropic'),
-    // The user's own key, from the user's own browser — which is exactly the
-    // case this flag exists for.
+
+
     dangerouslyAllowBrowser: true,
   });
 
@@ -414,7 +353,7 @@ async function askGoogle(messages: Message[]): Promise<string> {
   );
 }
 
-/** OpenAI's own endpoint and anything that copies its shape — OpenRouter, gateways, local servers. */
+
 async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[]): Promise<string> {
   const base =
     id === 'openai'
@@ -433,8 +372,8 @@ async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[])
       messages: [
         { role: 'system', content: SYSTEM },
         ...messages.map((message) =>
-          // Only images have a standard form here; a document would be silently
-          // dropped by most OpenAI-compatible servers, so it is named instead.
+
+
           message.files?.length
             ? {
                 role: message.role,
@@ -461,15 +400,11 @@ async function askOpenAiCompatible(id: 'openai' | 'custom', messages: Message[])
 export type Engine = {
   id: EngineId;
   label: string;
-  /** True when the conversation never leaves this device. */
+
   private: boolean;
-  /** Needs an API key, so its settings are always editable — not only while unset. */
+
   keyed?: boolean;
-  /**
-   * Whether this engine can take an attachment at all. Distinct from `private`:
-   * the on-device model reads images through a second, much larger model, while
-   * Chrome's built-in one is text and nothing else.
-   */
+
   takesFiles?: boolean;
   note: string;
   check(): Promise<Availability>;
@@ -493,8 +428,8 @@ export const ENGINES: Engine[] = [
       return (await localModelCached()) ? { state: 'ready' } : { state: 'needs-download', size: 'about 350 MB' };
     },
     async ask(messages, onProgress) {
-      // A picture needs the vision model, which is a much larger download, so it
-      // is only pulled in when one is actually attached.
+
+
       const wantsVision = messages.some((message) =>
         message.files?.some((file) => file.data && isImage(file.type)),
       );
@@ -524,9 +459,9 @@ export const ENGINES: Engine[] = [
           reason: 'This browser has no built-in model. It needs Chrome 138+ on a supported device, with the Prompt API flag enabled.',
         };
       }
-      // Four states, not two. Treating anything non-"unavailable" as ready
-      // reports success and then throws, because Chrome refuses to start a
-      // download except from a click.
+
+
+
       const availability = await api.availability?.().catch(() => 'unavailable');
       if (availability === 'available') return { state: 'ready' };
       if (availability === 'downloadable' || availability === 'downloading') {
@@ -580,8 +515,8 @@ export const ENGINES: Engine[] = [
     takesFiles: true,
     label: 'Other (OpenAI-compatible)',
     private: false,
-    // One field instead of one integration per service: OpenRouter, OpenClaw's
-    // gateway and most self-hosted servers all speak this shape.
+
+
     note: 'Any service that copies the OpenAI API — OpenRouter, an OpenClaw gateway, a local server. Needs a base URL.',
     check: async () =>
       readSetting('baseUrl') ? needsKey('custom') : { state: 'needs-key' as const },

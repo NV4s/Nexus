@@ -2,23 +2,13 @@ import { SWFDUMP_SHA } from '../data/swfdump.ts';
 import { GAMES, type Game } from '../data/games.ts';
 import { decodeSol, type SolValue } from './sol.ts';
 
-/**
- * Ruffle keys Flash SharedObjects by the SWF's URL, and every swfdump URL carries
- * the commit SHA — `…/NV4s/swfdump/<sha>/Bloxorz.swf` on raw, `…/NV4s/swfdump@<sha>/…`
- * on jsDelivr. Regenerating the catalog therefore moves every key at once and
- * orphans every save on every device. Matches both host forms.
- */
+
 const STALE_SHA = /(NV4s\/swfdump[@/])[0-9a-f]{40}(?=\/)/g;
 
-/**
- * Re-points saves written under an older catalog SHA at the current one, so a
- * catalog regeneration does not silently wipe everyone's progress.
- *
- * Idempotent: once a key is current it no longer matches a rewrite.
- */
+
 export function migrateSaveKeys() {
   try {
-    // Object.keys snapshots, so removing entries mid-loop is safe.
+
     for (const key of Object.keys(localStorage)) {
       const current = key.replace(STALE_SHA, `$1${SWFDUMP_SHA}`);
       if (current === key) continue;
@@ -26,26 +16,24 @@ export function migrateSaveKeys() {
       const value = localStorage.getItem(key);
       if (value === null) continue;
 
-      // A save already at the current SHA is the one being played — keep it and
-      // drop the stale copy rather than overwriting live progress with old bytes.
+
+
       if (localStorage.getItem(current) === null) localStorage.setItem(current, value);
       localStorage.removeItem(key);
     }
-  } catch {
-    // Storage blocked or full. Saves are best-effort and must never block boot.
-  }
+  } catch {}
 }
 
 export type SaveEntry = { game: Game; bytes: number; keys: string[] };
 
-/** Ruffle's key embeds the SWF's own URL, so the filename inside it names the game. */
+
 const swfFileIn = (key: string) => {
   const match = key.match(/[^/]+\.swf/i);
   if (!match) return null;
   try {
     return decodeURIComponent(match[0]);
   } catch {
-    return match[0]; // malformed escape — compare the raw form instead
+    return match[0];
   }
 };
 
@@ -55,7 +43,7 @@ const flashGamesByFile = () =>
     GAMES.filter((game) => game.runtime === 'flash').map((game) => [game.src.split('/').pop()!, game]),
   ));
 
-/** Every game that currently holds Flash save data on this device. */
+
 export function listSaves(): SaveEntry[] {
   const found = new Map<string, SaveEntry>();
   try {
@@ -75,7 +63,7 @@ export function listSaves(): SaveEntry[] {
   return [...found.values()].sort((a, b) => a.game.title.localeCompare(b.game.title));
 }
 
-/** One JSON file holding every Flash save, so progress survives a wiped browser. */
+
 export const exportSaves = () =>
   JSON.stringify(
     { format: 'nexus-saves/1', sha: SWFDUMP_SHA, saved: Object.fromEntries(
@@ -85,10 +73,7 @@ export const exportSaves = () =>
     2,
   );
 
-/**
- * Restores a backup, returning how many entries were written. Keys are migrated
- * afterwards, so a backup taken under an older catalog SHA still lands correctly.
- */
+
 export function importSaves(json: string): number {
   const parsed: unknown = JSON.parse(json);
   const saved =
@@ -111,30 +96,23 @@ export const deleteSave = (entry: SaveEntry) => entry.keys.forEach((key) => loca
 
 export type SaveFile = {
   key: string;
-  /** The SharedObject's own name, from the file header. */
+
   name: string;
   data: Record<string, SolValue>;
-  /** Set when decoding stopped early; `data` still holds everything read first. */
+
   error?: string;
 };
 
-/** Ruffle's own encoding: base64 of the raw .sol bytes. */
+
 const bytesOf = (value: string) => {
   try {
     return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
   } catch {
-    return null; // not base64, so not one of Ruffle's saves
+    return null;
   }
 };
 
-/**
- * The game's raw save bytes, still base64, joined in key order — or null if it
- * has never saved.
- *
- * Deliberately not decoded: this exists to answer "is there a save" and "has it
- * changed", and comparing the stored strings does that for a 270 KB save without
- * parsing it on every check.
- */
+
 export function saveRawFor(slug: string): string | null {
   try {
     const parts: string[] = [];
@@ -149,7 +127,7 @@ export function saveRawFor(slug: string): string | null {
   }
 }
 
-/** Every SharedObject this game holds, decoded. Never throws. */
+
 export function decodeSaves(slug: string): SaveFile[] {
   const files: SaveFile[] = [];
   try {
@@ -171,15 +149,10 @@ export function decodeSaves(slug: string): SaveFile[] {
   return files;
 }
 
-/** Guards a pathological save from producing an unreadable wall of rows. */
+
 const MAX_FIELDS = 400;
 
-/**
- * Flattened `path → value` pairs for the inspector.
- *
- * The paths printed here are exactly the strings a rule in data/saveRules.ts
- * takes, so mapping a game is reading this list rather than reverse-engineering.
- */
+
 export function saveFields(slug: string, maxDepth = 6): { path: string; value: string }[] {
   const rows: { path: string; value: string }[] = [];
 
@@ -190,7 +163,7 @@ export function saveFields(slug: string, maxDepth = 6): { path: string; value: s
       rows.push({ path, value: typeof node === 'string' ? `"${node}"` : String(node) });
       return;
     }
-    // `in` does not narrow the union to the numeric member, hence the casts.
+
     if ('$bytes' in node) {
       return rows.push({ path, value: `<${(node as { $bytes: number }).$bytes} bytes>` });
     }
@@ -204,7 +177,7 @@ export function saveFields(slug: string, maxDepth = 6): { path: string; value: s
       ? node.map((item, index) => [String(index), item])
       : Object.entries(node);
 
-    // An empty container is worth showing: it is still a path a rule can test.
+
     if (!entries.length) return rows.push({ path, value: Array.isArray(node) ? '[]' : '{}' });
 
     for (const [key, item] of entries) walk(item, path ? `${path}.${key}` : key, depth + 1);
@@ -216,11 +189,7 @@ export function saveFields(slug: string, maxDepth = 6): { path: string; value: s
   return rows;
 }
 
-/**
- * One value by dotted path, e.g. `slots.1.wave`. A leading segment matching a
- * SharedObject's name selects that file; otherwise every file is tried in turn.
- * Returns undefined for anything missing — never throws.
- */
+
 export function readSavePath(slug: string, path: string): SolValue | undefined {
   const segments = path.split('.').filter(Boolean);
   if (!segments.length) return undefined;
@@ -242,7 +211,7 @@ export function readSavePath(slug: string, path: string): SolValue | undefined {
   return undefined;
 }
 
-/** Kicks off a browser download without leaving a stray object URL behind. */
+
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -252,27 +221,21 @@ export function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-/**
- * One game's save as the real `.sol` file Flash would have written.
- *
- * This is the actual binary, not a wrapper, so it also loads in Ruffle desktop
- * or any other SharedObject tool. A game holding several objects gets several
- * files — hence the count.
- */
+
 export function downloadGameSave(slug: string): number {
   let written = 0;
   for (const file of decodeSaves(slug)) {
     const raw = localStorage.getItem(file.key);
     const bytes = raw && bytesOf(raw);
     if (!bytes) continue;
-    // A copy, because the download must not hold a view onto a larger buffer.
+
     downloadBlob(new Blob([bytes.slice()], { type: 'application/octet-stream' }), `${file.name || slug}.sol`);
     written++;
   }
   return written;
 }
 
-/** The same save as JSON, keyed the way importSaves expects it back. */
+
 export function downloadGameBackup(slug: string) {
   const entries = decodeSaves(slug).map((file) => [file.key, localStorage.getItem(file.key) ?? '']);
   if (!entries.length) return false;

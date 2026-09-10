@@ -9,31 +9,25 @@ import GameAchievements from './GameAchievements';
 import AdSlot from './AdSlot';
 import { railsClass, slotShows } from '../lib/ads';
 
-/**
- * The pre-game ad. Shown over the player until it is dismissed, once per game
- * per tab — a second one on the way back from the achievements list would be
- * the kind of thing that makes people leave.
- */
+
 function Interstitial({ slug }: { slug: string }) {
   const key = `nexus:ad-seen:${slug}`;
   const [done, setDone] = useState(() => {
     try {
       return sessionStorage.getItem(key) === '1';
     } catch {
-      return false; // private mode: show it, do not crash the page
+      return false;
     }
   });
 
-  // Nothing to show means no overlay: an interstitial holding only a "Play now"
-  // button would be a door with no room behind it.
+
+
   if (done || !slotShows('game-interstitial')) return null;
 
   const dismiss = () => {
     try {
       sessionStorage.setItem(key, '1');
-    } catch {
-      /* nothing to remember it with; it will show again */
-    }
+    } catch {}
     setDone(true);
   };
 
@@ -51,8 +45,8 @@ export default function GamePage({ slug }: { slug: string }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const game = bySlug(slug);
 
-  // A framing-refusing tool has no player page: reaching this route by deep link
-  // used to render the dead iframe the newTab flag exists to avoid.
+
+
   useEffect(() => {
     if (!game?.newTab) return;
     window.open(game.src, '_blank', 'noopener');
@@ -71,14 +65,14 @@ export default function GamePage({ slug }: { slug: string }) {
     );
   }
 
-  if (game.newTab) return null; // the effect above is already navigating away
+  if (game.newTab) return null;
 
   const back = () => navigate(game.section === 'study' ? '/study' : '/arcade');
   const url = gameUrl(game);
   const fallback = gameFallback(game);
 
   const openBlank = () => {
-    // /embed/ rather than /game/: the second tab should be the game, not the site.
+
     if (!openCloaked(`${window.location.origin}/#/embed/${game.slug}`)) {
       alert('Your browser blocked the popup. Allow popups for this site and try again.');
     }
@@ -104,8 +98,7 @@ export default function GamePage({ slug }: { slug: string }) {
         </div>
       </header>
 
-      {/* The rails sit outside the fullscreen element on purpose: fullscreen
-          should be the game, not the game with advertising down both sides. */}
+
       <div className={railsClass()}>
         <AdSlot name="rail-left" className="rail" />
 
@@ -120,8 +113,6 @@ export default function GamePage({ slug }: { slug: string }) {
 
         <AdSlot name="rail-right" className="rail" />
       </div>
-
-      {game.blurb && <p className="game-blurb">{game.blurb}</p>}
 
       <div className="panels">
         <GameAchievements slug={game.slug} />

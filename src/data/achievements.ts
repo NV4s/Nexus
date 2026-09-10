@@ -1,14 +1,6 @@
 import type { Achievement } from '../lib/achievements.ts';
 
-/**
- * Researched objectives, keyed by game slug. Anything absent here falls back to
- * the generic play-based list in lib/achievements.ts — that is deliberate. An
- * honest "play for 30 minutes" beats a specific-sounding objective invented for
- * a game nobody could verify, which would read as authoritative and be wrong.
- *
- * Only `auto` entries unlock themselves; Ruffle cannot see inside a SWF, so the
- * rest are ticked by the player.
- */
+
 
 const opened = (name = 'First run', hint = 'Open the game.'): Achievement => ({
   id: 'played',
@@ -38,10 +30,7 @@ const regular: Achievement = {
   auto: 'sessions5',
 };
 
-/**
- * Every Papa's game runs the same loop — take the order, cook it, build it, serve
- * it — so the objectives are shared and only the shop and signature dish change.
- */
+
 const papas = (dish: string): Achievement[] => [
   opened('Day one', 'Clock in for your first shift.'),
   { id: 'first-perfect', name: 'Perfect order', hint: `Score 100% on a ${dish}.` },
@@ -51,7 +40,7 @@ const papas = (dish: string): Achievement[] => [
   settled,
 ];
 
-/** The Boxhead games are all the same siege: barrels, weapon crates, endless dead. */
+
 const boxhead = (): Achievement[] => [
   opened('Boxed in', 'Start your first round.'),
   { id: 'barrel-chain', name: 'Chain reaction', hint: 'Kill five or more zombies with one barrel explosion.' },
@@ -60,15 +49,8 @@ const boxhead = (): Achievement[] => [
   settled,
 ];
 
-/**
- * Endless War is one series with a hard split: 1–4 march a single soldier across
- * a map, 5–7 hand you tanks and self-propelled guns instead.
- */
-/**
- * Endless War 4 is the only one of the infantry games whose save counts
- * missions, so `missionsDone` is passed in for it and left off the rest rather
- * than listing an objective the others can never unlock.
- */
+
+
 const endlessWarInfantry = (missionsDone = false): Achievement[] => [
   opened('Deployed', 'Start your first mission.'),
   ...(missionsDone
@@ -91,7 +73,7 @@ const endlessWarArmour = (): Achievement[] => [
   settled,
 ];
 
-/** Pick a weapon, take it out on the stickman, buy the next one with the payout. */
+
 const chooseWeapon = (): Achievement[] => [
   opened('Take your pick', 'Use your first weapon.'),
   { id: 'five-weapons', name: 'Variety', hint: 'Try five different weapons.' },
@@ -100,11 +82,7 @@ const chooseWeapon = (): Achievement[] => [
   settled,
 ];
 
-/**
- * Customerpalooza ran a live bracket: submit a character, then vote through four
- * divisions. The voting closed years ago, so only the Create section still does
- * anything — objectives stay on the part that actually works.
- */
+
 const customerpalooza = (): Achievement[] => [
   opened('Open the studio', 'Start the character creator.'),
   { id: 'make-one', name: 'First customer', hint: 'Create and name a character.' },
@@ -112,7 +90,7 @@ const customerpalooza = (): Achievement[] => [
   { id: 'three-entries', name: 'Full slate', hint: 'Fill all three entry slots.' },
 ];
 
-/** Each Madness mod is a different build of the same arena and story modes. */
+
 const madness = (): Achievement[] => [
   opened('Nexus online', 'Boot the mod.'),
   { id: 'arena-wave-10', name: 'Arena regular', hint: 'Reach wave 10 in Arena mode.' },
@@ -125,11 +103,11 @@ const madness = (): Achievement[] => [
 ];
 
 export const ACHIEVEMENTS: Record<string, Achievement[]> = {
-  // Built here in Construct 3. Its data.json touches no localStorage at all, so
-  // nothing it does can be read back — these are ticked by the player, and no
-  // rule for it belongs in data/saveRules.ts. The objectives name what the
-  // project actually contains: gunners, a gun, bullets, a health bar, an ammo
-  // count, and four score slots.
+
+
+
+
+
   'shootout-reloaded': [
     opened('Locked and loaded', 'Start a round.'),
     { id: 'first-hit', name: 'First blood', hint: 'Land a shot on the other gunner.' },
@@ -139,8 +117,8 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  // 33 stages; orange tiles are fragile, X switches need the block upright,
-  // circle switches take any weight, and split switches break the block in two.
+
+
   bloxorz: [
     opened('Block one', 'Start stage 1.'),
     { id: 'stage-5', name: 'Getting the hang of it', hint: 'Reach stage 5 without using a level code.' },
@@ -150,7 +128,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'stage-33', name: 'Bloxorz master', hint: 'Finish stage 33, the last one.' },
   ],
 
-  // Ten cursors, ten seconds each; past lives replay while you act.
+
   'cursor-10': [
     opened('One of ten', 'Spend your first cursor.'),
     { id: 'ghosts', name: 'Teamwork alone', hint: 'Let an earlier cursor hold a switch while a later one moves on.' },
@@ -159,7 +137,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'spare', name: 'Efficient', hint: 'Reach the top with cursors to spare.' },
   ],
 
-  // Takagi, 2004 — the game that codified the room-escape genre.
+
   'crimson-room': [
     opened('Wake up', 'Open your eyes in the red room.'),
     { id: 'search', name: 'Turn it over', hint: 'Find something hidden under or behind the furniture.' },
@@ -167,7 +145,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'escape', name: 'Out', hint: 'Escape the crimson room.' },
   ],
 
-  // A blue elephant collecting 100 achievements, most of them for nothing.
+
   'achievement-unlocked': [
     opened('Achievement unlocked', 'Start the game. That is one of them.'),
     { id: 'die', name: 'Learning by dying', hint: 'Die on purpose.' },
@@ -251,13 +229,13 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'champion', name: 'Champion', hint: 'Beat the final race.' },
     settled,
   ],
-  // Four stats — running, swimming, climbing, flying — then three leagues.
+
   'duck-life-3': [
     opened('Evolution', 'Pick a duck and start.'),
     { id: 'run-10', name: 'Sprinter', hint: 'Train running to level 10.' },
     { id: 'climb-10', name: 'Climber', hint: 'Train climbing to level 10.' },
     { id: 'coins-500', name: 'Well fed', hint: 'Save up 500 coins.' },
-    // Duck Life 3 keeps its own award flags in the save, a1 through a10.
+
     { id: 'own-medal', name: 'First award', hint: "Earn the game's own first award." },
     { id: 'four-stats', name: 'All four', hint: 'Train running, swimming, climbing and flying.' },
     { id: 'amateur', name: 'Amateur league', hint: 'Win the Amateur league.' },
@@ -278,7 +256,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  // 12 areas, each with 5 treasures and 5 challenges; 59 usable weapons.
+
   'cactus-mccoy': [
     opened('Cursed', 'Pick up the Thorned Emerald.'),
     { id: 'weapons-10', name: 'Whatever is to hand', hint: 'Use ten different weapons.' },
@@ -318,7 +296,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'ground-win', name: 'Ground taken', hint: 'Win by capturing enough enemy trenches.' },
     { id: 'artillery', name: 'Fire support', hint: 'Call in artillery, mortar or gas.' },
     { id: 'tank', name: 'Armour', hint: 'Deploy a tank.' },
-    // Warfare 1917 keeps a full career record, so these read the real totals.
+
     { id: 'kills-100', name: 'Hundred fallen', hint: 'Kill 100 enemy soldiers across your career.' },
     { id: 'trenches-10', name: 'Trench raider', hint: 'Take 10 trenches across your career.' },
     { id: 'rank-5', name: 'Experienced', hint: 'Reach experience level 5.' },
@@ -404,9 +382,9 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'no-walls', name: 'Close call', hint: 'Survive a full lap around the edge.' },
     regular,
   ],
-  // Cubefield saves exactly one field, `TopScore`, and flushes it when a run
-  // ends — so the three tiers below unlock from the number the game itself
-  // wrote rather than from the player's word. See data/saveRules.ts.
+
+
+
   cubefield: [
     opened('Into the field', 'Start flying.'),
     { id: 'colour-change', name: 'Colour shift', hint: 'Survive long enough for the field to change colour.' },
@@ -421,9 +399,9 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'beat-ai', name: 'Match won', hint: 'Beat the computer.' },
     regular,
   ],
-  // Neave's Asteroids writes one thing to its save — the initials typed on the
-  // score screen — so `named` is the only objective here the save can prove.
-  // The scores themselves were POSTed to neave.com, which no longer answers.
+
+
+
   asteroids: [
     opened('Thrusters on', 'Start a game.'),
     { id: 'clear-wave', name: 'Field cleared', hint: 'Destroy every rock in a wave.' },
@@ -480,7 +458,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   'kingsleys-customerpalooza-2019': customerpalooza(),
   'kingsleys-customerpalooza-2020': customerpalooza(),
 
-  // Steak the cow hauls milk, Jake the bird changes colour; 30 worlds of it.
+
   'steak-and-jake': [
     opened('Milk run', 'Start the first delivery.'),
     { id: 'colour-change', name: 'Quick change', hint: "Use Jake's colour change to get past an obstacle." },
@@ -517,7 +495,7 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  // Kill every stickman in the room, in an order where none of them sees it happen.
+
   causality: [
     opened('First accident', 'Start the first scene.'),
     { id: 'no-witness', name: 'No witnesses', hint: 'Clear a scene without a stickman seeing another one die.' },
@@ -580,11 +558,11 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'win', name: 'Continent held', hint: 'Win the campaign.' },
     settled,
   ],
-  // Commando contains no SharedObject at all — no getLocal, no flush anywhere
-  // in the SWF — so none of these can unlock from a save, and no rule for it
-  // belongs in data/saveRules.ts. Its highscores went to the portal it shipped
-  // on. What the objectives below name is what the game's own code tracks:
-  // mission_start, mission_end, level_pass, kill_boss, kill_num, weapon_name.
+
+
+
+
+
   commando: [
     opened('Boots on', 'Start the first mission.'),
     { id: 'level-pass', name: 'Level passed', hint: 'Clear a level and reach the mission screen.' },
@@ -638,8 +616,8 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     { id: 'reach-end', name: 'End of the road', hint: 'Play until the demo stops.' },
   ],
 
-  // Stones slide until they hit something; match five of a colour to flip them,
-  // flip the whole garden to clear the level. 100+ levels plus an endless mode.
+
+
   'rock-garden-deluxe': [
     opened('First stone', 'Start a garden.'),
     { id: 'match-five', name: 'Five in a row', hint: 'Match five stones of one colour and flip them.' },
@@ -649,9 +627,9 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
     settled,
   ],
 
-  // Astroflash and Hamu are deliberately absent: neither has any documentation I
-  // could verify, and inventing objectives for them would read as authoritative
-  // and be wrong. They fall back to the generic play-based list.
+
+
+
 
   'n-gon': [
     opened('Spawn in', 'Start a run.'),
@@ -669,8 +647,8 @@ export const ACHIEVEMENTS: Record<string, Achievement[]> = {
   ],
 };
 
-// A key that matches no game produces no achievements and no error, so say so in
-// development. Imported dynamically: nothing here should depend on the catalog.
+
+
 if (import.meta.env?.DEV) {
   import('./games').then(({ GAMES }) => {
     const slugs = new Set(GAMES.map((game) => game.slug));

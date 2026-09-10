@@ -1,10 +1,4 @@
-/**
- * The palettes offered in Settings.
- *
- * Each id matches a `[data-theme='…']` block in index.css, except `dark`, which
- * is the bare `:root` set — so it needs no block of its own and stays the value
- * everything else falls back to.
- */
+
 export type Theme = 'dark' | 'light' | 'midnight' | 'forest' | 'ember' | 'mono' | 'paper';
 
 export const THEMES: { id: Theme; name: string; swatch: string }[] = [
@@ -19,7 +13,7 @@ export const THEMES: { id: Theme; name: string; swatch: string }[] = [
 
 const ids = new Set(THEMES.map((theme) => theme.id));
 
-/** Falls back rather than trusting storage: a removed theme would leave the page unstyled. */
+
 export function readTheme(): Theme {
   try {
     const saved = localStorage.getItem('theme');
@@ -33,7 +27,5 @@ export function writeTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   try {
     localStorage.setItem('theme', theme);
-  } catch {
-    /* storage blocked — the theme still applies for this visit */
-  }
+  } catch {}
 }

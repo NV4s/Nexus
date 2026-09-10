@@ -4,7 +4,7 @@ export type Series = {
   id: string;
   title: string;
   blurb: string;
-  /** In release order, not alphabetical — a series is meant to be played through. */
+
   slugs: string[];
 };
 
@@ -145,13 +145,13 @@ export const SERIES: Series[] = [
   },
 ];
 
-/** Resolves a series to the games it actually has, in the order listed. */
+
 export const gamesInSeries = (series: Series) =>
   series.slugs.map((slug) => GAMES.find((game) => game.slug === slug)).filter((game) => !!game);
 
 if (import.meta.env?.DEV) {
-  // A slug that no longer exists leaves a silent hole in the row rather than an
-  // error, so it has to be said out loud somewhere.
+
+
   const known = new Set(GAMES.map((game) => game.slug));
   for (const series of SERIES) {
     const missing = series.slugs.filter((slug) => !known.has(slug));

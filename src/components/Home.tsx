@@ -9,11 +9,7 @@ const HomeField = lazy(() => import('../webgl/HomeField'));
 const flashCount = GAMES.filter((game) => game.runtime === 'flash').length;
 const arcadeCount = GAMES.filter((game) => game.section === 'arcade').length;
 
-/**
- * One idea per screen, each naming real games rather than describing a genre.
- * The page snaps between them, so a chapter is written to be read on its own
- * rather than skimmed on the way past.
- */
+
 type Chapter = {
   eyebrow: string;
   title: string;
@@ -72,8 +68,8 @@ export default function Home() {
     return () => document.documentElement.classList.remove('is-snapping');
   }, []);
 
-  // The starters are already sampled once per page load; memo keeps the rest of
-  // the page from rebuilding its lists on every render.
+
+
   const chapters = useMemo(
     () =>
       CHAPTERS.map((chapter) => ({
@@ -140,8 +136,7 @@ export default function Home() {
             <Row games={chapter.games} />
           </section>
 
-          {/* Between chapters rather than inside one, so a chapter's copy and
-              its row are never split by an advert. */}
+
           {index === 1 && <AdSlot name="home-2" className="home-ad" />}
         </Fragment>
       ))}

@@ -1,8 +1,4 @@
-/**
- * Exercises the chat and moderation endpoints against the in-memory Redis stub,
- * so the rate limits, the mute and block paths and the prank hand-off are run
- * rather than reasoned about.
- */
+
 import test, { before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AddressInfo } from 'node:net';
@@ -20,7 +16,7 @@ let moderate: Handler;
 let track: Handler;
 let resetCache: () => void;
 
-/** Enough of ServerResponse for the handlers, which only set a status and end. */
+
 function fakeRes() {
   const state = { status: 0, body: undefined as unknown, headers: {} as Record<string, string> };
   const res = {

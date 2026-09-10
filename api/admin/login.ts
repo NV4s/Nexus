@@ -15,14 +15,14 @@ const WINDOW_S = 900;
 const PER_IP_LIMIT = 10;
 const GLOBAL_LIMIT = 100;
 
-/** Every reply waits the same beat, so timing never tells an attacker anything. */
+
 const settle = () => new Promise((resolve) => setTimeout(resolve, 250));
 
 export default async function handler(req: Req, res: Res) {
   if (req.method !== 'POST') return send(res, 405);
 
-  // Say so plainly rather than failing as a wrong password: the usual cause is a
-  // deploy that predates the environment variables being added.
+
+
   if (!authConfigured()) {
     return send(res, 503, {
       error: 'ADMIN_PASSWORD and ADMIN_SESSION_SECRET are not set on this deployment.',
@@ -50,7 +50,7 @@ export default async function handler(req: Req, res: Res) {
   }
 
   if (!(await secretEquals(password, process.env.ADMIN_PASSWORD ?? ''))) {
-    // Counted only on failure, so ordinary logins cost no quota.
+
     await redis([
       ['INCR', bucket],
       ['EXPIRE', bucket, WINDOW_S],

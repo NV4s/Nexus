@@ -12,21 +12,15 @@ export type ChatMessage = {
   name: string;
   text: string;
   at: number;
-  /** First eight characters of the sender's visitor id, for muting. */
+
   who: string;
 };
 
-/**
- * One read serves everyone who polls within the window.
- *
- * Upstash bills per command and a room of ten people polling every five seconds
- * would spend the daily allowance before lunch. A warm function answers most of
- * those from here instead.
- */
+
 let cache: { at: number; messages: ChatMessage[] } | null = null;
 const CACHE_MS = 3000;
 
-/** For the tests, which swap the store out from under a warm instance. */
+
 export const resetCache = () => {
   cache = null;
 };

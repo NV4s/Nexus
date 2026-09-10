@@ -23,26 +23,19 @@ import { extractText, isImage, isPdf } from '../lib/archive';
 import AdSlot from './AdSlot';
 import Markdown from './Markdown';
 
-/** 4 MB each: base64 inflates by a third, and providers reject large payloads. */
+
 const MAX_FILE = 4 * 1024 * 1024;
 
 const asBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error(`Could not read ${file.name}`));
-    // Strip the "data:…;base64," prefix — every provider wants the payload alone.
+
     reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
     reader.readAsDataURL(file);
   });
 
-/**
- * Prepares one file for sending.
- *
- * Images and PDFs go up as themselves, because every provider accepts them.
- * Everything else — zips, spreadsheets, source files, logs — is unpacked to text
- * here, since none of these APIs accepts an arbitrary binary. A file with
- * nothing readable inside is reported rather than sent empty.
- */
+
 async function prepare(file: File): Promise<Attachment> {
   const type = file.type || 'application/octet-stream';
   if (isImage(type) || isPdf(type, file.name)) {
@@ -60,13 +53,7 @@ const KEY_HELP: Partial<Record<EngineId, string>> = {
   custom: 'Whatever your provider calls it',
 };
 
-/**
- * Where each key comes from, step by step.
- *
- * Written out per provider because the flows genuinely differ — one is free,
- * two need credit up front, and each hides the button somewhere else. `cost` is
- * the part people are usually actually asking about.
- */
+
 const KEY_GUIDE: Partial<Record<EngineId, { site: string; cost: string; steps: string[] }>> = {
   anthropic: {
     site: 'https://console.anthropic.com/settings/keys',
@@ -114,7 +101,7 @@ const KEY_GUIDE: Partial<Record<EngineId, { site: string; cost: string; steps: s
   },
 };
 
-/** The setup steps, folded away until someone needs them. */
+
 function KeyGuide({ engineId, label }: { engineId: EngineId; label: string }) {
   const guide = KEY_GUIDE[engineId];
   if (!guide) return null;
@@ -136,12 +123,7 @@ function KeyGuide({ engineId, label }: { engineId: EngineId; label: string }) {
 }
 
 
-/**
- * A list rather than a text box, because an exact model id is easy to mistype
- * and the failure is a 404 from the provider. "Other" keeps the free-text escape
- * hatch for anything newer than this list, and Refresh asks the provider what it
- * actually offers where its API allows that from a browser.
- */
+
 function ModelPicker({
   engineId,
   listed,
@@ -151,7 +133,7 @@ function ModelPicker({
   engineId: EngineId;
   listed: string[];
   onRefresh: () => Promise<void>;
-  /** Reported upward because each model keeps its own conversation. */
+
   onChange: (model: string) => void;
 }) {
   const known = MODELS[engineId] ?? [];
@@ -233,8 +215,8 @@ export default function Assistant() {
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const [answeredBy, setAnsweredBy] = useState('');
-  // The key inputs are uncontrolled, so they need a new identity to pick up a
-  // different engine's saved value or a clear.
+
+
   const [keyFields, setKeyFields] = useState(0);
   const [models, setModels] = useState<string[]>([]);
   const [files, setFiles] = useState<Attachment[]>([]);
@@ -243,8 +225,8 @@ export default function Assistant() {
 
   const engine = engineById(engineId);
 
-  // Each engine/model pair has its own transcript, so switching either one
-  // swaps the conversation rather than carrying one model's words into another.
+
+
   useEffect(() => {
     setMessages(readChat(engineId, model));
   }, [engineId, model]);
@@ -288,7 +270,7 @@ export default function Assistant() {
       const answer = await engine.ask(history, (note) => setStatus(note));
       setMessages([...history, { role: 'assistant', content: answer }]);
       setAnsweredBy(engine.label);
-      // Downloading the model changes what the panel should offer next time.
+
       engine.check().then(setAvailability);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -383,7 +365,7 @@ export default function Assistant() {
                   className="button ghost"
                   onClick={() => {
                     writeKey(engineId, '');
-                    setKeyFields((n) => n + 1); // remount the inputs so they clear
+                    setKeyFields((n) => n + 1);
                     engine.check().then(setAvailability);
                   }}
                 >
@@ -471,10 +453,10 @@ export default function Assistant() {
               type="file"
               hidden
               multiple
-              /* Anything: images and PDFs go as-is, the rest is read as text. */
+
               onChange={async (event) => {
                 const picked = [...(event.target.files ?? [])];
-                event.target.value = ''; // let the same file be chosen twice
+                event.target.value = '';
                 const tooBig = picked.filter((file) => file.size > MAX_FILE);
                 if (tooBig.length) {
                   setError(`${tooBig.map((f) => f.name).join(', ')} — over 4 MB, too large to send.`);

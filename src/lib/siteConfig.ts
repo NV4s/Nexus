@@ -6,13 +6,7 @@ export type SiteConfig = {
 
 const EMPTY: SiteConfig = { banner: '', hidden: [], hiddenSections: [] };
 
-/**
- * Settings the owner can change without a redeploy.
- *
- * Cached in localStorage and served from there on the next boot, so a slow or
- * unreachable API costs nothing visible — the site renders with whatever it
- * last knew and quietly corrects itself when the fetch lands.
- */
+
 const CACHE = 'nexus:siteConfig';
 
 let current: SiteConfig = read();
@@ -45,13 +39,9 @@ export async function loadSiteConfig(): Promise<SiteConfig> {
     current = next;
     try {
       localStorage.setItem(CACHE, JSON.stringify(next));
-    } catch {
-      /* the fetch still applies for this visit */
-    }
+    } catch {}
     for (const listener of listeners) listener(next);
-  } catch {
-    /* offline or no Redis configured — the cached copy stands */
-  }
+  } catch {}
   return current;
 }
 

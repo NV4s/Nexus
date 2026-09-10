@@ -1,23 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-/**
- * A horizontal strip you can drift, drag, wheel or step through.
- *
- * The drift used to be a CSS transform, which looked right and could not be
- * touched: a transformed track has no scroll position, so the wheel did
- * nothing and there was no way to go back to a card that had gone past. This
- * moves the same motion onto `scrollLeft`, so the browser's own scrolling —
- * trackpad, touch, shift-wheel, keyboard — works for free, and the animation is
- * just something nudging the same number.
- *
- * With `loop`, the caller's children are rendered twice and the position wraps
- * at half the width, so the seam lands on an identical frame.
- */
+
 export default function Scroller({
   children,
   loop = false,
-  /** Pixels per second of drift. 0 for a strip that only moves when pushed. */
+
   speed = 0,
   className = '',
   label,
@@ -33,11 +21,11 @@ export default function Scroller({
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
 
-  // Set while a pointer is down, and briefly after any manual scroll, so the
-  // drift does not fight the person using it.
+
+
   const paused = useRef(0);
   const drag = useRef<{ x: number; from: number; moved: number; captured: boolean } | null>(null);
-  /** When a drag last ended, so the click it produces can be ignored. */
+
   const draggedAt = useRef(0);
 
   const wrap = useCallback(
@@ -51,7 +39,7 @@ export default function Scroller({
     [loop],
   );
 
-  /** Arrow buttons only mean anything on a strip that ends. */
+
   const readEdges = useCallback(() => {
     const el = ref.current;
     if (!el || loop) return;
@@ -63,7 +51,7 @@ export default function Scroller({
     const el = ref.current;
     if (!el || !speed) return;
 
-    // An explicit reduce-motion choice and the system one both stop the drift.
+
     const still =
       document.documentElement.dataset.motion === 'reduced' ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -72,7 +60,7 @@ export default function Scroller({
     let frame = 0;
     let last = performance.now();
     const step = (now: number) => {
-      const dt = Math.min(now - last, 100) / 1000; // a backgrounded tab must not lurch
+      const dt = Math.min(now - last, 100) / 1000;
       last = now;
       if (!held && now > paused.current && !drag.current) {
         el.scrollLeft += speed * dt;
@@ -111,9 +99,9 @@ export default function Scroller({
         onMouseEnter={() => setHeld(true)}
         onMouseLeave={() => {
           setHeld(false);
-          // A press that leaves before it became a drag never captured, so its
-          // pointerup lands elsewhere and would strand the drag state, which
-          // stops the drift for good.
+
+
+
           if (drag.current && !drag.current.captured) drag.current = null;
         }}
         onFocusCapture={() => setHeld(true)}
@@ -126,7 +114,7 @@ export default function Scroller({
           paused.current = performance.now() + 2000;
         }}
         onPointerDown={(event) => {
-          // Touch already drags natively; hijacking it would break momentum.
+
           if (event.pointerType === 'touch') return;
           drag.current = {
             x: event.clientX,
@@ -140,11 +128,11 @@ export default function Scroller({
           if (!state) return;
           const dx = event.clientX - state.x;
           state.moved = Math.max(state.moved, Math.abs(dx));
-          // Capture only once this is unmistakably a drag. Capturing on
-          // pointerdown instead makes the whole strip unclickable: Chrome
-          // retargets the compatibility mouse events at the capturing element,
-          // so every click landed on the track and no card's button ever saw
-          // one. Past the threshold the click is unwanted anyway.
+
+
+
+
+
           if (!state.captured && state.moved > 5) {
             state.captured = true;
             event.currentTarget.setPointerCapture(event.pointerId);
@@ -157,10 +145,10 @@ export default function Scroller({
           paused.current = performance.now() + 2000;
           if (!state) return;
           if (state.captured) event.currentTarget.releasePointerCapture(event.pointerId);
-          // A drag that moved is not a click. Recording when it ended and
-          // checking that below beats adding a one-shot window listener: the
-          // listener has to be torn down if no click follows, and any timer
-          // that does the tearing down races the click it was meant to catch.
+
+
+
+
           if (state.moved > 5) draggedAt.current = performance.now();
         }}
         onClickCapture={(event) => {

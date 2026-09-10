@@ -11,7 +11,7 @@ declare global {
 
 let runtime: Promise<NonNullable<Window['RufflePlayer']>> | null = null;
 
-/** Loads the vendored Ruffle build once per session, however many games are opened. */
+
 function loadRuffle() {
   runtime ??= new Promise((resolve, reject) => {
     if (window.RufflePlayer) return resolve(window.RufflePlayer);
@@ -22,7 +22,7 @@ function loadRuffle() {
         ? resolve(window.RufflePlayer)
         : reject(new Error('Ruffle loaded but exposed no player'));
     script.onerror = () => {
-      runtime = null; // let a retry try again
+      runtime = null;
       reject(new Error('Could not load the Flash runtime'));
     };
     document.head.append(script);
@@ -40,7 +40,7 @@ const concat = (parts: Uint8Array[]) => {
   return merged;
 };
 
-/** Streams one file so the progress bar reflects the real download, not a guess. */
+
 async function fetchFile(url: string, onProgress: (fraction: number) => void) {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -65,25 +65,18 @@ async function fetchFile(url: string, onProgress: (fraction: number) => void) {
 
 export type Fallback = { base: string; parts: number };
 
-/** Rejoins `<base>.001`, `.002`, … into the exact original bytes. */
+
 async function fetchChunks(base: string, parts: number, onProgress: (fraction: number) => void) {
   const downloaded: Uint8Array[] = [];
   for (let i = 0; i < parts; i++) {
     const suffix = String(i + 1).padStart(3, '0');
-    // Chunks are near-equal in size, so each one is an equal slice of the bar.
+
     downloaded.push(await fetchFile(`${base}.${suffix}`, (f) => onProgress((i + f) / parts)));
   }
   return concat(downloaded);
 }
 
-/**
- * Fetches the SWF, with a standby for the games that have one.
- *
- * The big files are served from Git LFS, whose bandwidth is capped per month —
- * around 68 plays of a 146 MB game before GitHub starts refusing. The same file
- * is also committed as ordinary chunks on raw, which has no such meter, so a
- * refusal costs a retry rather than the game.
- */
+
 async function fetchSwf(
   url: string,
   fallback: Fallback | null,
@@ -93,8 +86,8 @@ async function fetchSwf(
     return (await fetchFile(url, onProgress)).buffer;
   } catch (cause) {
     if (!fallback) throw cause;
-    // Worth saying out loud: this is the quota running out, and knowing that
-    // beats wondering why the game took two goes to start.
+
+
     console.warn(`Primary download failed (${String(cause)}); using the chunk copy.`);
     onProgress(0);
     return (await fetchChunks(fallback.base, fallback.parts, onProgress)).buffer;
@@ -109,13 +102,13 @@ export default function RufflePlayer({
 }: {
   url: string;
   title: string;
-  /** Where to look if the primary download fails. */
+
   fallback?: Fallback | null;
-  /** Enables the save controls; the player itself does not need to know the game. */
+
   slug?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  // Kept so the SWF can be saved without downloading it a second time.
+
   const dataRef = useRef<ArrayBuffer | null>(null);
   const [prefs, setPrefs] = useState(readPlayerPrefs);
   const [note, setNote] = useState('');
@@ -148,7 +141,7 @@ export default function RufflePlayer({
 
         await player.load({
           data,
-          // Relative asset loads inside the SWF resolve against its own directory.
+
           base: new URL(url, window.location.href).href.replace(/[^/]*$/, ''),
           ...ruffleOptions(prefs),
         });
@@ -164,13 +157,13 @@ export default function RufflePlayer({
       cancelled = true;
       container.replaceChildren();
     };
-    // Depends on the fallback's values, not the object: callers build it fresh
-    // each render, and an object identity here would reload the game endlessly.
+
+
   }, [url, fallback?.base, fallback?.parts, attempt, prefs]);
 
   const set = (change: Parameters<typeof writePlayerPrefs>[0]) => {
     writePlayerPrefs(change);
-    setPrefs(readPlayerPrefs()); // re-reads so a partial change keeps the rest
+    setPrefs(readPlayerPrefs());
   };
 
   const saveSwf = () => {

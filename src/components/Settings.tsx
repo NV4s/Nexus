@@ -38,13 +38,6 @@ const setFavicon = (href: string) => {
 const size = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(bytes < 10240 ? 1 : 0)} KB`;
 
-/**
- * What this site is keeping, and a way to remove it.
- *
- * Saves are the bulk of it and the only part worth listing per game: a browser
- * gives a site somewhere around 5 MB, and a few of the bigger games take a real
- * fraction of that.
- */
 function StoragePanel({
   pass,
   onChange,
@@ -64,9 +57,7 @@ function StoragePanel({
     if (!confirm(warning)) return;
     try {
       localStorage.clear();
-    } catch {
-      /* nothing to clear */
-    }
+    } catch {}
     onNote('Everything on this device has been deleted.');
     onChange();
   };
@@ -128,7 +119,7 @@ export default function Settings() {
   const [player, setPlayer] = useState(readPlayerPrefs);
   const [note, setNote] = useState('');
   const [appearance, setAppearance] = useState(readAppearance);
-  // Bumped after a delete so the storage list re-reads localStorage.
+
   const [storagePass, setStoragePass] = useState(0);
   const progressRef = useRef<HTMLInputElement>(null);
 
@@ -154,7 +145,7 @@ export default function Settings() {
     const onKeyDown = (event: KeyboardEvent) => {
       event.preventDefault();
       const next = comboFrom(event);
-      if (!next) return; // modifier-only or bare key — keep listening
+      if (!next) return;
       setCombo(next);
       setRecording(false);
     };
@@ -363,7 +354,6 @@ export default function Settings() {
           </p>
         </div>
 
-
         <div className="panel">
           <h3>Flash player</h3>
           <p>
@@ -475,8 +465,6 @@ export default function Settings() {
               event.target.value = '';
               if (!file) return;
               try {
-                // Takes a full backup, an achievements file or a saves file —
-                // picking the wrong button used to fail with an unhelpful message.
                 setNote(describe(importAnything(await file.text())));
               } catch (cause) {
                 setNote(cause instanceof Error ? cause.message : 'That file could not be read.');

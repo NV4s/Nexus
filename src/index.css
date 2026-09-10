@@ -468,11 +468,6 @@ select,
 /* The card art needs to sit above the specular wash. */
 .card-art,
 .card-meta,
-.card-blurb {
-  position: relative;
-  z-index: 1;
-}
-
 @keyframes rise {
   from {
     opacity: 0;
@@ -586,45 +581,9 @@ select,
   font-size: 0.8rem;
 }
 
-/*
- * Supplementary only — title, genre and credits are always visible above.
- *
- * It slides up over the card rather than growing it. As a flex child it never
- * actually appeared: the grid stretches every card to its row's height, so the
- * expanding element was handed no free space and resolved to zero however large
- * its max-height was. Taking it out of flow fixes that and means hovering can no
- * longer reflow the rows beneath it either.
- */
-.card-blurb {
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 1.6rem 0.95rem 0.85rem;
-  font-size: 0.8rem;
-  background: linear-gradient(to top, var(--surface) 62%, color-mix(in srgb, var(--surface) 82%, transparent));
-  opacity: 0;
-  transform: translateY(100%);
-  transition: transform 0.28s var(--ease-soft), opacity 0.22s var(--ease);
-}
-
-.card:hover .card-blurb,
-.card:focus-visible .card-blurb {
-  opacity: 1;
-  transform: none;
-}
-
-/* Touch has no hover, so the reveal would be unreachable — show it outright. */
+.card:hover /* Touch has no hover, so the reveal would be unreachable — show it outright. */
 @media (hover: none) {
-  .card-blurb {
-    position: static;
-    opacity: 1;
-    transform: none;
-    padding: 0 0.95rem 0.85rem;
-    background: none;
   }
-}
 
 /* ---------- player ---------- */
 
@@ -712,11 +671,6 @@ select,
   height: 100%;
   background: var(--accent);
   transition: width 0.15s linear;
-}
-
-.game-blurb {
-  margin-top: 1.25rem;
-  max-width: 44rem;
 }
 
 /* ---------- settings and changelog ---------- */

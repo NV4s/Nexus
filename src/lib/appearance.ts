@@ -1,17 +1,10 @@
-/**
- * Appearance knobs that sit on top of the theme: an accent colour, a text size
- * and an explicit motion switch.
- *
- * Each is written as a CSS custom property on the root element, so it layers
- * over whichever theme is active rather than replacing it — pick Forest and a
- * pink accent and you get Forest with a pink accent.
- */
+
 export type Appearance = {
-  /** Empty means "whatever the theme says". */
+
   accent: string;
-  /** Root font size in pixels. 16 is the browser default. */
+
   textSize: number;
-  /** Honours the system setting when 'auto'. */
+
   motion: 'auto' | 'reduced';
 };
 
@@ -40,11 +33,7 @@ export function readAppearance(): Appearance {
   }
 }
 
-/**
- * An accent needs a readable colour on top of it, and the themes disagree about
- * which. Relative luminance decides: light accents take dark ink, dark ones take
- * white. Otherwise a pale amber button gets white text on it and disappears.
- */
+
 function inkFor(accent: string): string {
   const hex = accent.replace('#', '');
   if (hex.length !== 6) return '';
@@ -71,7 +60,5 @@ export function writeAppearance(appearance: Appearance) {
   applyAppearance(appearance);
   try {
     localStorage.setItem(KEY, JSON.stringify(appearance));
-  } catch {
-    /* still applied for this visit */
-  }
+  } catch {}
 }

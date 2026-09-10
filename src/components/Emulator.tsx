@@ -5,7 +5,7 @@ import { useGameSession } from '../lib/achievements';
 import AdSlot from './AdSlot';
 import { railsClass } from '../lib/ads';
 
-/** Pinned so an upstream change cannot break the page without a commit here. */
+
 const EJS_VERSION = '4.2.3';
 const EJS_BASE = `https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@${EJS_VERSION}/data/`;
 
@@ -21,18 +21,7 @@ declare global {
   }
 }
 
-/**
- * Console emulator, one ROM at a time.
- *
- * The ROM never leaves the device: it is read into a blob URL and handed to the
- * emulator, so nothing is uploaded and nothing is hosted here. That is also why
- * there is no game list — this site ships no ROMs.
- *
- * Save states are the emulator's own, reached from its toolbar, and they are
- * what "save state" actually means for a console: a snapshot of machine memory.
- * Flash has no equivalent, which is why the Flash side offers its save file
- * instead.
- */
+
 export default function Emulator({ id }: { id: string }) {
   const console_ = consoleById(id as ConsoleId);
   const [rom, setRom] = useState<{ name: string; url: string } | null>(null);
@@ -45,7 +34,7 @@ export default function Emulator({ id }: { id: string }) {
   useEffect(() => {
     if (!rom || !console_) return;
 
-    // EmulatorJS reads globals at script load, so they are set before injecting.
+
     window.EJS_player = '#emulator-host';
     window.EJS_core = console_.core;
     window.EJS_gameUrl = rom.url;
@@ -60,8 +49,8 @@ export default function Emulator({ id }: { id: string }) {
 
     return () => {
       script.remove();
-      // The loader builds inside the host; clearing it is what actually stops
-      // the previous machine when a different ROM is chosen.
+
+
       if (hostRef.current) hostRef.current.replaceChildren();
     };
   }, [rom, console_]);

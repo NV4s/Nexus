@@ -7,7 +7,7 @@ import { playIntroAudio, preloadIntroAudio } from '../lib/introAudio';
 
 const DURATION = 8.0;
 
-const vertex = /* glsl */ `
+const vertex =  `
   varying vec2 vUv;
   void main() {
     vUv = uv;
@@ -15,12 +15,8 @@ const vertex = /* glsl */ `
   }
 `;
 
-/**
- * Infinite Void: a boundary expands from a single point, and everything inside it is
- * mapped through a sphere inversion (q = p / |p|^2) so the interior reads as unbounded
- * space. Analytic throughout — no raymarch loop — so the cost is flat per pixel.
- */
-const fragment = /* glsl */ `
+
+const fragment =  `
   precision highp float;
   varying vec2 vUv;
   uniform float uTime;      // seconds since the intro started
@@ -123,8 +119,8 @@ const fragment = /* glsl */ `
 
 function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void }) {
   const { size } = useThree();
-  // Wall clock, not accumulated frame deltas: a slow GPU should drop frames,
-  // not play the whole sequence in slow motion.
+
+
   const startedAt = useRef(0);
   const finished = useRef(false);
   const material = useRef<ShaderMaterial>(null);
@@ -135,8 +131,8 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
       uResolution: { value: new Vector2(1, 1) },
       uLayers: { value: layers },
     }),
-    // Built once as the initial value; per-frame writes go through the ref below,
-    // so a remount cannot leave us mutating an object the material no longer holds.
+
+
     [],
   );
 
@@ -158,8 +154,8 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
   });
 
   return (
-    // A 2x2 plane written straight to clip space by the vertex shader — covers the
-    // viewport at any aspect without a camera.
+
+
     <mesh frustumCulled={false}>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
@@ -178,14 +174,14 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
   const [started, setStarted] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
-  // Stable identity: the old intro re-ran its animation effect on every parent render.
+
   const finish = useCallback(() => setLeaving(true), []);
 
   useEffect(preloadIntroAudio, []);
 
   useEffect(() => {
     if (!leaving) return;
-    // The track keeps playing past this point on purpose — see lib/introAudio.
+
     const timer = setTimeout(onComplete, 400);
     return () => clearTimeout(timer);
   }, [leaving, onComplete]);

@@ -4,7 +4,7 @@ import { AdditiveBlending, BufferGeometry, Float32BufferAttribute, Vector2 } fro
 import type { ShaderMaterial } from 'three';
 import { dprFor, particlesFor, useAdaptiveTier, type Tier } from '../lib/quality';
 
-const vertex = /* glsl */ `
+const vertex =  `
   uniform float uTime;
   uniform vec2  uPointer;
   uniform float uSize;
@@ -30,7 +30,7 @@ const vertex = /* glsl */ `
   }
 `;
 
-const fragment = /* glsl */ `
+const fragment =  `
   precision mediump float;
   varying float vGlow;
 
@@ -75,7 +75,7 @@ function Field({ tier }: { tier: Tier }) {
   );
 
   useFrame(({ pointer: p, clock }) => {
-    // Pointer arrives normalised to [-1, 1]; map it onto the visible plane and ease it.
+
     pointer.current.set((p.x * viewport.width) / 2, (p.y * viewport.height) / 2);
     uniforms.uPointer.value.lerp(pointer.current, 0.08);
     uniforms.uTime.value = clock.elapsedTime;

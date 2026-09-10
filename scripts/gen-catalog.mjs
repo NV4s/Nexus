@@ -1,5 +1,5 @@
-// Regenerates src/data/swfdump.ts from the swfdump repo.
-// Run after adding SWFs to NV4s/swfdump:  node scripts/gen-catalog.mjs
+
+
 import { writeFile } from 'node:fs/promises';
 
 const REPO = 'NV4s/swfdump';
@@ -17,14 +17,14 @@ const { tree, truncated } = await json(
 );
 if (truncated) throw new Error('tree response truncated — needs pagination');
 
-// Chunk files (`<name>.swf.001`, `.002`, …) are skipped by the `.swf` filter —
-// they are the fallback for an LFS file, not entries of their own.
-//
-// A file in LFS reports the ~130-byte pointer as its tree size, which would send
-// it to jsDelivr instead of the media endpoint and serve the pointer text as if
-// it were a game. Read the real byte count out of the pointer instead.
-// ponytail: 1 KB threshold — the smallest real SWF in the dump is ~10 KB, and a
-// tiny file that is not a pointer throws below rather than being guessed at.
+
+
+
+
+
+
+
+
 const LFS_POINTER_MAX = 1024;
 const realSize = async ([path, size]) => {
   if (size > LFS_POINTER_MAX) return [path, size];

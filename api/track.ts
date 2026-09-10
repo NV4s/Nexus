@@ -1,27 +1,19 @@
 import { redis, send, type Req, type Res } from './_lib.js';
 
-/** Every value here reaches the admin's screen or a Redis key, so validate it. */
+
 const UUID = /^[0-9a-f-]{36}$/;
 const PAGE = /^[a-z0-9/-]{0,64}$/;
 
 const PRESENCE_TTL_S = 900;
 const DAILY_TTL_S = 35 * 24 * 60 * 60;
 const VISITOR_TTL_S = 90 * 24 * 60 * 60;
-/** Keeps the recent-visitors list from growing without bound. */
+
 const RECENT_KEEP = 200;
 const DAY_MS = 86_400_000;
-/** A prank nobody was there to see stops being funny well before this. */
+
 const TROLL_TTL_MS = 10 * 60 * 1000;
 
-/**
- * Location from Vercel's own edge headers: city, region, country.
- *
- * This is derived from the IP by the edge, and the IP itself is never stored. It
- * is roughly city-accurate, which is as far as this goes on purpose — the
- * browser Geolocation API would give a street-level fix but has to prompt every
- * visitor for permission, and a visitor counter is not a reason to ask a
- * classroom of people to share where they are sitting.
- */
+
 const PLACE = /^[A-Za-z0-9 .'-]{1,40}$/;
 
 function placeOf(req: Req): string | null {
@@ -29,14 +21,14 @@ function placeOf(req: Req): string | null {
   const pick = (name: string) => {
     const value = headers[name];
     if (typeof value !== 'string') return null;
-    // Decode first: city names arrive percent-encoded when they contain spaces,
-    // and validating the raw form threw away every multi-word city. Validate
-    // after, because this is free text from the edge that the admin panel renders.
+
+
+
     let decoded = value;
     try {
       decoded = decodeURIComponent(value);
     } catch {
-      return null; // malformed escape — treat as absent rather than guess
+      return null;
     }
     return PLACE.test(decoded) ? decoded : null;
   };
@@ -55,8 +47,8 @@ const slugOf = (page: string) => {
 };
 
 export default async function handler(req: Req, res: Res) {
-  // Always 204, whatever happened. A visitor learns nothing from this endpoint,
-  // and a tracking failure must never look like a broken site.
+
+
   if (req.method !== 'POST') return send(res, 204);
 
   const body = (req.body ?? {}) as Record<string, unknown>;
@@ -69,22 +61,22 @@ export default async function handler(req: Req, res: Res) {
   const now = Date.now();
   const today = new Date().toISOString().slice(0, 10);
 
-  // The session's start rides along on every beat, because HSET replaces the whole
-  // field and re-reading it first would cost an extra command per beat. It is
-  // client-supplied, so clamp it: a bogus value would only skew the dwell column,
-  // but there is no reason to render someone's idea of a 40-year session.
+
+
+
+
   const claimed = typeof body.started === 'number' ? body.started : now;
   const started = claimed > now || now - claimed > DAY_MS ? now : claimed;
 
-  // First, so its result is always at index 0 however the rest of the pipeline
-  // grows. One command covers both lookups, which matters on a metered plan.
+
+
   const commands: (string | number)[][] = [
     ['HMGET', 'mod', `b:${vid ?? '-'}`, `t:${sid}`],
     ['HSET', 'presence', sid, JSON.stringify({ p: page, s: started, t: now, v: vid ?? undefined })],
   ];
 
   if (body.first === true) {
-    // Sessions stay their own number rather than being replaced by visitors.
+
     commands.push(
       ['INCR', 'visits:total'],
       ['HINCRBY', 'visits:daily', today, 1],
@@ -104,8 +96,8 @@ export default async function handler(req: Req, res: Res) {
         ['SADD', 'visitors:all', vid],
         ['SADD', `visitors:daily:${today}`, vid],
         ['EXPIRE', `visitors:daily:${today}`, DAILY_TTL_S],
-        // Sorted by last seen, so the admin panel can read the recent ones without
-        // ever enumerating the whole set.
+
+
         ['ZADD', 'visitors:recent', now, vid],
         ['ZREMRANGEBYRANK', 'visitors:recent', 0, -(RECENT_KEEP + 1)],
         ['HSETNX', `visitor:${vid}`, 'first', now],
@@ -118,7 +110,7 @@ export default async function handler(req: Req, res: Res) {
     commands.push(['HSET', `visitor:${vid}`, 'last', now]);
   }
 
-  // Only on an actual navigation — a beat that repeats the same page adds nothing.
+
   const slug = body.changed === true && vid ? slugOf(page) : null;
   if (slug && vid) {
     commands.push(
@@ -136,15 +128,13 @@ export default async function handler(req: Req, res: Res) {
   if (blocked) return send(res, 200, { blocked: true });
 
   if (trollRaw) {
-    // Delivered once. Clearing it here rather than on the admin's side means a
-    // prank aimed at a tab that never came back does not sit there for ever.
+
+
     await redis([['HDEL', 'mod', `t:${sid}`]]);
     try {
       const troll = JSON.parse(String(trollRaw)) as { kind: string; text: string; at: number };
       if (now - troll.at < TROLL_TTL_MS) return send(res, 200, { troll });
-    } catch {
-      /* unreadable directive — nothing to act on */
-    }
+    } catch {}
   }
 
   return send(res, 204);

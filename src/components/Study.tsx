@@ -4,14 +4,7 @@ import GameGrid from './GameGrid';
 type Tab = 'tools' | 'courses';
 type Track = 'school' | 'extra';
 
-/**
- * Study is two different things sharing a tab: the calculators and reference
- * tools you reach for mid-homework, and courses you sit down with. Splitting
- * them keeps a search for "Desmos" from returning a forty-hour curriculum.
- *
- * The tabs are state rather than routes, so the URL stays /study and the back
- * button still means "leave Study" rather than "go up one tab".
- */
+
 export default function Study() {
   const [tab, setTab] = useState<Tab>('tools');
   const [track, setTrack] = useState<Track>('school');

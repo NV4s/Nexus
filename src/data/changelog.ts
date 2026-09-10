@@ -4,13 +4,7 @@ export type Release = {
   changes: string[];
 };
 
-/**
- * What changed, for whoever is playing. Newest first.
- *
- * Anything that only the owner can act on — keys to set, quotas to watch, work
- * that is blocked on them — belongs in OWNER_NOTES below instead, where it shows
- * on the Admin page and nowhere else.
- */
+
 export const RELEASES: Release[] = [
   {
     version: 'v1.6.0',
@@ -159,19 +153,12 @@ export const RELEASES: Release[] = [
 export type OwnerNote = {
   date: string;
   title: string;
-  /** `todo` needs the owner to do something; `fyi` is just worth knowing. */
+
   kind: 'todo' | 'fyi';
   body: string[];
 };
 
-/**
- * Notes written to the site's owner rather than to whoever is playing.
- *
- * These sit behind the admin password on the Admin page, because they name
- * settings, quotas and pending work that mean nothing to a visitor and would
- * only advertise the site's soft spots. Nothing secret goes in here either —
- * the admin page is password-gated, not encrypted.
- */
+
 export const OWNER_NOTES: OwnerNote[] = [
   {
     date: '2026-08-28',

@@ -4,7 +4,7 @@ import { GAMES } from '../data/games';
 import { countsFor, readProgress, rescanAll } from '../lib/achievements';
 import { navigate } from '../lib/router';
 
-/** Rounded the way a person would say it, not to the second. */
+
 const spell = (seconds: number) => {
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.round(seconds / 60);
@@ -15,7 +15,7 @@ const spell = (seconds: number) => {
 };
 
 export default function Achievements() {
-  // Bumped by the re-check button to rebuild the rows below.
+
   const [pass, setPass] = useState(0);
 
   const rows = useMemo(
@@ -29,8 +29,8 @@ export default function Achievements() {
             b.unlocked / b.total - a.unlocked / a.total ||
             a.game.title.localeCompare(b.game.title),
         ),
-    // A fresh evaluation before reading, so a score set in the last session is
-    // already counted by the time the first row renders.
+
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [(rescanAll(), pass)],
   );

@@ -49,7 +49,7 @@ const ago = (ms: number) => {
   return `${Math.floor(hours / 24)}d ago`;
 };
 
-/** Routes are stored, but a title is what the owner actually recognises. */
+
 function useRouteLabels() {
   return useMemo(() => {
     const bySlug = new Map(GAMES.map((game) => [game.slug, game.title]));
@@ -62,7 +62,7 @@ function useRouteLabels() {
   }, []);
 }
 
-/** Fills gaps so a quiet day is a visible zero rather than a missing column. */
+
 function lastDays(daily: Record<string, number>, count: number) {
   const out: { day: string; count: number }[] = [];
   for (let i = count - 1; i >= 0; i--) {
@@ -102,13 +102,7 @@ function Chart({ days }: { days: { day: string; count: number }[] }) {
 }
 
 
-/**
- * Things the owner can change without a redeploy: a banner every visitor sees,
- * and games or whole sections pulled off the shelves.
- *
- * Hiding is housekeeping, not access control — the slug still works if someone
- * types the URL. It is for taking down something broken, not for locking it.
- */
+
 function SiteControls() {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [saving, setSaving] = useState(false);
@@ -251,9 +245,7 @@ export default function Admin() {
   const loadMod = async () => {
     try {
       setMod((await moderate({ action: 'list', id: '' })) as unknown as ModState);
-    } catch {
-      /* the panel still works without it */
-    }
+    } catch {}
   };
 
   const act = async (body: Record<string, unknown>, said: string) => {
@@ -270,11 +262,7 @@ export default function Admin() {
   const label = useRouteLabels();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  /**
-   * The session cookie is HttpOnly, so the panel cannot read it. Asking for the
-   * data *is* the auth check — a 401 means signed out. One source of truth, so
-   * the UI can never disagree with the real session.
-   */
+
   const load = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/stats');
@@ -303,7 +291,7 @@ export default function Admin() {
 
   useEffect(() => {
     if (stats) void loadMod();
-    // Only when the panel first has data; every later refresh comes from an action.
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(stats)]);
 
@@ -334,7 +322,7 @@ export default function Admin() {
     }
   };
 
-  // Not polled: two commands per visitor is fine once, wasteful every 5s.
+
   const loadVisitors = async () => {
     setLoadingVisitors(true);
     try {
@@ -612,8 +600,8 @@ export default function Admin() {
                   <button
                     className="button ghost"
                     onClick={() => {
-                      // One row per visitor, with the daily totals appended —
-                      // a spreadsheet is the right tool for anything past this.
+
+
                       const rows = [
                         ['visitor', 'visits', 'first_seen', 'last_seen', 'place', 'games'],
                         ...visitors.map((visitor) => [

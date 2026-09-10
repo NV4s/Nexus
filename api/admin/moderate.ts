@@ -3,19 +3,13 @@ import { redis, requireAdmin, send, type Req, type Res } from '../_lib.js';
 const MOD = 'mod';
 const UUID = /^[0-9a-f-]{36}$/;
 
-/** Pranks are visible, dismissible and short. Nothing here hides itself. */
+
 export const TROLLS = ['message', 'shake', 'flip', 'invert'] as const;
 export type Troll = (typeof TROLLS)[number];
 
 const MAX_TEXT = 200;
 
-/**
- * Owner-only controls over who is in the building.
- *
- * Blocks and mutes are keyed by visitor id, which lives in the visitor's own
- * localStorage. Clearing site data makes a new one, so this stops someone being
- * a nuisance — it is not a security boundary and should not be described as one.
- */
+
 export default async function handler(req: Req, res: Res) {
   if (!(await requireAdmin(req, res))) return;
   if (req.method !== 'POST') return send(res, 405);
@@ -24,7 +18,7 @@ export default async function handler(req: Req, res: Res) {
   const action = String(body.action ?? '');
   const id = typeof body.id === 'string' ? body.id : '';
 
-  // Only the per-visitor actions carry an id; the room-wide switches do not.
+
   const NEEDS_ID = ['block', 'unblock', 'mute', 'unmute', 'troll'];
   const valid = UUID.test(id) || /^[0-9a-f]{8}$/.test(id);
   if (NEEDS_ID.includes(action) && !valid) {
@@ -68,9 +62,9 @@ export default async function handler(req: Req, res: Res) {
       if (!TROLLS.includes(kind)) return send(res, 400, { error: 'Unknown prank.' });
       const text = String(body.text ?? '').slice(0, MAX_TEXT);
       if (kind === 'message' && !text.trim()) return send(res, 400, { error: 'Say something.' });
-      // Aimed at a live session, so it lands once and does not follow them back.
-      // The timestamp is what expires it: hash fields have no TTL of their own,
-      // and the beacon drops anything it finds older than ten minutes.
+
+
+
       await redis([['HSET', MOD, `t:${id}`, JSON.stringify({ kind, text, at: Date.now() })]]);
       return send(res, 200, { sent: kind });
     }

@@ -1,20 +1,12 @@
-/**
- * Runs every sim/content module's selfTest() outside a browser.
- *
- * The modules under public/time-crisis/{core,sim,content} are deliberately free
- * of DOM, window and AudioContext references, which is what lets Node import
- * them directly. Anything that reaches for a global belongs in main.js or
- * render/, not here — if this script starts failing with "document is not
- * defined", that separation has been broken and that is the bug to fix.
- */
+
 
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const ROOT = join(process.cwd(), 'public/time-crisis');
-// '.' picks up modules at the package root, such as audio.js — leaving it
-// out meant a whole module's asserts silently never ran.
+
+
 const DIRS = ['.', 'core', 'sim', 'content', 'render'];
 
 let pass = 0;

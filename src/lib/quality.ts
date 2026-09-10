@@ -14,7 +14,7 @@ const lower: Record<Tier, Tier> = { high: 'medium', medium: 'low', low: 'low' };
 export const prefersReducedMotion = () =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** First guess from what the device admits to. */
+
 export function detectTier(): Tier {
   if (prefersReducedMotion()) return 'low';
   const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
@@ -29,17 +29,14 @@ export const dprFor = (tier: Tier) =>
 
 export const particlesFor = (tier: Tier) => ({ low: 1200, medium: 4000, high: 9000 })[tier];
 
-/**
- * Device hints lie — a Chromebook reports 8 cores and still misses frame budget.
- * Sample real frame times for a second and drop a tier if we are over ~22ms.
- */
+
 export function useAdaptiveTier(): Tier {
   const [tier, setTier] = useState<Tier>(() =>
     readQualityPreference() === 'low' ? 'low' : detectTier(),
   );
 
   useEffect(() => {
-    // An explicit low setting is a floor, not a first guess — skip measuring entirely.
+
     if (prefersReducedMotion() || readQualityPreference() === 'low') return;
     let frames = 0;
     let raf = 0;
