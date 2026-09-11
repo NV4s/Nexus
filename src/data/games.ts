@@ -343,6 +343,15 @@ const EXTRA: Game[] = [
     year: '2019',
   },
   {
+    slug: 'scary-shawarma-kiosk',
+    title: 'Scary Shawarma Kiosk: The Anomaly',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/shawarma-kiosk/index.html',
+    category: 'Simulation',
+    thumb: '/thumbs/scary-shawarma-kiosk.jpg',
+  },
+  {
     slug: 'tetris',
     title: 'Tetris',
     section: 'arcade',

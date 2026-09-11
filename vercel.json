@@ -50,7 +50,11 @@
 
     { "source": "/bus-simulator", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/" },
     { "source": "/bus-simulator/", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/" },
-    { "source": "/bus-simulator/:path*", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/:path*" }
+    { "source": "/bus-simulator/:path*", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/:path*" },
+
+    { "source": "/shawarma-kiosk", "destination": "https://html5.gamedistribution.com/rvvASMiM/fae39128b95549389ad487f668c0a74c/" },
+    { "source": "/shawarma-kiosk/", "destination": "https://html5.gamedistribution.com/rvvASMiM/fae39128b95549389ad487f668c0a74c/" },
+    { "source": "/shawarma-kiosk/:path*", "destination": "https://html5.gamedistribution.com/rvvASMiM/fae39128b95549389ad487f668c0a74c/:path*" }
   ],
   "headers": [
     {

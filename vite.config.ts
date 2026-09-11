@@ -4,13 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Mirrors the rewrites in vercel.json so proxied games work in dev too.
   server: {
     proxy: {
       '/n-gon': { target: 'https://landgreen.github.io', changeOrigin: true },
       '/level13': { target: 'https://nroutasuo.github.io', changeOrigin: true },
-      // Doodles refuse to be framed by anyone but Google. Serving them from this
-      // origin is what satisfies their own frame-ancestors 'self'.
       '/logos': { target: 'https://www.google.com', changeOrigin: true },
       '/polytrack': { target: 'https://joe-the-chicken.github.io', changeOrigin: true },
       '/basket-random': {
@@ -29,10 +26,15 @@ export default defineConfig({
         rewrite: (path: string) =>
           path.replace(/^\/bus-simulator/, '/indian-uphill-bus-simulator-3d'),
       },
+      '/shawarma-kiosk': {
+        target: 'https://html5.gamedistribution.com',
+        changeOrigin: true,
+        rewrite: (path: string) =>
+          path.replace(/^\/shawarma-kiosk/, '/rvvASMiM/fae39128b95549389ad487f668c0a74c'),
+      },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,
-        // Its own host serves the game at the root, unlike the github.io copies.
         rewrite: (path: string) => path.replace(/^\/adarkroom/, '') || '/',
       },
       '/swf/run-3.swf': {
@@ -45,7 +47,6 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // three + r3f is most of the bundle and changes far less often than app code
         manualChunks: { three: ['three', '@react-three/fiber', '@react-three/drei'] },
       },
     },
