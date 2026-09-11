@@ -29,6 +29,7 @@ export default defineConfig({
       '/shawarma-kiosk': {
         target: 'https://html5.gamedistribution.com',
         changeOrigin: true,
+        bypass: (req) => (req.url?.startsWith('/shawarma-kiosk/index.html') ? req.url : undefined),
         rewrite: (path: string) =>
           path.replace(/^\/shawarma-kiosk/, '/rvvASMiM/fae39128b95549389ad487f668c0a74c'),
       },
