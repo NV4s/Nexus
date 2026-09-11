@@ -1,0 +1,13 @@
+Twitch Tetris
+Copyright Leigh Pauls - https://www.leighpauls.com
+Original project: https://code.google.com/p/html5tetris/
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+jawsjs.js is Jaws (http://jawsjs.com/), licensed under the LGPL; see its header.
+
+Changes made for Nexus:
+- Removed the original AdSense unit from each page.
+- Loaded the VT323 font over https, so it is not blocked as mixed content.
+- Renamed the .htm pages to .html, so the game's own links resolve on static hosting.
+- Removed index_deploy.htm, which needs a minified build that is not included.
+- Media files taken from a working deployment of the original game.

@@ -15,7 +15,6 @@ const vertex =  `
   }
 `;
 
-
 const fragment =  `
   precision highp float;
   varying vec2 vUv;
@@ -31,7 +30,6 @@ const fragment =  `
 
   float easeOut(float x) { return 1.0 - pow(1.0 - clamp(x, 0.0, 1.0), 3.0); }
 
-  // A soft irregular blob, used for the drifting wisps of light.
   float wisp(vec2 p, vec2 centre, float radius, float seed) {
     vec2 d = p - centre;
     float ang = atan(d.y, d.x);
@@ -40,8 +38,6 @@ const fragment =  `
     return 1.0 - smoothstep(edge * 0.05, edge, length(d));
   }
 
-  // One band of warp streaks. Each angular slot gets its own speed, length and
-  // colour, so the rush reads as thousands of separate trails rather than a fan.
   vec3 warpBand(float ang, float r, float count, float seed, float speed, float t) {
     float slot = floor(ang / TAU * count + 0.5) + seed * 37.0;
     float rnd = hash(vec2(slot, 3.7));
@@ -70,23 +66,19 @@ const fragment =  `
     float ang = atan(p.y, p.x);
     float t = uTime;
 
-    // The rush builds, holds, then gives way to the void it was carrying you into.
     float rush = smoothstep(0.25, 1.20, t) * (1.0 - smoothstep(4.40, 5.90, t));
     float settle = smoothstep(4.60, 6.40, t);
     float accel = 0.55 + easeOut((t - 0.3) / 4.0) * 1.35;
 
     vec3 color = vec3(0.004, 0.003, 0.012);
 
-    // --- the rush -------------------------------------------------------
     vec3 streaks = warpBand(ang, r, 64.0, 1.0, 0.55 * accel, t);
     if (uLayers >= 3.0) streaks += warpBand(ang, r, 118.0, 2.0, 0.78 * accel, t) * 0.75;
     if (uLayers >= 4.0) streaks += warpBand(ang, r, 182.0, 3.0, 0.98 * accel, t) * 0.55;
     color += streaks * rush * 1.35;
 
-    // The vanishing point everything is pouring out of.
     color += vec3(1.0, 0.82, 1.0) * (1.0 - smoothstep(0.0, 0.30, r)) * rush * 0.55;
 
-    // Wisps of light tumbling past.
     float drift = t * 0.35;
     float wisps = 0.0;
     wisps += wisp(p, vec2(-1.05 + sin(drift) * 0.15, 0.52), 0.34, 3.4);
@@ -97,7 +89,6 @@ const fragment =  `
     }
     color += vec3(0.95, 0.88, 1.0) * clamp(wisps, 0.0, 1.0) * rush * 0.16;
 
-    // --- the void it resolves into --------------------------------------
     float core = 0.27;
     float ring = 1.0 - smoothstep(0.0, 0.045, abs(r - core * 1.20));
     float halo = 1.0 - smoothstep(0.0, 0.28, abs(r - core * 1.30));
@@ -105,10 +96,8 @@ const fragment =  `
     vec3 field = vec3(0.005, 0.007, 0.014);
     field += vec3(0.90, 0.94, 1.0) * ring * 1.15;
     field += vec3(0.26, 0.34, 0.56) * halo * 0.30;
-    // Wispy cloud lying across the field, the way it does once the rush stops.
     float cloud = wisp(p, vec2(-1.25, -0.14), 0.70, 2.2) + wisp(p, vec2(1.22, 0.20), 0.62, 6.6);
     field += vec3(0.24, 0.30, 0.44) * clamp(cloud, 0.0, 1.0) * 0.055;
-    // Nothing escapes the core.
     field *= smoothstep(core * 0.94, core, r);
 
     color = mix(color, field, settle);
@@ -120,7 +109,6 @@ const fragment =  `
 function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void }) {
   const { size } = useThree();
 
-
   const startedAt = useRef(0);
   const finished = useRef(false);
   const material = useRef<ShaderMaterial>(null);
@@ -131,7 +119,6 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
       uResolution: { value: new Vector2(1, 1) },
       uLayers: { value: layers },
     }),
-
 
     [],
   );
@@ -155,7 +142,6 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
 
   return (
 
-
     <mesh frustumCulled={false}>
       <planeGeometry args={[2, 2]} />
       <shaderMaterial
@@ -173,7 +159,6 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
   const tier = useAdaptiveTier();
   const [started, setStarted] = useState(false);
   const [leaving, setLeaving] = useState(false);
-
 
   const finish = useCallback(() => setLeaving(true), []);
 

@@ -14,11 +14,9 @@ const vertex =  `
   void main() {
     vec3 p = position;
 
-    // Slow independent drift so the field never looks like a static texture.
     p.x += sin(uTime * 0.18 + aSeed * 6.2831) * 0.35;
     p.y += cos(uTime * 0.14 + aSeed * 3.1415) * 0.30;
 
-    // Push away from the pointer, falling off with distance.
     vec2 away = p.xy - uPointer;
     float d2 = dot(away, away);
     p.xy += normalize(away + 1e-4) * (1.6 / (d2 + 0.9));
@@ -35,7 +33,6 @@ const fragment =  `
   varying float vGlow;
 
   void main() {
-    // Round, soft-edged point without a texture fetch.
     float d = length(gl_PointCoord - 0.5);
     float alpha = 1.0 - smoothstep(0.05, 0.5, d);
     vec3 cool = vec3(0.36, 0.60, 1.00);

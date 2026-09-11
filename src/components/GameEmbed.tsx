@@ -18,7 +18,7 @@ export default function GameEmbed({ slug }: { slug: string }) {
       {game.runtime === 'flash' ? (
         <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
       ) : (
-        <EmbedPlayer url={url} title={game.title} />
+        <EmbedPlayer url={url} title={game.title} frame={game.frame} />
       )}
     </div>
   );

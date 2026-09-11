@@ -10,30 +10,20 @@ export type Game = {
   title: string;
   section: Section;
   runtime: Runtime;
-  /** Absolute URL, or a path inside the NV4s/swfdump repo. */
+
   src: string;
   category: string;
   thumb?: string;
-  /**
-   * How the thumbnail fills the card. Study tiles are fitted whole by default
-   * and the few that are banners crop instead; arcade tiles are the other way
-   * round. Either can say so explicitly — an image too small to crop without
-   * blurring is better shown at its own size.
-   */
+
   thumbFit?: 'cover' | 'contain';
   developer?: string;
-  year?: string;  /** Sites that send X-Frame-Options open in a tab instead of a dead iframe. */
+  year?: string;
   newTab?: boolean;
-  /** Which sub-tab a course belongs under. Only read for section 'courses'. */
+
   track?: 'school' | 'extra';
-  /**
-   * Number of `.001`, `.002`, … chunks the SWF also ships as.
-   *
-   * Not how the game is normally loaded — it comes from LFS — but LFS bandwidth
-   * is capped monthly, and these are plain blobs with no meter. The player falls
-   * back to them when the primary download fails.
-   */
+
   parts?: number;
+  frame?: [width: number, height: number];
 };
 
 const slugify = (value: string) =>
@@ -52,7 +42,6 @@ const titleFromPath = (path: string) =>
     .replace(/[_-]+/g, ' ')
     .trim();
 
-/** Filenames that do not spell the real title. Keyed by swfdump path. */
 const TITLES: Record<string, string> = {
   'Achivement_Unlocked/Achivement_Unlocked.swf': 'Achievement Unlocked',
   'Achivement_Unlocked/Achivement_Unlocked_3.swf': 'Achievement Unlocked 3',
@@ -76,7 +65,6 @@ const TITLES: Record<string, string> = {
   'Unfinished_Sarge_Game_Demo.swf': 'Unfinished Sarge Game (Demo)',
 };
 
-/** Genre per slug. Anything unlisted lands in Arcade. */
 const CATEGORIES: Record<string, string> = {
   'achievement-unlocked': 'Platformer',
   'achievement-unlocked-2': 'Platformer',
@@ -157,82 +145,88 @@ const CATEGORIES: Record<string, string> = {
   'warfare-1917': 'Strategy',
 };
 
-/**
- * Hand-checked metadata. Developer and year are only present where they are known —
- * an absent field is better than an invented one.
- */
 const META: Record<string, Partial<Game>> = {
+  'doodle-basketball': { thumb: '/thumbs/doodle-basketball.png', frame: [546, 227] },
+  'doodle-hurdles': { frame: [546, 227] },
+  'doodle-soccer': { frame: [546, 227] },
   'achievement-unlocked': {
     developer: 'John Cooney (jmtb02)',
     year: '2008',
-    thumb: '/thumbs/achievement-unlocked.png',  },
+    thumb: '/thumbs/achievement-unlocked.png',
+  },
   'achievement-unlocked-2': {
     developer: 'John Cooney (jmtb02)',
     year: '2010',
-    thumb: '/thumbs/achievement-unlocked-2.png',  },
+    thumb: '/thumbs/achievement-unlocked-2.png',
+  },
   'achievement-unlocked-3': {
     developer: 'John Cooney (jmtb02)',
     year: '2012',
-    thumb: '/thumbs/achievement-unlocked-3.png',  },
+    thumb: '/thumbs/achievement-unlocked-3.png',
+  },
   'adrenaline-challenge': {
-    thumb: '/thumbs/adrenaline-challenge.png',  },
+    thumb: '/thumbs/adrenaline-challenge.png',
+  },
   'alien-hominid': {
     developer: 'The Behemoth',
     year: '2002',
-    thumb: '/thumbs/alien-hominid.png',  },
-  asteroids: { thumb: '/thumbs/asteroids.jpg',},
+    thumb: '/thumbs/alien-hominid.png',
+  },
+  asteroids: { thumb: '/thumbs/asteroids.jpg' },
   astroflash: { thumb: '/thumbs/astroflash.png' },
-  avalanche: { thumb: '/thumbs/avalanche.png',},
+  avalanche: { thumb: '/thumbs/avalanche.png' },
   'battle-pong': { thumb: '/thumbs/battle-pong.png' },
   battleships: { thumb: '/thumbs/battleships.png' },
   bloxorz: {
     developer: 'Damien Clarke',
     year: '2007',
-    thumb: '/thumbs/bloxorz.jpg',  },
-  bowman: { thumb: '/thumbs/bowman.png',},
-  boxhead: { developer: 'Sean Cooper',},
+    thumb: '/thumbs/bloxorz.jpg',
+  },
+  bowman: { thumb: '/thumbs/bowman.png' },
+  boxhead: { developer: 'Sean Cooper' },
   'bubble-tanks-2': { developer: 'Hero Interactive', year: '2008' },
   'cactus-mccoy': {
     developer: 'Flipline Studios',
-    year: '2011',  },
+    year: '2011',
+  },
   'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012' },
   'commando-2': {
-    developer: 'Macrojoy',  },
+    developer: 'Macrojoy',
+  },
   'commando-3': {
-    developer: 'Macrojoy',  },
+    developer: 'Macrojoy',
+  },
   'crimson-room': {
     developer: 'Toshimitsu Takagi',
-    year: '2004',  },
+    year: '2004',
+  },
   'cursor-10': {
     developer: 'Nekogames',
-    year: '2008',  },
-  doom: { developer: 'id Software',},
-  'duck-life': { developer: 'Wix Games',},
+    year: '2008',
+  },
+  doom: { developer: 'id Software' },
+  'duck-life': { developer: 'Wix Games' },
   'duck-life-2': { developer: 'Wix Games' },
   'duck-life-3': { developer: 'Wix Games' },
   'duck-life-4': { developer: 'Wix Games' },
   'gun-mayhem-2': {
-    thumb: '/thumbs/gun-mayhem-2.jpg',  },
-  jacksmith: { developer: 'Flipline Studios', year: '2012',},
-  'breaking-the-bank': { developer: 'PuffballsUnited', year: '2008',},
-  'escaping-the-prison': { developer: 'PuffballsUnited', year: '2010',},
-  'stealing-the-diamond': { developer: 'PuffballsUnited', year: '2011',},
-  'infiltrating-the-airship': { developer: 'PuffballsUnited', year: '2013',},
-  'fleeing-the-complex': { developer: 'PuffballsUnited', year: '2015',},
-  'crossing-the-pit': { developer: 'PuffballsUnited',},
+    thumb: '/thumbs/gun-mayhem-2.jpg',
+  },
+  jacksmith: { developer: 'Flipline Studios', year: '2012' },
+  'breaking-the-bank': { developer: 'PuffballsUnited', year: '2008' },
+  'escaping-the-prison': { developer: 'PuffballsUnited', year: '2010' },
+  'stealing-the-diamond': { developer: 'PuffballsUnited', year: '2011' },
+  'infiltrating-the-airship': { developer: 'PuffballsUnited', year: '2013' },
+  'fleeing-the-complex': { developer: 'PuffballsUnited', year: '2015' },
+  'crossing-the-pit': { developer: 'PuffballsUnited' },
   'madness-project-nexus-classic': {
     developer: 'Krinkels & Swain',
-    year: '2012',  },
-  'warfare-1917': { developer: 'Con Artist Games', year: '2008',},
+    year: '2012',
+  },
+  'warfare-1917': { developer: 'Con Artist Games', year: '2008' },
   'color-switch': { developer: 'Fortafy Games', year: '2015' },
 };
 
-/**
- * Games stored in LFS that also ship as chunks, and how many.
- *
- * LFS allows 10 GB of transfer a month, which at 146 MB is roughly 68 plays of
- * this file. The chunks cost nothing against that, so they stand by.
- */
 const CHUNK_FALLBACK: Record<string, number> = {
   'madness-project-nexus-mod-v9-5': 2,
 };
@@ -255,48 +249,38 @@ function fromSwf(path: string): Game {
   };
 }
 
-/** Games that are not in the SWF dump. */
 const EXTRA: Game[] = [
   {
     slug: 'run-3',
     title: 'Run 3',
     section: 'arcade',
     runtime: 'flash',
-    // Still the developer's own copy, but proxied by vercel.json — player03.com sends
-    // no Access-Control-Allow-Origin, so fetching it cross-origin fails outright.
+
     src: '/swf/run-3.swf',
     category: 'Platformer',
     thumb: '/thumbs/run-3.jpg',
     developer: 'Player 03',
-    year: '2014',  },
+    year: '2014',
+  },
   {
     slug: 'n-gon',
     title: 'n-gon',
     section: 'arcade',
     runtime: 'html5',
-    // Proxied through this origin by vercel.json. github.io is filtered on school
-    // networks, and proxying means the game is whatever landgreen shipped today
-    // rather than a copy that goes stale.
+
     src: '/n-gon/',
     category: 'Action',
-    developer: 'Ross Landgreen',  },
+    developer: 'Ross Landgreen',
+  },
   {
     slug: 'gba-emulator',
     title: 'GBA Emulator',
     section: 'arcade',
     runtime: 'html5',
     src: 'https://gba.ninja/',
-    category: 'Emulator',  },
+    category: 'Emulator',
+  },
 
-  /*
-   * Pokémon. Both of these send no X-Frame-Options and no frame-ancestors, so
-   * they play in the page rather than opening a tab — checked, not assumed.
-   *
-   * Pokémon Infinite Fusion itself is not here because no browser build of it
-   * exists: it is an RPG Maker XP game for Windows. Every "play it online" page
-   * found so far — including pokerogue.io/pokemon-infinite-fusion and the site
-   * it embeds — is the sprite-fusion calculator below under a misleading title.
-   */
   {
     slug: 'pokerogue',
     title: 'PokéRogue',
@@ -304,7 +288,8 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: 'https://pokerogue.net/',
     category: 'RPG',
-    developer: 'pagefaultgames',  },
+    developer: 'pagefaultgames',
+  },
   {
     slug: 'pokemon-showdown',
     title: 'Pokémon Showdown',
@@ -313,21 +298,10 @@ const EXTRA: Game[] = [
     src: 'https://play.pokemonshowdown.com/',
     category: 'RPG',
     developer: 'Smogon',
-    // Its headers allow framing, but the client checks for itself and stops with
-    // "Please visit Showdown directly" — so this is a tab, not an embed.
-    newTab: true,  },
-  /*
-   * Both proxied through this origin by vercel.json, the same as n-gon: they are
-   * served from github.io, which school filters block wholesale, and proxying
-   * also means each game stays whatever its author last shipped.
-   */
-  /*
-   * Three modern browser games. None of their official hosts allow framing, and
-   * for Polytrack proxying cannot help either — kodub.com names its permitted
-   * ancestors explicitly rather than allowing 'self', so serving it from here
-   * would still be refused. These are self-hosted community builds, proxied the
-   * same way n-gon is, which also gets them past filters that block github.io.
-   */
+
+    newTab: true,
+  },
+
   {
     slug: 'polytrack',
     title: 'PolyTrack',
@@ -335,7 +309,8 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/polytrack/',
     category: 'Racing',
-    developer: 'Kodub',  },
+    developer: 'Kodub',
+  },
   {
     slug: 'basket-random',
     title: 'Basket Random',
@@ -343,7 +318,9 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/basket-random/',
     category: 'Sports',
-    developer: 'RHM Interactive',  },
+    thumb: '/thumbs/basket-random.jpg',
+    developer: 'RHM Interactive',
+  },
   {
     slug: 'basketball-stars',
     title: 'Basketball Stars',
@@ -351,7 +328,9 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/basketball-stars/',
     category: 'Sports',
-    developer: 'Madpuffers',  },
+    thumb: '/thumbs/basketball-stars.jpg',
+    developer: 'Madpuffers',
+  },
   {
     slug: 'indian-uphill-bus-simulator',
     title: 'Indian Uphill Bus Simulator 3D',
@@ -361,7 +340,8 @@ const EXTRA: Game[] = [
     category: 'Racing',
     thumb: '/thumbs/indian-uphill-bus-simulator.jpg',
     developer: 'Mageeks Apps & Games',
-    year: '2019',  },
+    year: '2019',
+  },
   {
     slug: 'tetris',
     title: 'Tetris',
@@ -371,7 +351,19 @@ const EXTRA: Game[] = [
     category: 'Puzzle',
     thumb: '/thumbs/tetris.png',
     developer: 'Nexus',
-    year: '2026',  },
+    year: '2026',
+  },
+  {
+    slug: 'twitch-tetris',
+    title: 'Twitch Tetris',
+    section: 'arcade',
+    runtime: 'html5',
+    src: '/twitch-tetris/index.html',
+    category: 'Puzzle',
+    thumb: '/thumbs/twitch-tetris.png',
+    developer: 'Leigh Pauls',
+    year: '2011',
+  },
   {
     slug: 'level-13',
     title: 'Level 13',
@@ -379,7 +371,8 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: '/level13/',
     category: 'Strategy',
-    developer: 'Nina Routasuo',  },
+    developer: 'Nina Routasuo',
+  },
   {
     slug: 'a-dark-room',
     title: 'A Dark Room',
@@ -388,65 +381,47 @@ const EXTRA: Game[] = [
     src: '/adarkroom/',
     category: 'Strategy',
     thumb: '/thumbs/a-dark-room.png',
-    // The game's own 125px icon is all it publishes; cropping it to a 16:10
-    // tile would mean upscaling it past twice its size.
+
     thumbFit: 'contain',
-    developer: 'Doublespeak Games',  },
+    developer: 'Doublespeak Games',
+  },
   {
     slug: 'pokemon-infinite-fusion-calculator',
     title: 'Infinite Fusion Calculator',
     section: 'arcade',
     runtime: 'html5',
     src: 'https://aegide.pokemoninfinitefusion.io/',
-    category: 'RPG',  },
-  /*
-   * Written for this site, served from public/time-crisis/. A rail shooter built
-   * around the twin-pedal cover system: each pedal leans you out of one side of
-   * the field, dropping back into cover is what reloads you, and a wave always
-   * spans both sides so neither pedal clears an area alone. The handling numbers
-   * — headshot multiplier, post-hit invulnerability, the window a red "crisis"
-   * shot gives you to reach cover, the magazine and ammo-drop counts — are the
-   * arcade cabinet's own tuning values rather than guesses. Mechanics only: no
-   * code or asset from that build is used or redistributed here.
-   */
+    category: 'RPG',
+  },
+
   {
     slug: 'crisis-point',
     title: 'Crisis Point',
     section: 'arcade',
     runtime: 'html5',
-    // The file, not the directory: a bare /time-crisis/ is caught by the SPA
-    // fallback and serves Nexus's own index.html, which loads the whole site
-    // inside the game frame instead of the game.
+
     src: '/time-crisis/index.html',
     category: 'Action',
     thumb: '/thumbs/crisis-point.svg',
     thumbFit: 'cover',
     developer: 'Fan reimplementation',
-    year: '2026',  },
+    year: '2026',
+  },
   {
     slug: 'shootout-reloaded',
     title: 'Shootout Reloaded',
     section: 'arcade',
     runtime: 'html5',
-    // The file, not the directory, for the same reason as above.
+
     src: '/shootout-reloaded/index.html',
     category: 'Shooter',
-    // A frame captured from the running game; the export's own icon is the
-    // stock Construct logo, which says nothing about the game.
+
     thumb: '/thumbs/shootout-reloaded.jpg',
     developer: 'Nexus',
-    year: '2026',  },
+    year: '2026',
+  },
 ];
 
-
-
-/**
- * Free courses, split into the two sub-tabs the Courses page offers.
- *
- * `newTab` is set from each site's real headers, not guessed: most course
- * platforms send X-Frame-Options SAMEORIGIN, so most of these open in a tab.
- * The four that do embed are marked by their absence from that flag.
- */
 const COURSES: Game[] = [
   {
     slug: 'comptia',
@@ -457,7 +432,8 @@ const COURSES: Game[] = [
     src: 'https://www.comptia.org/en-us/',
     category: 'Certification',
     developer: 'CompTIA',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'professor-messer',
     title: 'Professor Messer',
@@ -466,7 +442,8 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://www.professormesser.com/',
     category: 'Certification',
-    developer: 'Professor Messer',  },
+    developer: 'Professor Messer',
+  },
   {
     slug: 'cs50',
     title: 'CS50',
@@ -476,7 +453,8 @@ const COURSES: Game[] = [
     src: 'https://cs50.harvard.edu/x/',
     category: 'Computer science',
     developer: 'Harvard',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'mit-ocw',
     title: 'MIT OpenCourseWare',
@@ -485,7 +463,8 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://ocw.mit.edu/',
     category: 'University',
-    developer: 'MIT',  },
+    developer: 'MIT',
+  },
   {
     slug: 'khan-test-prep',
     title: 'Khan Academy Test Prep',
@@ -495,7 +474,8 @@ const COURSES: Game[] = [
     src: 'https://www.khanacademy.org/test-prep',
     category: 'Test prep',
     developer: 'Khan Academy',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'openstax-courses',
     title: 'OpenStax Textbooks',
@@ -504,7 +484,8 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://openstax.org/subjects',
     category: 'Textbooks',
-    developer: 'Rice University',  },
+    developer: 'Rice University',
+  },
   {
     slug: 'claude-courses',
     title: 'Claude Courses',
@@ -514,7 +495,8 @@ const COURSES: Game[] = [
     src: 'https://anthropic.skilljar.com/',
     category: 'AI',
     developer: 'Anthropic',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'freecodecamp',
     title: 'freeCodeCamp',
@@ -524,7 +506,8 @@ const COURSES: Game[] = [
     src: 'https://www.freecodecamp.org/learn/',
     category: 'Programming',
     developer: 'freeCodeCamp',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'codecademy',
     title: 'Codecademy',
@@ -533,7 +516,8 @@ const COURSES: Game[] = [
     runtime: 'html5',
     src: 'https://www.codecademy.com/catalog',
     category: 'Programming',
-    developer: 'Codecademy',  },
+    developer: 'Codecademy',
+  },
   {
     slug: 'w3schools',
     title: 'W3Schools',
@@ -543,7 +527,8 @@ const COURSES: Game[] = [
     src: 'https://www.w3schools.com/',
     category: 'Reference',
     developer: 'W3Schools',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'coursera',
     title: 'Coursera',
@@ -553,7 +538,8 @@ const COURSES: Game[] = [
     src: 'https://www.coursera.org/courses?query=free',
     category: 'University',
     developer: 'Coursera',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'duolingo',
     title: 'Duolingo',
@@ -563,7 +549,8 @@ const COURSES: Game[] = [
     src: 'https://www.duolingo.com/',
     category: 'Languages',
     developer: 'Duolingo',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'brilliant',
     title: 'Brilliant',
@@ -573,7 +560,8 @@ const COURSES: Game[] = [
     src: 'https://brilliant.org/courses/',
     category: 'Maths',
     developer: 'Brilliant',
-    newTab: true,  },
+    newTab: true,
+  },
   {
     slug: 'sololearn',
     title: 'SoloLearn',
@@ -583,23 +571,10 @@ const COURSES: Game[] = [
     src: 'https://www.sololearn.com/',
     category: 'Programming',
     developer: 'SoloLearn',
-    newTab: true,  },
+    newTab: true,
+  },
 ];
 
-/**
- * Google Doodle games.
- *
- * They refuse to be framed by anyone but Google — every one sends
- * `frame-ancestors 'self' *.google.com …`, and this site is not on that list.
- * But `'self'` is judged against whoever serves the *document*, so proxying
- * /logos through this origin (see vercel.json) satisfies it. Their assets are
- * root-relative, so they come through the same proxy.
- *
- * Only the interactive ones are here. There are thousands of doodles and about
- * twenty that are games; each path below was loaded and checked rather than
- * guessed from a naming pattern, because the archive moved and the old JSON
- * index that used to list them returns a 404 now.
- */
 const DOODLES: [slug: string, title: string, path: string, year: string][] = [
   ['doodle-pacman', 'Pac-Man', '/logos/2010/pacman10-hp.html', '2010'],
   ['doodle-magic-cat-academy', 'Magic Cat Academy', '/logos/2016/halloween16/halloween16.html', '2016'],
@@ -631,13 +606,10 @@ const DOODLE_GAMES: Game[] = DOODLES.map(([slug, title, src, year]) => ({
   src,
   category: 'Doodle',
   developer: 'Google',
-  year,}));
+  year,
+  ...META[slug],
+}));
 
-/**
- * The Eaglercraft client is deployed separately (see deploy/eaglercraft-relay/README.md)
- * and its URL is baked in at build time. Unset means no card at all, which beats a
- * card that opens a blank frame.
- */
 const EAGLERCRAFT: Game[] = import.meta.env?.VITE_EAGLERCRAFT_URL
   ? [
       {
@@ -646,18 +618,11 @@ const EAGLERCRAFT: Game[] = import.meta.env?.VITE_EAGLERCRAFT_URL
         section: 'arcade',
         runtime: 'html5',
         src: import.meta.env?.VITE_EAGLERCRAFT_URL,
-        category: 'Sandbox',      },
+        category: 'Sandbox',
+      },
     ]
   : [];
 
-/**
- * Study tools. `newTab` is set from each site's actual headers rather than by
- * guessing: Wolfram Alpha, Symbolab, Translate, PhET, Scratch, Merriam-Webster,
- * Quizlet and Keep all send X-Frame-Options or a frame-ancestors policy that
- * refuses this origin, and an embedded one would be a dead grey box.
- * `developer` is the vendor: without it the card subtitle falls through to the
- * generic "Browser game" (GameCard), which says nothing about what the tool is.
- */
 const STUDY: Game[] = [
   {
     slug: 'desmos',
@@ -716,8 +681,7 @@ const STUDY: Game[] = [
     thumb: '/thumbs/study/khan-academy.png',
     category: 'Courses',
     developer: 'Khan Academy',
-    // Its headers look framable from a plain request but a real frame is refused,
-    // so this is set from what actually happens rather than what the headers say.
+
     newTab: true,
   },
   {
@@ -758,7 +722,8 @@ const STUDY: Game[] = [
     src: 'https://turbowarp.org/',
     thumb: '/thumbs/study/turbowarp.png',
     category: 'Coding',
-    developer: 'TurboWarp',  },
+    developer: 'TurboWarp',
+  },
   {
     slug: 'snap',
     title: 'Snap!',
@@ -788,7 +753,8 @@ const STUDY: Game[] = [
     thumb: '/thumbs/study/quizizz.png',
     thumbFit: 'cover',
     category: 'Flashcards',
-    developer: 'Quizizz',  },
+    developer: 'Quizizz',
+  },
   {
     slug: 'openstax',
     title: 'OpenStax Textbooks',
@@ -934,12 +900,6 @@ if (duplicates.length) throw new Error(`duplicate game slugs: ${duplicates.join(
 
 export const bySlug = (slug: string) => GAMES.find((game) => game.slug === slug);
 
-/** A way in, so 113 tiles are not the first thing anyone has to parse. */
-/**
- * Games worth a first visit. Deliberately wider than the eight shown, because the
- * front page samples from it — a returning player should meet something different
- * rather than the same eight tiles every time.
- */
 const STARTERS = [
   'bloxorz',
   'run-3',
@@ -977,11 +937,6 @@ const STARTERS = [
 
 const SHOWN = 8;
 
-/**
- * Sampled once when the module loads: the same eight for as long as this tab is
- * open, a different eight next visit. Re-sampling per render would reshuffle the
- * grid under the cursor every time React re-rendered the page.
- */
 const starters = (() => {
   const pool = [...new Set(STARTERS)].map(bySlug).filter((game): game is Game => !!game);
   for (let i = pool.length - 1; i > 0; i--) {
@@ -993,18 +948,11 @@ const starters = (() => {
 
 export const featuredGames = () => starters;
 
-// A starter naming a game that does not exist would silently shrink the row.
 if (import.meta.env?.DEV) {
   const missing = [...new Set(STARTERS)].filter((slug) => !bySlug(slug));
   if (missing.length) console.warn(`starters: no game called ${missing.join(', ')}`);
 }
 
-/**
- * The games in a section, minus anything the owner has hidden from the Admin
- * page. Hiding is not security — the slug still resolves if someone types the
- * URL — it is a way to pull a broken or unwanted game off the shelves without
- * a redeploy.
- */
 export const gamesIn = (section: Section) => {
   const { hidden, hiddenSections } = siteConfig();
   if (hiddenSections.includes(section)) return [];
@@ -1015,18 +963,8 @@ export const categoriesIn = (section: Section) => [
   ...new Set(gamesIn(section).map((game) => game.category)),
 ].sort();
 
-/**
- * Resolved URL to load. Absolute and site-root sources pass through; the rest are
- * swfdump paths, which resolve to jsDelivr, raw, or the LFS media endpoint by size.
- */
 export const gameUrl = (game: Game) =>
   /^(https?:\/\/|\/)/.test(game.src) ? game.src : swfUrl(game.src);
 
-/**
- * Where to look if the primary download fails.
- *
- * Only for the LFS-hosted games, which also ship as chunks. Returning null means
- * a failure is simply a failure — there is nowhere else to try.
- */
 export const gameFallback = (game: Game) =>
   game.parts ? { base: swfChunkBase(game.src), parts: game.parts } : null;
