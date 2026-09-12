@@ -229,6 +229,7 @@
 
                 // Additional init modules
 cloudSaves = await LoadCloud();
+cloudSaves = cloudSaves === 'noData' ? JSON.stringify([JSON.stringify({ language: 'en' })]) : cloudSaves.replace(/language\\+":\\+"ru/, m => m.slice(0, -2) + 'en');
 console.log('Init Storage ysdk');
 
 environmentData = await RequestingEnvironmentData();
