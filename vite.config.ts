@@ -43,6 +43,12 @@ export default defineConfig({
         bypass: (req) => (req.url?.startsWith('/bad-time-simulator/index.html') ? req.url : undefined),
         rewrite: (path: string) => path.replace(/^\/bad-time-simulator/, '/c2-sans-fight'),
       },
+      '/ultrakill': {
+        target: 'https://html-classic.itch.zone',
+        changeOrigin: true,
+        bypass: (req) => (req.url?.startsWith('/ultrakill/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/ultrakill/, '/html/18282996'),
+      },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,
