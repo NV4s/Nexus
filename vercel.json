@@ -52,7 +52,10 @@
     { "source": "/bus-simulator/", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/" },
     { "source": "/bus-simulator/:path*", "destination": "https://trafficjam3d.github.io/indian-uphill-bus-simulator-3d/:path*" },
 
-    { "source": "/shawarma-kiosk/:path*", "destination": "https://html5.gamedistribution.com/rvvASMiM/fae39128b95549389ad487f668c0a74c/:path*" }
+    { "source": "/shawarma-kiosk/:path*", "destination": "https://html5.gamedistribution.com/rvvASMiM/fae39128b95549389ad487f668c0a74c/:path*" },
+
+    { "source": "/rooftop-snipers/:path*", "destination": "https://sobloxsy.github.io/rooftop-snipers/:path*" },
+    { "source": "/bad-time-simulator/:path*", "destination": "https://jcw87.github.io/c2-sans-fight/:path*" }
   ],
   "headers": [
     {

@@ -33,6 +33,16 @@ export default defineConfig({
         rewrite: (path: string) =>
           path.replace(/^\/shawarma-kiosk/, '/rvvASMiM/fae39128b95549389ad487f668c0a74c'),
       },
+      '/rooftop-snipers': {
+        target: 'https://sobloxsy.github.io',
+        changeOrigin: true,
+      },
+      '/bad-time-simulator': {
+        target: 'https://jcw87.github.io',
+        changeOrigin: true,
+        bypass: (req) => (req.url?.startsWith('/bad-time-simulator/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/bad-time-simulator/, '/c2-sans-fight'),
+      },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,
