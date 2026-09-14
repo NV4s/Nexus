@@ -38,7 +38,7 @@ export default function GameGrid({
 }: {
   section: Section;
   title: string;
-  lede: string;
+  lede?: string;
 
   track?: 'school' | 'extra';
 }) {
@@ -73,7 +73,7 @@ export default function GameGrid({
       <header className="section-head">
         <div>
           <h2>{title}</h2>
-          <p>{lede}</p>
+          {lede && <p>{lede}</p>}
         </div>
         <input
           type="search"
@@ -102,7 +102,6 @@ export default function GameGrid({
 
       {section === 'arcade' && !query && category === 'All' && (
         <div className="series">
-          <h3>Series</h3>
           {SERIES.map((series) => {
             const games = gamesInSeries(series);
             if (!games.length) return null;
@@ -110,10 +109,6 @@ export default function GameGrid({
               <div className="series-row" key={series.id}>
                 <div className="series-head">
                   <h4>{series.title}</h4>
-                  <p>{series.blurb}</p>
-                  <span className="series-count">
-                    {games.length} {games.length === 1 ? 'game' : 'games'}
-                  </span>
                 </div>
                 <Scroller className="series-scroller" label={series.title}>
                   {games.map((game) => (

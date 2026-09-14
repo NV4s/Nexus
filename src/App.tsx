@@ -98,7 +98,7 @@ export default function App() {
         {showIntro ? null : head === 'game' && param ? (
           <GamePage slug={param} />
         ) : head === 'arcade' ? (
-          <GameGrid section="arcade" title="Arcade" lede="Flash and browser games, playable here." />
+          <GameGrid section="arcade" title="Arcade" />
         ) : head === 'study' ? (
           <Study />
         ) : head === 'chat' ? (

@@ -17,16 +17,18 @@ export default function Scroller({
   label?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [held, setHeld] = useState(false);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
 
-
-
+  const held = useRef(false);
   const paused = useRef(0);
   const drag = useRef<{ x: number; from: number; moved: number; captured: boolean } | null>(null);
 
   const draggedAt = useRef(0);
+
+  const pause = (ms = 2000) => {
+    paused.current = Math.max(paused.current, performance.now() + ms);
+  };
 
   const wrap = useCallback(
     (el: HTMLElement) => {
@@ -57,32 +59,42 @@ export default function Scroller({
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (still) return;
 
+    let position = el.scrollLeft;
     let frame = 0;
     let last = performance.now();
     const step = (now: number) => {
       const dt = Math.min(now - last, 100) / 1000;
       last = now;
-      if (!held && now > paused.current && !drag.current) {
-        el.scrollLeft += speed * dt;
-        wrap(el);
+      if (Math.abs(el.scrollLeft - position) > 1.5) position = el.scrollLeft;
+      if (!held.current && now > paused.current && !drag.current) {
+        position += speed * dt;
+        const half = el.scrollWidth / 2;
+        if (loop && half >= 1 && position >= half) position -= half;
+        el.scrollLeft = position;
       }
       frame = requestAnimationFrame(step);
     };
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [speed, held, wrap]);
+  }, [speed, loop]);
 
-  useEffect(readEdges, [readEdges, children]);
+  useEffect(() => {
+    readEdges();
+    window.addEventListener('resize', readEdges);
+    return () => window.removeEventListener('resize', readEdges);
+  }, [readEdges, children]);
 
   const nudge = (direction: 1 | -1) => {
     const el = ref.current;
     if (!el) return;
-    paused.current = performance.now() + 2000;
+    pause();
     el.scrollBy({ left: direction * el.clientWidth * 0.8, behavior: 'smooth' });
   };
 
+  const edges = loop ? '' : `${atStart ? ' is-at-start' : ''}${atEnd ? ' is-at-end' : ''}`;
+
   return (
-    <div className={`scroller ${className}`}>
+    <div className={`scroller ${className}${edges}`}>
       <button
         type="button"
         className="scroller-arrow is-prev"
@@ -96,23 +108,27 @@ export default function Scroller({
       <div
         ref={ref}
         className="scroller-track"
-        onMouseEnter={() => setHeld(true)}
-        onMouseLeave={() => {
-          setHeld(false);
-
-
-
+        onPointerEnter={(event) => {
+          if (event.pointerType === 'mouse') held.current = true;
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType === 'mouse') held.current = false;
           if (drag.current && !drag.current.captured) drag.current = null;
         }}
-        onFocusCapture={() => setHeld(true)}
-        onBlurCapture={() => setHeld(false)}
+        onFocusCapture={(event) => {
+          if ((event.target as Element).matches(':focus-visible')) held.current = true;
+        }}
+        onBlurCapture={() => {
+          held.current = false;
+        }}
         onScroll={(event) => {
           wrap(event.currentTarget);
           readEdges();
         }}
-        onWheel={() => {
-          paused.current = performance.now() + 2000;
-        }}
+        onWheel={() => pause()}
+        onTouchStart={() => pause(3000)}
+        onTouchMove={() => pause(3000)}
+        onTouchEnd={() => pause(3000)}
         onPointerDown={(event) => {
 
           if (event.pointerType === 'touch') return;
@@ -142,7 +158,7 @@ export default function Scroller({
         onPointerUp={(event) => {
           const state = drag.current;
           drag.current = null;
-          paused.current = performance.now() + 2000;
+          pause();
           if (!state) return;
           if (state.captured) event.currentTarget.releasePointerCapture(event.pointerId);
 

@@ -6,9 +6,16 @@ type Message = { id: string; name: string; text: string; at: number; who: string
 const NAME_KEY = 'nexus:chat:name';
 const POLL_MS = 5000;
 const MAX_TEXT = 200;
+const GROUP_MS = 5 * 60 * 1000;
 
 const clock = (at: number) =>
-  new Date(at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  new Date(at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+const hue = (text: string) => {
+  let value = 0;
+  for (const char of text.toLowerCase()) value = (value * 31 + char.charCodeAt(0)) % 360;
+  return value;
+};
 
 
 function localCheck(text: string): string | null {
@@ -33,24 +40,26 @@ export default function Chat() {
   const [off, setOff] = useState(false);
   const log = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
+  const latest = useRef('');
 
   const load = useCallback(async () => {
+    if (document.visibilityState !== 'visible') return;
     try {
       const response = await fetch('/api/chat');
       if (!response.ok) return;
-      const data = (await response.json()) as { messages: Message[]; off?: boolean };
+      const data = (await response.json()) as { messages?: Message[]; off?: boolean };
       setOff(Boolean(data.off));
-      setMessages(data.messages ?? []);
+      const next = data.messages ?? [];
+      const key = `${next.length}:${next[next.length - 1]?.id ?? ''}`;
+      if (key === latest.current) return;
+      latest.current = key;
+      setMessages(next);
     } catch {}
   }, []);
 
   useEffect(() => {
     load();
-
-
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === 'visible') load();
-    }, POLL_MS);
+    const timer = window.setInterval(load, POLL_MS);
     document.addEventListener('visibilitychange', load);
     return () => {
       window.clearInterval(timer);
@@ -90,6 +99,7 @@ export default function Chat() {
         localStorage.setItem(NAME_KEY, name.trim());
       } catch {}
       setDraft('');
+      pinned.current = true;
       if (data.message) setMessages((current) => [...current, data.message!]);
     } catch {
       setError('No connection.');
@@ -98,24 +108,29 @@ export default function Chat() {
     }
   }
 
+  const left = MAX_TEXT - draft.length;
+
   return (
-    <section className="chat">
-      <header className="page-head">
-        <h2>Chat</h2>
-        <p>
-          One public room. Everyone can see everything you type here, including
-          the owner — no private messages, and no links, addresses or contact
-          details.
-        </p>
+    <section className="section chat-room">
+      <header className="section-head">
+        <div>
+          <h2>Chat</h2>
+          <p>
+            One public room. Everyone sees what you type, the owner included. No private messages,
+            links, addresses or contact details.
+          </p>
+        </div>
       </header>
 
       {off ? (
-        <div className="empty">Chat is switched off right now.</div>
+        <p className="empty">Chat is switched off right now.</p>
       ) : (
-        <div className="chat-box glass">
+        <div className="chat-room-box glass">
           <div
             className="chat-log"
             ref={log}
+            role="log"
+            aria-live="polite"
             onScroll={(event) => {
               const el = event.currentTarget;
               pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
@@ -124,19 +139,42 @@ export default function Chat() {
             {messages.length === 0 ? (
               <p className="chat-empty">Nothing yet. Say hello.</p>
             ) : (
-              messages.map((message) => (
-                <p className="chat-line" key={message.id}>
-                  <span className="chat-when">{clock(message.at)}</span>
-                  <span className="chat-name">{message.name}</span>
-                  <span className="chat-text">{message.text}</span>
-                </p>
-              ))
+              messages.map((message, index) => {
+                const previous = messages[index - 1];
+                const first =
+                  !previous ||
+                  previous.who !== message.who ||
+                  previous.name !== message.name ||
+                  message.at - previous.at > GROUP_MS;
+                return (
+                  <div
+                    key={message.id}
+                    className={first ? 'chat-msg is-first' : 'chat-msg'}
+                    style={first ? ({ '--hue': hue(message.name) } as React.CSSProperties) : undefined}
+                  >
+                    {first && (
+                      <>
+                        <span className="chat-avatar" aria-hidden="true">
+                          {message.name.slice(0, 1).toUpperCase()}
+                        </span>
+                        <div className="chat-meta">
+                          <span className="chat-name">{message.name}</span>
+                          <time className="chat-when" dateTime={new Date(message.at).toISOString()}>
+                            {clock(message.at)}
+                          </time>
+                        </div>
+                      </>
+                    )}
+                    <p className="chat-text">{message.text}</p>
+                  </div>
+                );
+              })
             )}
           </div>
 
           <form className="chat-form" onSubmit={send}>
             <input
-              className="chat-name-input"
+              className="field chat-name-input"
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Name"
@@ -144,19 +182,26 @@ export default function Chat() {
               aria-label="Your name in chat"
             />
             <input
-              className="chat-draft"
+              className="field chat-draft"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Message"
               maxLength={MAX_TEXT}
               aria-label="Message"
             />
-            <button type="submit" disabled={sending}>
+            <span className={left < 30 ? 'chat-count is-near' : 'chat-count'} aria-hidden="true">
+              {left}
+            </span>
+            <button type="submit" className="button" disabled={sending || !draft.trim()}>
               {sending ? 'Sending…' : 'Send'}
             </button>
           </form>
 
-          {error && <p className="chat-error">{error}</p>}
+          {error && (
+            <p className="chat-error" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       )}
     </section>

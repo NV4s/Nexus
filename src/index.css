@@ -1892,12 +1892,25 @@ select.field {
   /* Horizontal overscroll must not turn into a page-level back gesture. */
   overscroll-behavior-x: contain;
   cursor: grab;
-  /* Fades both ends so cards enter and leave rather than being cut off. */
-  mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 var(--fade-start, 2.5rem),
+    #000 calc(100% - var(--fade-end, 2.5rem)),
+    transparent
+  );
 }
 
 .scroller-track:active {
   cursor: grabbing;
+}
+
+.scroller.is-at-start > .scroller-track {
+  --fade-start: 0rem;
+}
+
+.scroller.is-at-end > .scroller-track {
+  --fade-end: 0rem;
 }
 
 /* Thin on the strips, where a full-height bar would crowd the cards. */
@@ -2129,14 +2142,6 @@ select.field {
   margin-bottom: 2rem;
 }
 
-.series > h3 {
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-dim);
-  margin-bottom: 1rem;
-}
-
 .series-row {
   margin-bottom: 1.75rem;
 }
@@ -2155,17 +2160,6 @@ select.field {
   font-weight: 620;
 }
 
-.series-head p {
-  flex: 1 1 20rem;
-  font-size: 0.85rem;
-}
-
-.series-count {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-
 /* One row per series. Cards are a fixed width so a two-game series does not
    stretch each card across the page. */
 .series-scroller .scroller-track {
@@ -2177,6 +2171,144 @@ select.field {
   width: 11.5rem;
   flex: 0 0 11.5rem;
   scroll-snap-align: start;
+}
+
+.chat-room {
+  max-width: 54rem;
+}
+
+.chat-room-box {
+  display: flex;
+  flex-direction: column;
+  height: clamp(22rem, calc(100vh - 17rem), 44rem);
+  padding: 0;
+  overflow: hidden;
+}
+
+.chat-log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.9rem 0.9rem 0.6rem;
+}
+
+.chat-empty {
+  margin: auto;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.chat-msg {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  column-gap: 0.7rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 8px;
+}
+
+.chat-msg.is-first {
+  margin-top: 0.6rem;
+  padding-top: 0.35rem;
+}
+
+.chat-msg:first-child {
+  margin-top: 0;
+}
+
+.chat-msg:hover {
+  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+}
+
+.chat-avatar {
+  grid-row: span 2;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: #fff;
+  background: hsl(var(--hue, 210) 55% 42%);
+}
+
+.chat-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.chat-name {
+  font-size: 0.88rem;
+  font-weight: 620;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-when {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.chat-text {
+  grid-column: 2;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.chat-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--glass-edge);
+}
+
+.chat-form .chat-name-input {
+  flex: 0 1 9rem;
+  min-width: 6rem;
+}
+
+.chat-form .chat-draft {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.chat-count {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.chat-count.is-near {
+  color: var(--accent);
+}
+
+.chat-error {
+  margin: 0;
+  padding: 0 0.9rem 0.75rem;
+  font-size: 0.8rem;
+  color: #ff8a8a;
+}
+
+@media (max-width: 40rem) {
+  .chat-room-box {
+    height: calc(100vh - 13rem);
+  }
+
+  .chat-form .chat-name-input {
+    flex-basis: 100%;
+  }
 }
 
 /* ---------- sub-tabs (Study) ---------- */

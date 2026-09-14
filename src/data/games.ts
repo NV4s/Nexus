@@ -187,6 +187,10 @@ const META: Record<string, Partial<Game>> = {
   'boxhead-2play-rooms': { thumb: '/thumbs/boxhead-2play-rooms.png' },
   'boxhead-more-rooms': { thumb: '/thumbs/boxhead-more-rooms.png' },
   'boxhead-the-christmas-nightmare': { thumb: '/thumbs/boxhead-the-christmas-nightmare.png' },
+  'boxhead-the-nightmare': { thumb: '/thumbs/boxhead-the-nightmare.png' },
+  'boxhead-the-nightmare-biever-and-baby': { thumb: '/thumbs/boxhead-the-nightmare-biever-and-baby.png' },
+  'boxhead-the-rooms': { thumb: '/thumbs/boxhead-the-rooms.png' },
+  'boxhead-the-zombie-wars': { thumb: '/thumbs/boxhead-the-zombie-wars.png' },
   'bubble-tanks-2': { developer: 'Hero Interactive', year: '2008' },
   'cactus-mccoy': {
     developer: 'Flipline Studios',
