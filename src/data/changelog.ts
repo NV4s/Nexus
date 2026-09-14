@@ -7,6 +7,95 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v1.11.0',
+    date: '2026-09-12',
+    changes: [
+      'ULTRAKILL Prelude. It loads through this site, so it works where itch.io is blocked',
+      'Rooftop Snipers, loading through this site',
+      'Bad Time Simulator, without the Google Analytics the original page carried',
+      'Red vs Blue, Ravenfield and RavenBit 2: Winter War. The copies going around had ad banners, tracking and someone else\'s branding on the loading screen. These have none of it',
+      'Red vs Blue could crash while loading. Fixed',
+      'Red vs Blue started in Russian. It starts in English now, and saves already set to Russian switch over',
+      'Boxhead, Boxhead 2Play Rooms, More Rooms and The Christmas Nightmare have cover art',
+    ],
+  },
+  {
+    version: 'v1.10.0',
+    date: '2026-09-10',
+    changes: [
+      'Scary Shawarma Kiosk: The Anomaly, with its ads taken out. The ad version pulled in about fifty ad and tracking sites; this one makes no requests to other sites at all',
+      'Granny, from an unofficial web port of the real game. Most "Granny online" sites run look-alikes',
+      'The Chrome dino game. It starts on a click or tap as well as Space',
+      'Twitch Tetris is hosted here, since its own site now refuses to load in a frame',
+      'The 2012 Olympic doodles — Basketball, Hurdles and Soccer — showed up as a strip in the corner of the player. They fill it now',
+      'Basketball Stars, Basket Random and the Basketball doodle have cover art',
+    ],
+  },
+  {
+    version: 'v1.9.0',
+    date: '2026-09-09',
+    changes: [
+      'A chat room. It is one public room with no private messages, and anything with swearing, slurs, links, emails, phone numbers, social handles or addresses is refused before it is saved',
+      'Three messages every ten seconds at most, and nobody can take the owner\'s name',
+      'The owner can mute or block someone, clear the room or turn chat off. It goes by the random id in your browser, not by who you are',
+      'Commando 2. The original only starts on Miniclip\'s site; this copy starts here and keeps your progress',
+      'Tetris, built for this site, with hold, a ghost piece and levels',
+      'Indian Uphill Bus Simulator 3D, loading through this site',
+      'Basketball Stars stopped loading because the site it came from started redirecting to a blocked one. Fixed',
+      'Achievement Unlocked 1 and 2 have cover art',
+      'Game cards no longer have a line of description under them',
+    ],
+  },
+  {
+    version: 'v1.8.1',
+    date: '2026-09-08',
+    changes: [
+      'Shootout Reloaded, hosted here',
+      'Nothing in "Start here" or the Series rows could be clicked. Fixed',
+      'Achievement Unlocked 3 sat on an Armor Games error for about forty seconds before starting. It starts straight away now. Its Armor Games login and leaderboards stay gone, because their servers are',
+      'Achievement Unlocked 3 had another game\'s picture on its card. Fixed',
+    ],
+  },
+  {
+    version: 'v1.8.0',
+    date: '2026-09-03',
+    changes: [
+      'The rows of games scroll by dragging, the mouse wheel, touch, the keyboard or the arrows that appear on hover. The drift pauses while you use them',
+      'The on-device assistant can look at pictures. That model is about 4 GB, so it only downloads when you attach an image, and it tells you the size first',
+    ],
+  },
+  {
+    version: 'v1.7.1',
+    date: '2026-09-02',
+    changes: [
+      'Champion Island\'s cutscenes stalled, and sound in the other doodles broke the same way. Fixed',
+      'Polytrack, Basket Random and Basketball Stars, loading through this site',
+    ],
+  },
+  {
+    version: 'v1.7.0',
+    date: '2026-09-01',
+    changes: [
+      'Commando 3, rebuilt as one file so it plays here',
+      'Achievements could miss a score set after the game closed. Cubefield sat on 135,000 with its score tiers unticked. Saves are re-checked when the site opens and when you open the list, and there is a Re-check saves button',
+      'Google Doodle games, Halloween ones included',
+      'Series rows: thirteen franchises, each in release order',
+      'Study splits into Tools and Courses, with fourteen free courses',
+      'The assistant remembers each conversation, separately for every model. Attached files are not kept, only their names',
+      'Settings shows what each save takes up and can delete them one game at a time. It also has an accent colour, text size, a reduce-motion switch and one-click tab disguises',
+      'The owner can put up a banner for everyone and take games or sections down without an update',
+      'A Dark Room and Wikipedia have proper cover art',
+    ],
+  },
+  {
+    version: 'v1.6.1',
+    date: '2026-08-29',
+    changes: [
+      'Pages with one or two panels, like the emulator and the assistant, showed a thin box with the rest of the row empty. Panels fill the row again',
+      'Achievements and Saves share one Progress tab; Settings and Changelog share one Settings tab. Old links still work',
+    ],
+  },
+  {
     version: 'v1.6.0',
     date: '2026-08-28',
     changes: [
