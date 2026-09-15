@@ -194,12 +194,16 @@ const META: Record<string, Partial<Game>> = {
   'bubble-shooter': { thumb: '/thumbs/bubble-shooter.png' },
   'bullet-bill': { thumb: '/thumbs/bullet-bill.png' },
   'doodle-bubble-tea': { thumb: '/thumbs/doodle-bubble-tea.png' },
+  'bush-shootout': { thumb: '/thumbs/bush-shootout.png' },
+  'castle-wars': { thumb: '/thumbs/castle-wars.png' },
+  causality: { thumb: '/thumbs/causality.png' },
   'bubble-tanks-2': { developer: 'Hero Interactive', year: '2008', thumb: '/thumbs/bubble-tanks-2.png' },
   'cactus-mccoy': {
     developer: 'Flipline Studios',
     year: '2011',
+    thumb: '/thumbs/cactus-mccoy.png',
   },
-  'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012' },
+  'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012', thumb: '/thumbs/cactus-mccoy-2.png' },
   'commando-2': {
     developer: 'Macrojoy',
   },
