@@ -11,6 +11,7 @@ import Changelog from './components/Changelog';
 import Achievements from './components/Achievements';
 import Saves from './components/Saves';
 import GameEmbed from './components/GameEmbed';
+import BackgroundVideo from './components/BackgroundVideo';
 import { segments, useRoute } from './lib/router';
 import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
@@ -81,6 +82,7 @@ export default function App() {
   return (
     <>
       <Analytics />
+      <BackgroundVideo />
       {showIntro && (
         <Suspense fallback={<div className="intro" />}>
           <VoidIntro onComplete={dismissIntro} />
