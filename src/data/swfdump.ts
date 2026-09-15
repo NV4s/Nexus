@@ -1,8 +1,4 @@
-
-
-
-export const SWFDUMP_SHA = 'f063a8d9453f5e9fe88d757f76b1dbaf9946e6ca';
-
+export const SWFDUMP_SHA = '3b954d8a7c7d41d1bccbccecff5cb428149ca16f';
 
 export const SWFDUMP_FILES: ReadonlyArray<readonly [string, number]> = [
   ["Achivement_Unlocked/Achievement_Unlocked_2.swf", 3333711],
@@ -37,6 +33,8 @@ export const SWFDUMP_FILES: ReadonlyArray<readonly [string, number]> = [
   ["Choose_Your_Weapon_2.swf", 2725330],
   ["Choose_Your_Weapon_3.swf", 2901537],
   ["Choose_Your_Weapon_4.swf", 2541269],
+  ["Choose_Your_Weapon_5.swf", 18152164],
+  ["Choose_Your_Weapon_TD.swf", 502177],
   ["Choose_Your_Weapon.swf", 3131989],
   ["Color_Switch.swf", 682234],
   ["Commando_2.swf", 15076737],

@@ -97,7 +97,14 @@ export const SERIES: Series[] = [
   {
     id: 'choose-your-weapon',
     title: 'Choose Your Weapon',
-    slugs: ['choose-your-weapon', 'choose-your-weapon-2', 'choose-your-weapon-3', 'choose-your-weapon-4'],
+    slugs: [
+      'choose-your-weapon',
+      'choose-your-weapon-2',
+      'choose-your-weapon-3',
+      'choose-your-weapon-4',
+      'choose-your-weapon-5',
+      'choose-your-weapon-tower-defense',
+    ],
   },
   {
     id: 'achievement-unlocked',
