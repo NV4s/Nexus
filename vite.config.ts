@@ -49,6 +49,18 @@ export default defineConfig({
         bypass: (req) => (req.url?.startsWith('/ultrakill/index.html') ? req.url : undefined),
         rewrite: (path: string) => path.replace(/^\/ultrakill/, '/html/18282996'),
       },
+      '/football-bros': {
+        target: 'https://funny-school.github.io',
+        changeOrigin: true,
+        bypass: (req) => (req.url?.startsWith('/football-bros/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/football-bros/, '/f1/footballbros'),
+      },
+      '/gta-simulator': {
+        target: 'https://d11jzht7mj96rr.cloudfront.net',
+        changeOrigin: true,
+        bypass: (req) => (req.url?.startsWith('/gta-simulator/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/gta-simulator/, '/games/2023/unity2/gta-simulator'),
+      },
       '/adarkroom': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,

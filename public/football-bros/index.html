@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Football Bros</title>
+<style>
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
+#openfl-content { width: 100%; height: 100%; background: #000; outline: none; }
+</style>
+<script>
+(function () {
+  var SAVE_KEY = 'nexus:football-bros:cloud';
+  var noop = function () {};
+  [
+    'ShowAd1', 'ShowAd2', 'ShowAd3', 'ShowAd4', 'ShowAd6', 'ShowAd7', 'ShowAd8', 'ShowAd9', 'ShowAdBreak',
+    'refreshTag', 'LoadVideo', 'SetupMSNotification', 'SetCGInviteLink', 'EmailSignup', 'HappyTime',
+    'GamePlayStart', 'GamePlayStop', 'SendEvent', 'updateStatus', 'doScroll', 'right', 'triggerSignIn',
+    'loadGameDataAsync'
+  ].forEach(function (name) { window[name] = noop; });
+  window.ShowVideo = function () { if (window.Main && Main.DoneVideoAd) Main.DoneVideoAd(true); };
+  window.isUserLoggedIn = function () { return false; };
+  window.signOut = function () { if (window.Main && Main.SignOutComplete) Main.SignOutComplete(); };
+  window.saveGameData = function (data) { try { localStorage.setItem(SAVE_KEY, data); } catch (e) {} };
+  window.loadGameData = function () { try { return localStorage.getItem(SAVE_KEY) || ''; } catch (e) { return ''; } };
+  window.getOSFromUserAgent = function () { return 'Unknown'; };
+  window.sendFeedback = function () { var form = document.getElementById('feedbackForm'); if (form) form.style.display = 'none'; };
+  window.keepFocus = function () { var el = document.getElementById('openfl-content'); if (el) el.focus(); };
+  window.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  window.addEventListener('keydown', function (e) {
+    if ((e.keyCode === 32 || e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 9) && e.target === document.body) e.preventDefault();
+  });
+})();
+</script>
+<script src="FootballBros.js?th=271"></script>
+</head>
+<body>
+<div id="openfl-content" tabindex="0" onblur="window.focus();"></div>
+<script>lime.embed("FootballBros", "openfl-content", 0, 0, { parameters: {} });</script>
+</body>
+</html>

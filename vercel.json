@@ -56,7 +56,9 @@
 
     { "source": "/rooftop-snipers/:path*", "destination": "https://sobloxsy.github.io/rooftop-snipers/:path*" },
     { "source": "/bad-time-simulator/:path*", "destination": "https://jcw87.github.io/c2-sans-fight/:path*" },
-    { "source": "/ultrakill/:path*", "destination": "https://html-classic.itch.zone/html/18282996/:path*" }
+    { "source": "/ultrakill/:path*", "destination": "https://html-classic.itch.zone/html/18282996/:path*" },
+    { "source": "/football-bros/:path*", "destination": "https://funny-school.github.io/f1/footballbros/:path*" },
+    { "source": "/gta-simulator/:path*", "destination": "https://d11jzht7mj96rr.cloudfront.net/games/2023/unity2/gta-simulator/:path*" }
   ],
   "headers": [
     {
