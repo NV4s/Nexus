@@ -11,6 +11,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000;
 <script>
 (function () {
   var SAVE_KEY = 'nexus:football-bros:cloud';
+  window.aCo = 'US';
+  window.scrollerMessage = '';
   var noop = function () {};
   [
     'ShowAd1', 'ShowAd2', 'ShowAd3', 'ShowAd4', 'ShowAd6', 'ShowAd7', 'ShowAd8', 'ShowAd9', 'ShowAdBreak',
@@ -35,6 +37,21 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #000;
 <script src="FootballBros.js?th=271"></script>
 </head>
 <body>
+<div id="loading" style="display:none"></div>
+<div id="preroll" style="display:none"></div>
+<div id="signup" style="display:none"></div>
+<div id="youtube" style="display:none"></div>
+<div id="deleteme" style="display:none"></div>
+<div id="feedbackForm" style="display:none"></div>
+<div id="footballbros-io_160x600" style="display:none"></div>
+<div id="footballbros-io_160x600_2" style="display:none"></div>
+<div id="footballbros-io_300x250" style="display:none"></div>
+<div id="footballbros-io_300x250_2" style="display:none"></div>
+<div id="footballbros-io_336x280" style="display:none"></div>
+<div id="footballbros-io_336x280_2" style="display:none"></div>
+<div id="footballbros-io_728x90" style="display:none"></div>
+<div id="footballbros-io_728x90_m" style="display:none"></div>
+<div id="footballbros-io_970x250" style="display:none"></div>
 <div id="openfl-content" tabindex="0" onblur="window.focus();"></div>
 <script>lime.embed("FootballBros", "openfl-content", 0, 0, { parameters: {} });</script>
 </body>
