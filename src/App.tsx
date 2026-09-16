@@ -5,6 +5,7 @@ import Home from './components/Home';
 import GameGrid from './components/GameGrid';
 import Study from './components/Study';
 import Chat from './components/Chat';
+import Contact from './components/Contact';
 import GamePage from './components/GamePage';
 import Settings from './components/Settings';
 import Changelog from './components/Changelog';
@@ -105,6 +106,8 @@ export default function App() {
           <Study />
         ) : head === 'chat' ? (
           <Chat />
+        ) : head === 'contact' ? (
+          <Contact />
         ) : head === 'settings' || head === 'changelog' ? (
           <>
             <Settings />

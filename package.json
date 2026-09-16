@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit",
     "check:secrets": "node scripts/check-secrets.mjs",
     "redis:stub": "node scripts/redis-stub.mjs",
-    "test": "node --localstorage-file=.localstorage-test --import ./scripts/ts-resolve.mjs --test scripts/sol.test.ts scripts/markdown.test.ts scripts/rescan.test.ts scripts/moderation.test.ts scripts/chat.test.ts",
+    "test": "node --localstorage-file=.localstorage-test --import ./scripts/ts-resolve.mjs --test scripts/sol.test.ts scripts/markdown.test.ts scripts/rescan.test.ts scripts/moderation.test.ts scripts/chat.test.ts scripts/contact.test.ts",
     "test:crisis": "node scripts/crisis-selftest.mjs && node scripts/crisis-verify.mjs && node scripts/crisis-content.mjs"
   },
   "dependencies": {

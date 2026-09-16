@@ -9,6 +9,7 @@ const LINKS: { path: string; label: string; owns: string[] }[] = [
   { path: '/chat', label: 'Chat', owns: ['/chat'] },
   { path: '/achievements', label: 'Progress', owns: ['/achievements', '/saves'] },
   { path: '/settings', label: 'Settings', owns: ['/settings', '/changelog'] },
+  { path: '/contact', label: 'Contact', owns: ['/contact'] },
 ];
 
 export default function Navbar({ route }: { route: string }) {

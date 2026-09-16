@@ -2605,3 +2605,76 @@ select.field {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.contact {
+  max-width: 52rem;
+}
+
+.contact-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.contact-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.contact-field > span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.contact-body {
+  min-height: 12rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius);
+  resize: vertical;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.contact-count {
+  justify-self: end;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.contact-status {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.contact-status.is-sent {
+  color: #5fd08a;
+}
+
+.contact-status.is-error {
+  color: #ff8a8a;
+}
+
+.contact-privacy {
+  font-size: 0.78rem;
+}
+
+.contact-inbox strong {
+  font-weight: 600;
+}
+
+.contact-message {
+  margin: 0.45rem 0 0;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
