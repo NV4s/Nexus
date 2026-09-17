@@ -215,15 +215,22 @@ const META: Record<string, Partial<Game>> = {
     thumb: '/thumbs/cactus-mccoy.png',
   },
   'cactus-mccoy-2': { developer: 'Flipline Studios', year: '2012', thumb: '/thumbs/cactus-mccoy-2.png' },
+  commando: { developer: 'Macrojoy', year: '2006', thumb: '/thumbs/commando.png' },
   'commando-2': {
     developer: 'Macrojoy',
+    thumb: '/thumbs/commando-2.png',
   },
   'commando-3': {
     developer: 'Macrojoy',
+    thumb: '/thumbs/commando-3.png',
   },
+  'connect-4': { thumb: '/thumbs/connect-4.png' },
+  'conquer-antarctica': { thumb: '/thumbs/conquer-antarctica.png' },
+  'doodle-cricket': { thumb: '/thumbs/doodle-cricket.png' },
   'crimson-room': {
     developer: 'Toshimitsu Takagi',
     year: '2004',
+    thumb: '/thumbs/crimson-room.png',
   },
   'cursor-10': {
     developer: 'Nekogames',
@@ -249,7 +256,7 @@ const META: Record<string, Partial<Game>> = {
     year: '2012',
   },
   'warfare-1917': { developer: 'Con Artist Games', year: '2008' },
-  'color-switch': { developer: 'Fortafy Games', year: '2015' },
+  'color-switch': { thumb: '/thumbs/color-switch.png' },
 };
 
 const CHUNK_FALLBACK: Record<string, number> = {
