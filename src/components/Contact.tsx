@@ -6,24 +6,24 @@ const TYPES = [
     id: 'blocked',
     label: 'Site not loading',
     subject: 'e.g. the site would not open this morning',
-    body: 'When it started and stopped, which network you were on, and whether it was the whole site or one game.',
+    body: 'When it started and stopped, which network you were on, and whether it was the whole site or one page.',
   },
   {
     id: 'bug',
     label: 'Bug',
     subject: 'e.g. Duck Life 3 will not load',
-    body: 'What happened, what you expected, and which game or page it was on.',
+    body: 'What happened, what you expected, and which page it was on.',
   },
   {
     id: 'game',
-    label: 'Add a game',
+    label: 'Add something',
     subject: 'e.g. Add Retro Bowl',
-    body: 'The name of the game, and a link to where it can be played if you have one.',
+    body: 'The name of it, and a link to where it can be opened if you have one.',
   },
   {
     id: 'suggestion',
     label: 'Suggestion',
-    subject: 'e.g. Sort the arcade by newest',
+    subject: 'e.g. Sort the library by newest',
     body: 'What would make the site better.',
   },
   { id: 'other', label: 'Other', subject: 'What is it about?', body: 'Your message.' },
@@ -35,7 +35,7 @@ const BLOCKED_TEMPLATE =
   'Date and time it started: \n' +
   'Date and time it worked again: \n' +
   'Network (school, home, phone data): \n' +
-  'What would not load (whole site, one game, one page): \n' +
+  'What would not load (whole site, one page): \n' +
   'Any message on screen: \n';
 
 const SUBJECT_MAX = 120;
@@ -105,7 +105,7 @@ export default function Contact() {
         <div>
           <h2>Contact</h2>
           <p>
-            Report a bug, ask for a game, or tell us when the site would not load. Only the owner
+            Report a bug, ask for something, or tell us when the site would not load. Only the owner
             reads these.
           </p>
         </div>

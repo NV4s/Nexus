@@ -91,7 +91,7 @@ export default function Saves() {
       <header className="section-head">
         <div>
           <h2>Saves</h2>
-          <p>Flash progress is stored on this device. Back it up before clearing your browser.</p>
+          <p>Progress is stored on this device. Back it up before clearing your browser.</p>
         </div>
       </header>
 
@@ -100,8 +100,8 @@ export default function Saves() {
           <h3>Backup</h3>
           <p>
             {entries.length
-              ? `${entries.length} ${entries.length === 1 ? 'game has' : 'games have'} saved data, ${size(total)} in total.`
-              : 'No Flash saves yet. Play a game that saves and it will appear here.'}
+              ? `${entries.length} ${entries.length === 1 ? 'app has' : 'apps have'} saved data, ${size(total)} in total.`
+              : 'No saves yet. Open an app that saves and it will appear here.'}
           </p>
           <div className="row">
             <button className="button" onClick={download} disabled={!entries.length}>

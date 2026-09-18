@@ -1,9 +1,10 @@
 
 
 import type { Directive } from './mod.ts';
+import { K } from './keys.ts';
 
 const BEAT_MS = 60_000;
-const VISITOR_KEY = 'nexus:vid';
+const VISITOR_KEY = K.visitor;
 
 export const ids = () => ({ sid: sessionId(), vid: visitorId() });
 
@@ -23,10 +24,10 @@ const visitorId = () => {
 
 const sessionId = () => {
   try {
-    const existing = sessionStorage.getItem('sid');
+    const existing = sessionStorage.getItem(K.session);
     if (existing) return existing;
     const fresh = crypto.randomUUID();
-    sessionStorage.setItem('sid', fresh);
+    sessionStorage.setItem(K.session, fresh);
     return fresh;
   } catch {
     return null;

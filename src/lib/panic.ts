@@ -1,3 +1,4 @@
+import { K } from './keys.ts';
 export const DEFAULT_COMBO = 'ctrl+`';
 export const DEFAULT_LINK = 'https://classroom.google.com';
 
@@ -18,8 +19,8 @@ export function comboFrom(event: KeyboardEvent): string | null {
   return parts.join('+');
 }
 
-export const readCombo = () => localStorage.getItem('panicCombo') ?? DEFAULT_COMBO;
-export const readLink = () => localStorage.getItem('panicLink') ?? DEFAULT_LINK;
+export const readCombo = () => localStorage.getItem(K.combo) ?? DEFAULT_COMBO;
+export const readLink = () => localStorage.getItem(K.link) ?? DEFAULT_LINK;
 
 export const label = (combo: string) =>
   combo
@@ -30,9 +31,9 @@ export const label = (combo: string) =>
 export type PanicMode = 'replace' | 'newtab';
 
 export const readPanicMode = (): PanicMode =>
-  localStorage.getItem('panicMode') === 'newtab' ? 'newtab' : 'replace';
+  localStorage.getItem(K.mode) === 'newtab' ? 'newtab' : 'replace';
 
-export const writePanicMode = (mode: PanicMode) => localStorage.setItem('panicMode', mode);
+export const writePanicMode = (mode: PanicMode) => localStorage.setItem(K.mode, mode);
 
 
 function closeTab(): boolean {

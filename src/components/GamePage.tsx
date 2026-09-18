@@ -8,10 +8,11 @@ import EmbedPlayer from './EmbedPlayer';
 import GameAchievements from './GameAchievements';
 import AdSlot from './AdSlot';
 import { railsClass, slotShows } from '../lib/ads';
+import { K } from '../lib/keys.ts';
 
 
 function Interstitial({ slug }: { slug: string }) {
-  const key = `nexus:ad-seen:${slug}`;
+  const key = K.adSeen(slug);
   const [done, setDone] = useState(() => {
     try {
       return sessionStorage.getItem(key) === '1';
@@ -57,9 +58,9 @@ export default function GamePage({ slug }: { slug: string }) {
     return (
       <section className="section">
         <h2>Not found</h2>
-        <p className="lede">No game with the id “{slug}”.</p>
+        <p className="lede">Nothing here with the id “{slug}”.</p>
         <button className="button" onClick={() => navigate('/arcade')}>
-          Back to the arcade
+          Back to the library
         </button>
       </section>
     );

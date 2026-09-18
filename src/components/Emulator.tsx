@@ -44,7 +44,7 @@ export default function Emulator({ id }: { id: string }) {
 
     const script = document.createElement('script');
     script.src = `${EJS_BASE}loader.js`;
-    script.onerror = () => setError('Could not load the emulator. A network filter may be blocking the CDN.');
+    script.onerror = () => setError('Could not load the player. A network filter may be blocking the CDN.');
     document.body.append(script);
 
     return () => {
@@ -62,7 +62,7 @@ export default function Emulator({ id }: { id: string }) {
   if (!console_) {
     return (
       <section className="section">
-        <h2>Unknown console</h2>
+        <h2>Unknown system</h2>
       </section>
     );
   }
@@ -73,7 +73,7 @@ export default function Emulator({ id }: { id: string }) {
         <div>
           <h2>{console_.title}</h2>
           <p>
-            Bring your own ROM — {console_.extensions.join(', ')}. It stays on this device; nothing
+            Bring your own file — {console_.extensions.join(', ')}. It stays on this device; nothing
             is uploaded, and no games are hosted here.
           </p>
         </div>
@@ -82,7 +82,7 @@ export default function Emulator({ id }: { id: string }) {
       {!rom && (
         <div className="panels">
           <div className="panel">
-            <h3>Open a ROM</h3>
+            <h3>Open a file</h3>
             <p>{console_.note}</p>
             <div className="row">
               <button className="button" onClick={() => fileRef.current?.click()}>
@@ -103,8 +103,8 @@ export default function Emulator({ id }: { id: string }) {
               }}
             />
             <p>
-              Save states live in the emulator&rsquo;s own toolbar once a game is running — the disk
-              icon writes one, the folder icon loads it back.
+              Save states live in the player&rsquo;s own toolbar once something is running — the
+              disk icon writes one, the folder icon loads it back.
             </p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function Emulator({ id }: { id: string }) {
         <div className="row">
           <span className="player-field">{rom.name}</span>
           <button className="button ghost" onClick={() => setRom(null)}>
-            Load a different ROM
+            Load a different file
           </button>
         </div>
       )}

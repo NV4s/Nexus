@@ -12,6 +12,9 @@ export const RELEASES: Release[] = [
     changes: [
       'A Contact page. Pick what it is about, write a subject and a message, and it reaches the owner. Only the message, the time it was sent, your time zone and this browser\'s random id are kept',
       'The background video plays its full five minutes at 60 frames a second, the same on every device. It used to be a 25 second loop, with a lighter file on slower machines',
+      'Nothing on the page says what this site is. Everything draws inside a closed shadow root, so an extension or a filter reading the tab finds one empty element and no text, and the description in the page source is gone',
+      'Arcade is now Library, Emulators is now Systems, and the wording around them follows',
+      'Settings, achievements and progress moved to short storage names. What you already have moves across the first time you open the site',
       'Cover art for Commando, Commando 2, Commando 3, Color Switch, Connect 4, Conquer Antarctica, Cricket and Crimson Room',
     ],
   },

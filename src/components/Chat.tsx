@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ids } from '../lib/track';
+import { K } from '../lib/keys.ts';
 
 type Message = { id: string; name: string; text: string; at: number; who: string };
 
-const NAME_KEY = 'nexus:chat:name';
+const NAME_KEY = K.chatName;
 const POLL_MS = 5000;
 const MAX_TEXT = 200;
 const GROUP_MS = 5 * 60 * 1000;

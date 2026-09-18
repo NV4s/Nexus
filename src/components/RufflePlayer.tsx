@@ -23,7 +23,7 @@ function loadRuffle() {
         : reject(new Error('Ruffle loaded but exposed no player'));
     script.onerror = () => {
       runtime = null;
-      reject(new Error('Could not load the Flash runtime'));
+      reject(new Error('Could not load the classic runtime'));
     };
     document.head.append(script);
   });
@@ -188,7 +188,7 @@ export default function RufflePlayer({
 
       {status === 'ready' && (
         <div className="player-bar">
-          <button className="button ghost" onClick={() => setAttempt((n) => n + 1)} title="Restart the game">
+          <button className="button ghost" onClick={() => setAttempt((n) => n + 1)} title="Restart">
             <RotateCcw size={14} /> Restart
           </button>
 
@@ -199,10 +199,10 @@ export default function RufflePlayer({
           {slug && (
             <button
               className="button ghost"
-              title="Download this game's save file"
+              title="Download this save file"
               onClick={() => {
                 const written = downloadGameSave(slug);
-                setNote(written ? '' : 'This game has not saved anything yet.');
+                setNote(written ? '' : 'This app has not saved anything yet.');
               }}
             >
               <Save size={14} /> Save file

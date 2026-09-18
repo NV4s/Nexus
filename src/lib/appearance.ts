@@ -1,3 +1,4 @@
+import { K } from './keys.ts';
 
 export type Appearance = {
 
@@ -22,7 +23,7 @@ export const ACCENTS = [
 
 export const TEXT_SIZES = [14, 15, 16, 17, 18, 20];
 
-const KEY = 'nexus:appearance';
+const KEY = K.appearance;
 
 export function readAppearance(): Appearance {
   try {

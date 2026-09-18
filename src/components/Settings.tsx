@@ -29,6 +29,7 @@ import {
 } from '../lib/appearance';
 import { THEMES, readTheme, writeTheme, type Theme } from '../lib/theme';
 import { describe, exportEverything, importAnything } from '../lib/transfer';
+import { K } from '../lib/keys.ts';
 
 const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
@@ -67,7 +68,7 @@ function StoragePanel({
       <p>
         {saves.length
           ? `${saves.length} ${saves.length === 1 ? 'game has' : 'games have'} saved progress, using ${size(total)}.`
-          : 'No game has saved anything yet.'}
+          : 'Nothing has saved anything yet.'}
         {chats.length
           ? ` ${chats.length} saved ${chats.length === 1 ? 'conversation' : 'conversations'}.`
           : ''}
@@ -135,11 +136,11 @@ export default function Settings() {
     setPlayer(readPlayerPrefs());
   };
 
-  useEffect(() => localStorage.setItem('panicCombo', combo), [combo]);
-  useEffect(() => localStorage.setItem('panicLink', link), [link]);
+  useEffect(() => localStorage.setItem(K.combo, combo), [combo]);
+  useEffect(() => localStorage.setItem(K.link, link), [link]);
 
   useEffect(() => {
-    localStorage.setItem('recordingPanicCombo', String(recording));
+    localStorage.setItem(K.recording, String(recording));
     if (!recording) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -257,7 +258,7 @@ export default function Settings() {
             </button>
           </div>
           <p>
-            Stops the arcade row drifting and the home page settling between sections. Left off, the
+            Stops the library row drifting and the home page settling between sections. Left off, the
             system setting decides.
           </p>
         </div>
@@ -324,7 +325,7 @@ export default function Settings() {
 
         <div className="panel">
           <h3>Panic key</h3>
-          <p>Leaves this page immediately. A modifier is required so it cannot fire mid-game.</p>
+          <p>Leaves this page immediately. A modifier is required so it cannot fire mid-session.</p>
           <div className="row">
             <button className="button ghost" onClick={() => setRecording(true)}>
               {recording ? 'Press a combination…' : label(combo)}
@@ -355,9 +356,9 @@ export default function Settings() {
         </div>
 
         <div className="panel">
-          <h3>Flash player</h3>
+          <h3>Classic player</h3>
           <p>
-            Applies to every Flash game. A game reloads when these change, so finish what you are
+            Applies to every classic app. An app reloads when these change, so finish what you are
             doing first.
           </p>
           <div className="row">
@@ -369,7 +370,7 @@ export default function Settings() {
               >
                 {FRAME_RATES.map((rate) => (
                   <option key={rate} value={rate}>
-                    {rate === 0 ? 'Game default' : rate}
+                    {rate === 0 ? 'Default' : rate}
                   </option>
                 ))}
               </select>
@@ -411,7 +412,7 @@ export default function Settings() {
             <button
               className={`button ${player.stretch ? '' : 'ghost'}`}
               onClick={() => setPlayerPref({ stretch: !player.stretch })}
-              title="Fills the frame even when a game asks to stay at its authored size"
+              title="Fills the frame even when an app asks to stay at its authored size"
             >
               Stretch to fit {player.stretch ? 'on' : 'off'}
             </button>
@@ -435,7 +436,7 @@ export default function Settings() {
         <div className="panel">
           <h3>Move progress to another device</h3>
           <p>
-            One file with your achievements, playtime and game saves. Importing merges rather than
+            One file with your achievements, time spent and saves. Importing merges rather than
             replaces: it can only add unlocks and keep the larger playtime, so an older file never
             undoes newer progress.
           </p>

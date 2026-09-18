@@ -1,6 +1,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { K } from '../src/lib/keys.ts';
 
 const CUBEFIELD_SOL = 'AL8AAAAtVENTTwAEAAAAAAAJY3ViZWZpZWxkAAAAAAAIVG9wU2NvcmUAQNZZQAAAAAAA';
 
@@ -59,8 +60,8 @@ test('playtime rules are re-evaluated too, not just saves', async () => {
 
 
 
-  localStorage.setItem('nexus:play:snake', JSON.stringify({ seconds: 4000, sessions: 6 }));
-  localStorage.setItem('nexus:play:boxhead', JSON.stringify({ seconds: 4000, sessions: 1 }));
+  localStorage.setItem(K.progress('snake'), JSON.stringify({ seconds: 4000, sessions: 6 }));
+  localStorage.setItem(K.progress('boxhead'), JSON.stringify({ seconds: 4000, sessions: 1 }));
   rescanAll();
 
   assert.ok(readUnlocked('snake').has('sessions5'), 'six sessions clears the five-session rule');
@@ -77,7 +78,7 @@ test('an auto rule only unlocks an objective the game actually lists', () => {
 
 
 function readUnlockedFor(slug: string): Set<string> {
-  return new Set(JSON.parse(localStorage.getItem(`nexus:ach:${slug}`) ?? '[]') as string[]);
+  return new Set(JSON.parse(localStorage.getItem(K.unlocked(slug)) ?? '[]') as string[]);
 }
 
 test('rescanning is safe to repeat and never takes an unlock away', async () => {

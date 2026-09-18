@@ -1,3 +1,4 @@
+import { CHAT_PREFIX, K } from './keys.ts';
 
 
 export type EngineId = 'local' | 'chrome' | 'anthropic' | 'google' | 'openai' | 'custom';
@@ -30,15 +31,15 @@ export type Progress = (note: string) => void;
 const store = {
   get(key: string) {
     try {
-      return localStorage.getItem(`nexus:ai:${key}`) ?? '';
+      return localStorage.getItem(K.apiKey(key)) ?? '';
     } catch {
       return '';
     }
   },
   set(key: string, value: string) {
     try {
-      if (value) localStorage.setItem(`nexus:ai:${key}`, value);
-      else localStorage.removeItem(`nexus:ai:${key}`);
+      if (value) localStorage.setItem(K.apiKey(key), value);
+      else localStorage.removeItem(K.apiKey(key));
     } catch {}
   },
 };
@@ -91,7 +92,7 @@ export const MODELS: Record<string, { id: string; label: string }[]> = {
 const HISTORY_LIMIT = 50;
 
 
-const chatKey = (engine: string, model: string) => `nexus:chat:${engine}:${model || 'default'}`;
+const chatKey = K.chat;
 
 export function readChat(engine: string, model: string): Message[] {
   try {
@@ -124,7 +125,7 @@ export const clearChat = (engine: string, model: string) => {
 
 export function listChats(): string[] {
   try {
-    return Object.keys(localStorage).filter((key) => key.startsWith('nexus:chat:'));
+    return Object.keys(localStorage).filter((key) => key.startsWith(CHAT_PREFIX));
   } catch {
     return [];
   }

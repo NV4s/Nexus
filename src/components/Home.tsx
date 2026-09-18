@@ -27,7 +27,7 @@ const CHAPTERS: Chapter[] = [
   {
     eyebrow: 'Commit',
     title: 'Games that expect you back',
-    body: 'A pizza shop, a duck in training, a desert to punch through. They keep your progress in the browser, which the site now backs up and reads — a top score here unlocks something because the game wrote it down, not because you said so.',
+    body: 'A pizza shop, a duck in training, a desert to punch through. They keep your progress in the browser, which the site now backs up and reads — a top score here unlocks something because the app wrote it down, not because you said so.',
     slugs: ['papas-pizzeria', 'duck-life-3', 'cactus-mccoy', 'jacksmith'],
   },
   {
@@ -94,7 +94,7 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <button className="button" onClick={() => navigate('/arcade')}>
-              Open the arcade
+              Open the library
             </button>
             <button className="button ghost" onClick={() => navigate('/study')}>
               Study tools
@@ -149,12 +149,12 @@ export default function Home() {
           <h2>{arcadeCount} games, one tab</h2>
           <p>
             Saves stay on this device and export to a file when you move. Achievements read the
-            game's own save where it keeps one, so they record what you did rather than how long you
+            app's own save where it keeps one, so they record what you did rather than how long you
             sat there.
           </p>
           <div className="hero-actions">
             <button className="button" onClick={() => navigate('/arcade')}>
-              Browse the arcade
+              Browse the library
             </button>
             <button className="button ghost" onClick={() => navigate('/achievements')}>
               Your progress

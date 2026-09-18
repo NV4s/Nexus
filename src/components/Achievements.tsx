@@ -48,14 +48,14 @@ export default function Achievements() {
           <h2>Achievements</h2>
           <p>
             {rows.length
-              ? `${unlocked} unlocked across ${rows.length} ${rows.length === 1 ? 'game' : 'games'}, kept on this device.`
-              : 'Nothing yet. Open a game and its list appears under the player.'}
+              ? `${unlocked} unlocked across ${rows.length} ${rows.length === 1 ? 'app' : 'apps'}, kept on this device.`
+              : 'Nothing yet. Open an app and its list appears under the player.'}
           </p>
         </div>
         <button
           className="button ghost"
           onClick={() => setPass((n) => n + 1)}
-          title="Read every game's save again and tick anything it has earned"
+          title="Read every save again and tick anything it has earned"
         >
           <RefreshCw size={15} /> Re-check saves
         </button>
@@ -85,7 +85,7 @@ export default function Achievements() {
           {longest && (
             <p className="empty">
               Most played: {longest.game.title}, {spell(longest.seconds)}. Only time with the tab in
-              front is counted, so a game left open in the background does not add up.
+              front is counted, so an app left open in the background does not add up.
             </p>
           )}
 

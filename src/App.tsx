@@ -17,6 +17,7 @@ import { segments, useRoute } from './lib/router';
 import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
 import { loadSiteConfig, onSiteConfig, siteConfig } from './lib/siteConfig';
+import { K } from './lib/keys.ts';
 
 
 
@@ -37,18 +38,18 @@ export default function App() {
   const route = useRoute();
 
   const [showIntro, setShowIntro] = useState(
-    () => !sessionStorage.getItem('introSeen') && (window.location.hash.slice(1) || '/') === '/',
+    () => !sessionStorage.getItem(K.intro) && (window.location.hash.slice(1) || '/') === '/',
   );
 
   const dismissIntro = useCallback(() => {
-    sessionStorage.setItem('introSeen', '1');
+    sessionStorage.setItem(K.intro, '1');
     setShowIntro(false);
   }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
-      if (localStorage.getItem('recordingPanicCombo') === 'true') return;
+      if (localStorage.getItem(K.recording) === 'true') return;
       if (comboFrom(event) === readCombo()) {
         event.preventDefault();
         panic();
@@ -101,7 +102,7 @@ export default function App() {
         {showIntro ? null : head === 'game' && param ? (
           <GamePage slug={param} />
         ) : head === 'arcade' ? (
-          <GameGrid section="arcade" title="Arcade" />
+          <GameGrid section="arcade" title="Library" />
         ) : head === 'study' ? (
           <Study />
         ) : head === 'chat' ? (

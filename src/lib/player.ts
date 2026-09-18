@@ -1,3 +1,4 @@
+import { K } from './keys.ts';
 
 
 export type Quality = 'low' | 'medium' | 'high' | 'best';
@@ -26,7 +27,7 @@ export const DEFAULT_PREFS: PlayerPrefs = {
   stretch: true,
 };
 
-const KEY = 'nexus:player';
+const KEY = K.player;
 
 export function readPlayerPrefs(): PlayerPrefs {
   try {

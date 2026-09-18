@@ -6,10 +6,10 @@ export default function Consoles() {
     <section className="section">
       <header className="section-head">
         <div>
-          <h2>Emulators</h2>
+          <h2>Systems</h2>
           <p>
-            Console emulators that run in the tab. You supply the ROM — it is read on this device
-            and never uploaded, and no games are hosted here.
+            Systems that run in the tab. You supply the file — it is read on this device and
+            never uploaded, and nothing is hosted here.
           </p>
         </div>
       </header>
@@ -23,7 +23,7 @@ export default function Consoles() {
           >
             <h3>{console_.title}</h3>
             <p>{console_.note}</p>
-            <p className="visually-hidden">Open the {console_.title} emulator</p>
+            <p className="visually-hidden">Open {console_.title}</p>
           </button>
         ))}
       </div>
@@ -32,13 +32,13 @@ export default function Consoles() {
         <div className="panel">
           <h3>Not on this list</h3>
           <p>
-            PS5 has no emulator anywhere. PS4 and PS Vita have only early desktop projects, and
-            3DS emulation is desktop-only too — all four need hardware access and far more memory
-            than a browser tab is given, so a page for them would just fail.
+            PS5 has nothing that runs anywhere. PS4 and PS Vita have only early desktop
+            projects, and the 3DS is desktop-only too — all four need hardware access and far
+            more memory than a browser tab is given, so a page for them would just fail.
           </p>
           <p>
-            Sega CD and Saturn need their console&rsquo;s BIOS, which is not included here for the
-            same reason no ROMs are.
+            Sega CD and Saturn need their own BIOS, which is not included here for the same
+            reason no files are.
           </p>
         </div>
       </div>

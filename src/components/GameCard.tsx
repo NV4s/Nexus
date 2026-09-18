@@ -15,7 +15,7 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
   const h = hue(game.slug);
 
   return (
-    <button type="button" onClick={onOpen} className="card group" aria-label={`${game.section === 'study' ? 'Open' : 'Play'} ${game.title}`}>
+    <button type="button" onClick={onOpen} className="card group" aria-label={`${'Open'} ${game.title}`}>
       <div className="card-art">
         {game.thumb ? (
           <img
@@ -44,7 +44,7 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
         <h3 className={game.thumb ? '' : 'visually-hidden'}>{game.title}</h3>
         <p>
           {[game.developer, game.year].filter(Boolean).join(' · ') ||
-            (game.runtime === 'flash' ? 'Flash' : 'Browser game')}
+            (game.runtime === 'flash' ? 'Classic' : 'Browser')}
         </p>
       </div>
 

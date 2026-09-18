@@ -1,3 +1,4 @@
+import { K } from './keys.ts';
 export type SiteConfig = {
   banner: string;
   hidden: string[];
@@ -7,7 +8,7 @@ export type SiteConfig = {
 const EMPTY: SiteConfig = { banner: '', hidden: [], hiddenSections: [] };
 
 
-const CACHE = 'nexus:siteConfig';
+const CACHE = K.siteConfig;
 
 let current: SiteConfig = read();
 

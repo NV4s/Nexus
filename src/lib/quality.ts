@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
+import { K } from './keys.ts';
 
 export type Tier = 'low' | 'medium' | 'high';
 export type QualityPreference = 'auto' | 'low';
 
 export const readQualityPreference = (): QualityPreference =>
-  localStorage.getItem('quality') === 'low' ? 'low' : 'auto';
+  localStorage.getItem(K.quality) === 'low' ? 'low' : 'auto';
 
 export const writeQualityPreference = (value: QualityPreference) =>
-  localStorage.setItem('quality', value);
+  localStorage.setItem(K.quality, value);
 
 const lower: Record<Tier, Tier> = { high: 'medium', medium: 'low', low: 'low' };
 

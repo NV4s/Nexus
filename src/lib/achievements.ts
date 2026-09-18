@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ACHIEVEMENTS } from '../data/achievements.ts';
 import { SAVE_RULES, passes } from '../data/saveRules.ts';
 import { listSaves, readSavePath, saveRawFor } from './saves.ts';
+import { K, PROGRESS_PREFIX, UNLOCKED_PREFIX } from './keys.ts';
 
 
 export type AutoRule = 'played' | 'time30' | 'time120' | 'sessions5' | 'saved' | 'save-changed';
@@ -16,8 +17,8 @@ export type Achievement = {
 
 export type Progress = { seconds: number; sessions: number };
 
-const UNLOCKED = (slug: string) => `nexus:ach:${slug}`;
-const PROGRESS = (slug: string) => `nexus:play:${slug}`;
+const UNLOCKED = K.unlocked;
+const PROGRESS = K.progress;
 
 
 function read<T>(key: string, fallback: T): T {
@@ -72,7 +73,7 @@ const save = (slug: string, ids: Set<string>) => {
   return ids;
 };
 
-const SIGNATURE = (slug: string) => `nexus:savesig:${slug}`;
+const SIGNATURE = K.signature;
 
 
 function fingerprint(text: string) {
@@ -241,8 +242,8 @@ export function useGameSession(slug: string | null) {
   return { unlocked, setUnlocked };
 }
 
-const ACH_PREFIX = 'nexus:ach:';
-const PLAY_PREFIX = 'nexus:play:';
+const ACH_PREFIX = UNLOCKED_PREFIX;
+const PLAY_PREFIX = PROGRESS_PREFIX;
 
 
 export function exportAchievements(): string {

@@ -1,3 +1,4 @@
+import { K } from './keys.ts';
 
 export type Theme = 'dark' | 'light' | 'midnight' | 'forest' | 'ember' | 'mono' | 'paper';
 
@@ -16,7 +17,7 @@ const ids = new Set(THEMES.map((theme) => theme.id));
 
 export function readTheme(): Theme {
   try {
-    const saved = localStorage.getItem('theme');
+    const saved = localStorage.getItem(K.theme);
     return saved && ids.has(saved as Theme) ? (saved as Theme) : 'dark';
   } catch {
     return 'dark';
@@ -26,6 +27,6 @@ export function readTheme(): Theme {
 export function writeTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   try {
-    localStorage.setItem('theme', theme);
+    localStorage.setItem(K.theme, theme);
   } catch {}
 }

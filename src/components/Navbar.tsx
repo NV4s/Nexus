@@ -2,9 +2,9 @@ import { navigate } from '../lib/router';
 
 
 const LINKS: { path: string; label: string; owns: string[] }[] = [
-  { path: '/arcade', label: 'Arcade', owns: ['/arcade', '/game'] },
+  { path: '/arcade', label: 'Library', owns: ['/arcade', '/game'] },
   { path: '/study', label: 'Study', owns: ['/study'] },
-  { path: '/emulators', label: 'Emulators', owns: ['/emulators', '/emulator'] },
+  { path: '/emulators', label: 'Systems', owns: ['/emulators', '/emulator'] },
   { path: '/assistant', label: 'Assistant', owns: ['/assistant'] },
   { path: '/chat', label: 'Chat', owns: ['/chat'] },
   { path: '/achievements', label: 'Progress', owns: ['/achievements', '/saves'] },

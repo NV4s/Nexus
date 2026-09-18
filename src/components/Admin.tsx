@@ -108,7 +108,7 @@ type ContactMessage = { id: string; type: string; subject: string; body: string;
 const CONTACT_LABELS: Record<string, string> = {
   blocked: 'Site not loading',
   bug: 'Bug',
-  game: 'Add a game',
+  game: 'Add something',
   suggestion: 'Suggestion',
   other: 'Other',
 };
@@ -281,7 +281,7 @@ function SiteControls() {
 
       <input
         className="field"
-        placeholder="Find a game to hide…"
+        placeholder="Find an app to hide…"
         value={filter}
         onChange={(event) => setFilter(event.target.value)}
       />
@@ -313,7 +313,7 @@ function SiteControls() {
       {config.hidden.length > 0 && (
         <>
           <p>
-            {config.hidden.length} hidden {config.hidden.length === 1 ? 'game' : 'games'}.
+            {config.hidden.length} hidden {config.hidden.length === 1 ? 'app' : 'apps'}.
           </p>
           <div className="row">
             {config.hidden.map((slug) => (
