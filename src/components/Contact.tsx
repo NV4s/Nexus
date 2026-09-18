@@ -4,9 +4,9 @@ import { ids } from '../lib/track';
 const TYPES = [
   {
     id: 'blocked',
-    label: 'Site blocked',
-    subject: 'e.g. GoGuardian blocked the site',
-    body: 'Which filter blocked it, when it started and stopped, and whether it was the whole site or one game.',
+    label: 'Site not loading',
+    subject: 'e.g. the site would not open this morning',
+    body: 'When it started and stopped, which network you were on, and whether it was the whole site or one game.',
   },
   {
     id: 'bug',
@@ -32,10 +32,11 @@ const TYPES = [
 type TypeId = (typeof TYPES)[number]['id'];
 
 const BLOCKED_TEMPLATE =
-  'Filter (GoGuardian, Securly, Lightspeed, ...): \n' +
-  'Blocked from (date and time): \n' +
-  'Blocked until: \n' +
-  'What was blocked (whole site, one game, one page): \n';
+  'Date and time it started: \n' +
+  'Date and time it worked again: \n' +
+  'Network (school, home, phone data): \n' +
+  'What would not load (whole site, one game, one page): \n' +
+  'Any message on screen: \n';
 
 const SUBJECT_MAX = 120;
 const BODY_MAX = 3000;
@@ -104,8 +105,8 @@ export default function Contact() {
         <div>
           <h2>Contact</h2>
           <p>
-            Report a bug, ask for a game, or tell us when a school filter blocks the site. Only the
-            owner reads these.
+            Report a bug, ask for a game, or tell us when the site would not load. Only the owner
+            reads these.
           </p>
         </div>
       </header>

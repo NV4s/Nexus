@@ -7,6 +7,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v1.12.0',
+    date: '2026-09-17',
+    changes: [
+      'A Contact page. Pick what it is about, write a subject and a message, and it reaches the owner. Only the message, the time it was sent, your time zone and this browser\'s random id are kept',
+      'The background video plays its full five minutes at 60 frames a second, the same on every device. It used to be a 25 second loop, with a lighter file on slower machines',
+      'Cover art for Commando, Commando 2, Commando 3, Color Switch, Connect 4, Conquer Antarctica, Cricket and Crimson Room',
+    ],
+  },
+  {
     version: 'v1.11.0',
     date: '2026-09-12',
     changes: [

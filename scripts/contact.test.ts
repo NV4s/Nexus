@@ -64,8 +64,8 @@ const report = (fields: Record<string, unknown> = {}, vid = VID) =>
     sid: SID,
     vid,
     type: 'blocked',
-    subject: 'GoGuardian blocked the site',
-    body: 'Filter: GoGuardian\nBlocked from: 9:10 am\nBlocked until: 10:45 am\nWhat: the whole site',
+    subject: 'The site would not open this morning',
+    body: 'Started: 9:10 am\nWorked again: 10:45 am\nNetwork: school wifi\nWhat: the whole site',
     tz: 'America/Chicago',
     ...fields,
   });
@@ -73,14 +73,14 @@ const report = (fields: Record<string, unknown> = {}, vid = VID) =>
 const inbox = async () =>
   ((await call(contact, 'GET', undefined, adminCookie)).body as { messages: Message[] }).messages;
 
-test('a blocked-site report is stored with its details and a short sender id', async () => {
+test('a site-not-loading report is stored with its details and a short sender id', async () => {
   const sent = await report();
   assert.equal(sent.status, 200);
 
   const [message] = await inbox();
   assert.equal(message.type, 'blocked');
-  assert.equal(message.subject, 'GoGuardian blocked the site');
-  assert.match(message.body, /Blocked until: 10:45 am/);
+  assert.equal(message.subject, 'The site would not open this morning');
+  assert.match(message.body, /Worked again: 10:45 am/);
   assert.equal(message.tz, 'America/Chicago');
   assert.equal(message.who, VID.slice(0, 8));
   assert.ok(Math.abs(Date.now() - message.at) < 5000);

@@ -106,7 +106,7 @@ function Chart({ days }: { days: { day: string; count: number }[] }) {
 type ContactMessage = { id: string; type: string; subject: string; body: string; at: number; tz: string; who: string };
 
 const CONTACT_LABELS: Record<string, string> = {
-  blocked: 'Site blocked',
+  blocked: 'Site not loading',
   bug: 'Bug',
   game: 'Add a game',
   suggestion: 'Suggestion',
