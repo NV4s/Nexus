@@ -6,67 +6,101 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/n-gon': { target: 'https://landgreen.github.io', changeOrigin: true },
-      '/level13': { target: 'https://nroutasuo.github.io', changeOrigin: true },
+      '/m/': {
+        target: 'https://cdn.jsdelivr.net',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/m\/([^/]+)\//, '/gh/NV4s/swfdump@$1/'),
+      },
+      '/mr/': {
+        target: 'https://raw.githubusercontent.com',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/mr\/([^/]+)\//, '/NV4s/swfdump/$1/'),
+      },
+      '/ml/': {
+        target: 'https://media.githubusercontent.com',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/ml\/([^/]+)\//, '/media/NV4s/swfdump/$1/'),
+      },
+      '/e/': {
+        target: 'https://cdn.jsdelivr.net',
+        changeOrigin: true,
+        rewrite: (path: string) =>
+          path.replace(/^\/e\/([^/]+)\//, '/npm/@emulatorjs/emulatorjs@$1/data/'),
+      },
+      '/p/0756f330': {
+        target: 'https://landgreen.github.io',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/p\/0756f330/, '/n-gon'),
+      },
+      '/p/a1cb8890': {
+        target: 'https://nroutasuo.github.io',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/p\/a1cb8890/, '/level13'),
+      },
       '/logos': { target: 'https://www.google.com', changeOrigin: true },
-      '/polytrack': { target: 'https://joe-the-chicken.github.io', changeOrigin: true },
-      '/basket-random': {
+      '/p/07ad84de': {
+        target: 'https://joe-the-chicken.github.io',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/p\/07ad84de/, '/polytrack'),
+      },
+      '/p/20315ea7': {
         target: 'https://colinthepanda.github.io',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/basket-random/, '/BasketballRandom'),
+        rewrite: (path: string) => path.replace(/^\/p\/20315ea7/, '/BasketballRandom'),
       },
-      '/basketball-stars': {
+      '/p/7405d5d1': {
         target: 'https://ubg98.github.io',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/basketball-stars/, '/BasketballStars'),
+        rewrite: (path: string) => path.replace(/^\/p\/7405d5d1/, '/BasketballStars'),
       },
-      '/bus-simulator': {
+      '/p/44399512': {
         target: 'https://trafficjam3d.github.io',
         changeOrigin: true,
         rewrite: (path: string) =>
-          path.replace(/^\/bus-simulator/, '/indian-uphill-bus-simulator-3d'),
+          path.replace(/^\/p\/44399512/, '/indian-uphill-bus-simulator-3d'),
       },
-      '/shawarma-kiosk': {
+      '/p/655f2c87': {
         target: 'https://html5.gamedistribution.com',
         changeOrigin: true,
-        bypass: (req) => (req.url?.startsWith('/shawarma-kiosk/index.html') ? req.url : undefined),
+        bypass: (req) => (req.url?.startsWith('/p/655f2c87/index.html') ? req.url : undefined),
         rewrite: (path: string) =>
-          path.replace(/^\/shawarma-kiosk/, '/rvvASMiM/fae39128b95549389ad487f668c0a74c'),
+          path.replace(/^\/p\/655f2c87/, '/rvvASMiM/fae39128b95549389ad487f668c0a74c'),
       },
-      '/rooftop-snipers': {
+      '/p/4efb52ef': {
         target: 'https://sobloxsy.github.io',
         changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/p\/4efb52ef/, '/rooftop-snipers'),
       },
-      '/bad-time-simulator': {
+      '/p/3c3d334d': {
         target: 'https://jcw87.github.io',
         changeOrigin: true,
-        bypass: (req) => (req.url?.startsWith('/bad-time-simulator/index.html') ? req.url : undefined),
-        rewrite: (path: string) => path.replace(/^\/bad-time-simulator/, '/c2-sans-fight'),
+        bypass: (req) => (req.url?.startsWith('/p/3c3d334d/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/p\/3c3d334d/, '/c2-sans-fight'),
       },
-      '/ultrakill': {
+      '/p/d5cc6a54': {
         target: 'https://html-classic.itch.zone',
         changeOrigin: true,
-        bypass: (req) => (req.url?.startsWith('/ultrakill/index.html') ? req.url : undefined),
-        rewrite: (path: string) => path.replace(/^\/ultrakill/, '/html/18282996'),
+        bypass: (req) => (req.url?.startsWith('/p/d5cc6a54/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/p\/d5cc6a54/, '/html/18282996'),
       },
-      '/football-bros': {
+      '/p/c3f284e8': {
         target: 'https://funny-school.github.io',
         changeOrigin: true,
-        bypass: (req) => (req.url?.startsWith('/football-bros/index.html') ? req.url : undefined),
-        rewrite: (path: string) => path.replace(/^\/football-bros/, '/f1/footballbros'),
+        bypass: (req) => (req.url?.startsWith('/p/c3f284e8/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/p\/c3f284e8/, '/f1/footballbros'),
       },
-      '/gta-simulator': {
+      '/p/a2e781a3': {
         target: 'https://d11jzht7mj96rr.cloudfront.net',
         changeOrigin: true,
-        bypass: (req) => (req.url?.startsWith('/gta-simulator/index.html') ? req.url : undefined),
-        rewrite: (path: string) => path.replace(/^\/gta-simulator/, '/games/2023/unity2/gta-simulator'),
+        bypass: (req) => (req.url?.startsWith('/p/a2e781a3/index.html') ? req.url : undefined),
+        rewrite: (path: string) => path.replace(/^\/p\/a2e781a3/, '/games/2023/unity2/gta-simulator'),
       },
-      '/adarkroom': {
+      '/p/0fa40d32': {
         target: 'https://adarkroom.doublespeakgames.com',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/adarkroom/, '') || '/',
+        rewrite: (path: string) => path.replace(/^\/p\/0fa40d32/, '') || '/',
       },
-      '/swf/run-3.swf': {
+      '/p/36d84be5/run-3.swf': {
         target: 'https://player03.com',
         changeOrigin: true,
         rewrite: () => '/run/3/Run3.swf',
@@ -76,6 +110,9 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
+        entryFileNames: 'assets/[hash].js',
+        chunkFileNames: 'assets/[hash].js',
+        assetFileNames: 'assets/[hash][extname]',
         manualChunks: { three: ['three', '@react-three/fiber', '@react-three/drei'] },
       },
     },

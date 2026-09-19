@@ -551,7 +551,7 @@ select,
  * centred, and capped so a tall logo and a wide one end up looking the same
  * size on the card instead of one filling it and the next floating in it.
  */
-.card-art img[src^='/thumbs/study/'] {
+.card-art img[src^='/i/s/'] {
   object-fit: contain;
   padding: 9% 14%;
   background: linear-gradient(140deg, var(--surface-2), var(--surface));

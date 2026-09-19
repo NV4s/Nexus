@@ -30,6 +30,7 @@ import {
 import { THEMES, readTheme, writeTheme, type Theme } from '../lib/theme';
 import { describe, exportEverything, importAnything } from '../lib/transfer';
 import { K } from '../lib/keys.ts';
+import { ICON, TITLE } from '../lib/head.ts';
 
 const setFavicon = (href: string) => {
   const icon = document.getElementById('favicon') as HTMLLinkElement | null;
@@ -167,8 +168,8 @@ export default function Settings() {
   };
 
   const resetDisguise = () => {
-    document.title = 'Nexus';
-    setFavicon('/favicon.svg');
+    document.title = TITLE;
+    setFavicon(ICON);
     setTabTitle('');
     setTabIcon('');
   };

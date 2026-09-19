@@ -7,7 +7,7 @@ import { railsClass } from '../lib/ads';
 
 
 const EJS_VERSION = '4.2.3';
-const EJS_BASE = `https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@${EJS_VERSION}/data/`;
+const EJS_BASE = `/e/${EJS_VERSION}/`;
 
 declare global {
   interface Window {

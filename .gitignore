@@ -8,8 +8,8 @@ dist/
 *.jar
 
 # Local asset packs for the Crisis Point port — never committed, never deployed.
-public/time-crisis/assets/*
-!public/time-crisis/assets/README.md
+public/p/e6285586/assets/*
+!public/p/e6285586/assets/README.md
 
 # Scratch store for the achievement tests
 .localstorage-test

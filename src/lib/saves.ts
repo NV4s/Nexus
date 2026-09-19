@@ -2,15 +2,38 @@ import { SWFDUMP_SHA } from '../data/swfdump.ts';
 import { GAMES, type Game } from '../data/games.ts';
 import { decodeSol, type SolValue } from './sol.ts';
 
+/** Empty off the browser, which is fine: the node tests only exercise the
+ *  host-less shape. */
+const HOST = typeof location === 'undefined' ? '' : location.host;
 
-const STALE_SHA = /(NV4s\/swfdump[@/])[0-9a-f]{40}(?=\/)/g;
+
+const STALE_SHA = /((?:\/m|\/mr|\/ml)\/)[0-9a-f]{40}(?=\/)/g;
+
+/**
+ * Ruffle keys a save by the movie's own URL, so moving the SWFs off the public
+ * CDNs and behind /m, /mr and /ml changed every key. These rewrite the old ones.
+ * Ruffle includes the host when the URL had one, so the replacement puts this
+ * site's host in its place; a key that never carried a host keeps not having one.
+ */
+const MOVED_SWF: [RegExp, string][] = [
+  [/(^|[^a-z])cdn\.jsdelivr\.net\/gh\/NV4s\/swfdump@([0-9a-f]{40})\//g, `$1${HOST}/m/$2/`],
+  [/(^|[^a-z])raw\.githubusercontent\.com\/NV4s\/swfdump\/([0-9a-f]{40})\//g, `$1${HOST}/mr/$2/`],
+  [/(^|[^a-z])media\.githubusercontent\.com\/media\/NV4s\/swfdump\/([0-9a-f]{40})\//g, `$1${HOST}/ml/$2/`],
+  [/(^|\/)gh\/NV4s\/swfdump@([0-9a-f]{40})\//g, '$1m/$2/'],
+  [/(^|\/)NV4s\/swfdump\/([0-9a-f]{40})\//g, '$1mr/$2/'],
+  [/(^|\/)media\/NV4s\/swfdump\/([0-9a-f]{40})\//g, '$1ml/$2/'],
+];
+
+/** The path the SWFs live under now, whatever origin the site is served from. */
+const relocate = (key: string) =>
+  MOVED_SWF.reduce((current, [pattern, replacement]) => current.replace(pattern, replacement), key);
 
 
 export function migrateSaveKeys() {
   try {
 
     for (const key of Object.keys(localStorage)) {
-      const current = key.replace(STALE_SHA, `$1${SWFDUMP_SHA}`);
+      const current = relocate(key).replace(STALE_SHA, `$1${SWFDUMP_SHA}`);
       if (current === key) continue;
 
       const value = localStorage.getItem(key);

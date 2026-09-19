@@ -7,7 +7,7 @@
  * present on the machine running it, every sprite and sound below is taken from
  * that pack instead, and the procedural version becomes the fallback.
  *
- * Drop a pack at:   public/time-crisis/assets/
+ * Drop a pack at:   public/p/e6285586/assets/
  * That folder is gitignored, so a local pack never enters version control and
  * never reaches the deployment. It is yours, it stays on your disk.
  *

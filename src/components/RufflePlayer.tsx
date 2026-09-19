@@ -16,7 +16,7 @@ function loadRuffle() {
   runtime ??= new Promise((resolve, reject) => {
     if (window.RufflePlayer) return resolve(window.RufflePlayer);
     const script = document.createElement('script');
-    script.src = '/ruffle/ruffle.js';
+    script.src = '/r/ruffle.js';
     script.onload = () =>
       window.RufflePlayer
         ? resolve(window.RufflePlayer)

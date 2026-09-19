@@ -9,12 +9,15 @@ import { rescanAll } from './lib/achievements';
 import { readTheme } from './lib/theme';
 import { applyAppearance, readAppearance } from './lib/appearance';
 import { migrateKeys } from './lib/keys.ts';
+import { applyHead } from './lib/head.ts';
 
 
 // Storage names changed, so this has to run before anything reads a setting:
 // on the first load after the rename the old names are all a visitor has.
 migrateKeys(localStorage);
 migrateKeys(sessionStorage);
+
+applyHead();
 
 document.documentElement.dataset.theme = readTheme();
 applyAppearance(readAppearance());
