@@ -10,7 +10,6 @@ export const RELEASES: Release[] = [
     version: 'v1.12.0',
     date: '2026-09-17',
     changes: [
-      'A Contact page. Pick what it is about, write a subject and a message, and it reaches the owner. Only the message, the time it was sent, your time zone and this browser\'s random id are kept',
       'The background video plays its full five minutes at 60 frames a second, the same on every device. It used to be a 25 second loop, with a lighter file on slower machines',
       'The page requests nothing that names anything. Cover art, the Flash runtime and every game that loads through this site sit on short unreadable paths, the build files are named by hash, and the SWFs come from this domain now instead of a public CDN. Saved progress follows them across on the first load',
       'The tab says Home, and the page that arrives from the server is four lines with no name, description or preview text in it. The name, icon and colour are put in place after it loads',

@@ -103,113 +103,6 @@ function Chart({ days }: { days: { day: string; count: number }[] }) {
 
 
 
-type ContactMessage = { id: string; type: string; subject: string; body: string; at: number; tz: string; who: string };
-
-const CONTACT_LABELS: Record<string, string> = {
-  blocked: 'Site not loading',
-  bug: 'Bug',
-  game: 'Add something',
-  suggestion: 'Suggestion',
-  other: 'Other',
-};
-
-function ContactInbox() {
-  const [messages, setMessages] = useState<ContactMessage[] | null>(null);
-  const [filter, setFilter] = useState('all');
-  const [note, setNote] = useState('');
-
-  const load = useCallback(async () => {
-    const response = await fetch('/api/contact');
-    if (!response.ok) {
-      setNote(`Could not load messages (${response.status}).`);
-      return;
-    }
-    setMessages(((await response.json()) as { messages: ContactMessage[] }).messages);
-    setNote('');
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const remove = async (id: string) => {
-    if (id === '*' && !window.confirm('Delete every message?')) return;
-    await fetch('/api/contact', {
-      method: 'DELETE',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    await load();
-  };
-
-  const count = (type: string) => (messages ?? []).filter((message) => message.type === type).length;
-  const shown = (messages ?? []).filter((message) => filter === 'all' || message.type === filter);
-
-  return (
-    <>
-      <p>From the Contact page, newest first. Times are when it was sent; the sender's time zone is beside it.</p>
-      <div className="admin-actions">
-        <select className="field" value={filter} onChange={(event) => setFilter(event.target.value)}>
-          <option value="all">All ({messages?.length ?? 0})</option>
-          {Object.entries(CONTACT_LABELS).map(([type, label]) => (
-            <option key={type} value={type}>
-              {label} ({count(type)})
-            </option>
-          ))}
-        </select>
-        <button className="button ghost" onClick={load}>
-          Refresh
-        </button>
-        {messages && messages.length > 0 && (
-          <button className="button ghost" onClick={() => remove('*')}>
-            Clear all
-          </button>
-        )}
-      </div>
-      {messages === null ? (
-        <p>Loading…</p>
-      ) : shown.length === 0 ? (
-        <p>No messages{filter === 'all' ? '' : ' of this type'} yet.</p>
-      ) : (
-        <ul className="visitor-list contact-inbox">
-          {shown.map((message) => (
-            <li key={message.id}>
-              <div className="visitor-head">
-                <span className="card-chip">{CONTACT_LABELS[message.type] ?? message.type}</span>
-                <strong>{message.subject}</strong>
-                <span className="live-actions">
-                  <button className="chip-button" onClick={() => remove(message.id)}>
-                    Delete
-                  </button>
-                  <button
-                    className="chip-button is-danger"
-                    onClick={async () => {
-                      try {
-                        await moderate({ action: 'block', id: message.who });
-                        setNote(`Blocked ${message.who}.`);
-                      } catch {
-                        setNote('Could not block that sender.');
-                      }
-                    }}
-                  >
-                    Block sender
-                  </button>
-                </span>
-              </div>
-              <div className="visitor-meta">
-                {new Date(message.at).toLocaleString()} · {ago(message.at)}
-                {message.tz ? ` · sender in ${message.tz}` : ''} · <code>{message.who}</code>
-              </div>
-              <p className="contact-message">{message.body}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-      {note && <p className="admin-hint">{note}</p>}
-    </>
-  );
-}
-
 function SiteControls() {
   const [config, setConfig] = useState<SiteConfig | null>(null);
   const [saving, setSaving] = useState(false);
@@ -735,11 +628,6 @@ export default function Admin() {
               );
             })()
           )}
-        </div>
-
-        <div className="panel is-wide">
-          <h3>Messages</h3>
-          <ContactInbox />
         </div>
 
         <div className="panel is-wide">
