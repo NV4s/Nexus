@@ -17,6 +17,7 @@ import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
 import { loadSiteConfig, onSiteConfig, siteConfig } from './lib/siteConfig';
 import { K } from './lib/keys.ts';
+import { cloakSite, needsCloak } from './lib/launch';
 
 
 
@@ -36,14 +37,23 @@ const Emulator = lazy(() => import('./components/Emulator'));
 export default function App() {
   const route = useRoute();
 
+  // Outside about:blank the intro always shows, whatever the page: its Enter click is
+  // the gesture a browser needs before it lets the site open a tab.
   const [showIntro, setShowIntro] = useState(
-    () => !sessionStorage.getItem(K.intro) && (window.location.hash.slice(1) || '/') === '/',
+    () => needsCloak() || (!sessionStorage.getItem(K.intro) && (window.location.hash.slice(1) || '/') === '/'),
   );
 
   const dismissIntro = useCallback(() => {
     sessionStorage.setItem(K.intro, '1');
     setShowIntro(false);
   }, []);
+
+  // Marked seen first: the new tab gets a copy of this tab's sessionStorage, so the
+  // about:blank copy opens straight onto the site instead of a second intro.
+  const enterCloaked = () => {
+    sessionStorage.setItem(K.intro, '1');
+    return cloakSite();
+  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -86,7 +96,7 @@ export default function App() {
       <BackgroundVideo />
       {showIntro && (
         <Suspense fallback={<div className="intro" />}>
-          <VoidIntro onComplete={dismissIntro} />
+          <VoidIntro onComplete={dismissIntro} onEnter={needsCloak() ? enterCloaked : undefined} />
         </Suspense>
       )}
 

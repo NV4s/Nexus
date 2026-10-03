@@ -155,7 +155,14 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
   );
 }
 
-export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
+export default function VoidIntro({
+  onComplete,
+  onEnter,
+}: {
+  onComplete: () => void;
+  /** Runs inside the Enter click. True means this tab is leaving, so skip the show. */
+  onEnter?: () => boolean;
+}) {
   const tier = useAdaptiveTier();
   const [started, setStarted] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -172,6 +179,7 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
   }, [leaving, onComplete]);
 
   const begin = () => {
+    if (onEnter?.()) return;
     setStarted(true);
     playIntroAudio();
     if (prefersReducedMotion()) finish();
@@ -198,9 +206,15 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
       )}
 
       {!started ? (
-        <button className="intro-enter" onClick={begin}>
-          Enter
-        </button>
+        <>
+          <button className="intro-enter" onClick={begin}>
+            Enter
+          </button>
+          {/* onEnter is only passed when the on-load about:blank was blocked. */}
+          {onEnter && (
+            <p className="intro-hint">Allow pop-ups for this site and it opens straight into a blank tab.</p>
+          )}
+        </>
       ) : (
         <button className="intro-skip" onClick={finish}>
           Skip

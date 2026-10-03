@@ -7,6 +7,14 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v1.13.0',
+    date: '2026-10-02',
+    changes: [
+      'Entering Nexus opens it in a new about:blank tab and sends the first tab to your panic link, with no fullscreen prompt in the way. Where popups are allowed it happens as the page loads; otherwise clicking Enter does it, and Enter now shows on every page you arrive at from outside. The Open cloaked button in Settings is gone, since there is nothing left for it to do',
+      'Inside the about:blank tab the panic key leaves the tab itself, not just the page inside it, and the tab disguise changes the title and icon you actually see',
+    ],
+  },
+  {
     version: 'v1.12.0',
     date: '2026-09-17',
     changes: [

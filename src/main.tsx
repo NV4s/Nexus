@@ -10,12 +10,18 @@ import { readTheme } from './lib/theme';
 import { applyAppearance, readAppearance } from './lib/appearance';
 import { migrateKeys } from './lib/keys.ts';
 import { applyHead } from './lib/head.ts';
+import { cloakSite, needsCloak } from './lib/launch.ts';
 
 
 // Storage names changed, so this has to run before anything reads a setting:
 // on the first load after the rename the old names are all a visitor has.
 migrateKeys(localStorage);
 migrateKeys(sessionStorage);
+
+// Where popups are allowed, the site moves into about:blank before anything draws.
+// This tab is leaving for the panic link, so stop the module: render nothing, count
+// no visit. Otherwise the intro's Enter click does it (see App).
+if (needsCloak() && cloakSite()) throw new Error('cloaked: continuing in the about:blank tab');
 
 applyHead();
 

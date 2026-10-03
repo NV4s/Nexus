@@ -10,7 +10,6 @@ import {
   writePanicMode,
   type PanicMode,
 } from '../lib/panic';
-import { openCloaked } from '../lib/launch';
 import {
   DEFAULT_PREFS,
   FRAME_RATES,
@@ -31,10 +30,25 @@ import { THEMES, readTheme, writeTheme, type Theme } from '../lib/theme';
 import { describe, exportEverything, importAnything } from '../lib/transfer';
 import { K } from '../lib/keys.ts';
 import { ICON, TITLE } from '../lib/head.ts';
+import { CLOAK_TITLE, tabDocument } from '../lib/launch';
 
-const setFavicon = (href: string) => {
-  const icon = document.getElementById('favicon') as HTMLLinkElement | null;
-  if (icon) icon.href = href;
+// The disguise goes on the tab itself, which is the about:blank wrapper when cloaked.
+const showOnTab = (title: string, href: string) => {
+  const doc = tabDocument();
+  doc.title = title;
+  let icon = doc.getElementById('favicon') as HTMLLinkElement | null;
+  if (!icon) {
+    icon = Object.assign(doc.createElement('link'), { id: 'favicon', rel: 'icon' });
+    doc.head.append(icon);
+  }
+  icon.href = href;
+};
+
+const resetTab = () => {
+  const doc = tabDocument();
+  if (doc === document) return showOnTab(TITLE, ICON);
+  doc.title = CLOAK_TITLE;
+  doc.getElementById('favicon')?.remove();
 };
 
 const size = (bytes: number) =>
@@ -162,22 +176,13 @@ export default function Settings() {
     ['Gmail', 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico'],
   ] as const;
 
-  const applyDisguise = () => {
-    document.title = tabTitle || 'Google';
-    setFavicon(tabIcon || 'https://www.google.com/favicon.ico');
-  };
+  const applyDisguise = () =>
+    showOnTab(tabTitle || 'Google', tabIcon || 'https://www.google.com/favicon.ico');
 
   const resetDisguise = () => {
-    document.title = TITLE;
-    setFavicon(ICON);
+    resetTab();
     setTabTitle('');
     setTabIcon('');
-  };
-
-  const cloak = () => {
-    if (!openCloaked(window.location.href, link)) {
-      alert('Your browser blocked the popup. Allow popups for this site and try again.');
-    }
   };
 
   return (
@@ -306,8 +311,7 @@ export default function Settings() {
                 onClick={() => {
                   setTabTitle(name);
                   setTabIcon(icon);
-                  document.title = name;
-                  setFavicon(icon);
+                  showOnTab(name, icon);
                 }}
               >
                 {name}
@@ -349,10 +353,10 @@ export default function Settings() {
             ))}
           </div>
           <p>
-            A page can only close a tab that a page opened. Launch through <b>Open cloaked</b> below
-            and the second option really does delete the tab — your link opens in a fresh one and
-            this tab disappears. Opened any other way it cannot close, so it is left blank instead,
-            which is the closest a page is allowed to get.
+            Entering Nexus reopens it in an about:blank tab, and a tab a page opened is one it may
+            close — so the second option really does delete the tab: your link opens in a fresh one
+            and this tab disappears. If the browser blocked that reopen, the tab cannot close and is
+            left blank instead, which is the closest a page is allowed to get.
           </p>
         </div>
 
@@ -482,17 +486,6 @@ export default function Settings() {
             onChange={() => setStoragePass((n) => n + 1)}
             onNote={setNote}
           />
-        </div>
-
-        <div className="panel">
-          <h3>about:blank</h3>
-          <p>
-            Reopens Nexus inside a blank tab and sends this one to your panic link. A tab opened
-            this way can close itself, which is what makes the panic key delete it outright.
-          </p>
-          <button className="button" onClick={cloak}>
-            Open cloaked
-          </button>
         </div>
 
         <div className="panel">

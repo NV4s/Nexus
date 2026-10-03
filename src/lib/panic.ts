@@ -45,6 +45,10 @@ function closeTab(): boolean {
 }
 
 
+// The tab, not the frame: inside the about:blank wrapper `window.location` is only
+// the frame, and the panic link's site refuses to be framed.
+const tab = () => window.top!.location;
+
 export function panic(link = readLink(), mode = readPanicMode()) {
   if (mode === 'newtab') {
     window.open(link, '_blank', 'noopener');
@@ -52,8 +56,8 @@ export function panic(link = readLink(), mode = readPanicMode()) {
 
 
 
-    window.location.replace('about:blank');
+    tab().replace('about:blank');
     return;
   }
-  window.location.replace(link);
+  tab().replace(link);
 }

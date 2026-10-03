@@ -854,6 +854,16 @@ select,
   letter-spacing: 0.3em;
 }
 
+.intro-hint {
+  position: absolute;
+  bottom: 2rem;
+  inset-inline: 1rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 0.45);
+}
+
 .intro-skip {
   position: absolute;
   bottom: 2rem;
