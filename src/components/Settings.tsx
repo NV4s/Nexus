@@ -353,7 +353,7 @@ export default function Settings() {
             ))}
           </div>
           <p>
-            Entering Nexus reopens it in an about:blank tab, and a tab a page opened is one it may
+            Opening Nexus reopens it in an about:blank tab, and a tab a page opened is one it may
             close — so the second option really does delete the tab: your link opens in a fresh one
             and this tab disappears. If the browser blocked that reopen, the tab cannot close and is
             left blank instead, which is the closest a page is allowed to get.

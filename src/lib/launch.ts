@@ -73,14 +73,28 @@ function addFullscreenPrompt(doc: Document, frame: HTMLIFrameElement) {
 }
 
 
-/**
- * A visit that should be running inside about:blank and is not yet. False inside the
- * wrapper's frame, and under `vite dev` so every reload doesn't spawn a tab.
- */
-export const needsCloak = () => window.top === window.self && !import.meta.env.DEV;
+const BLOCKED_ALERT =
+  'Pop-ups are blocked. Allow pop-ups for this site using the icon at the right of the address bar, then press OK.';
 
-/** Moves the whole site into an about:blank tab and sends this one to the panic link. */
-export const cloakSite = () => openCloaked(window.location.href, readLink(), false);
+/**
+ * Moves the whole site into an about:blank tab on load and sends this tab to the
+ * panic link. Returns true when that happened, so the caller can skip rendering a
+ * page that is already on its way out.
+ *
+ * A blocked popup gets an alert. It pauses the page while pop-ups are allowed from
+ * the address bar, and pressing OK tries again — no reload needed.
+ */
+export function cloakOnLoad(): boolean {
+  // Already the framed copy (or the bare game player inside a blank tab).
+  if (window.top !== window.self) return false;
+  // Off under `vite dev` so every reload doesn't spawn a tab; `vite preview` runs it.
+  if (import.meta.env.DEV) return false;
+
+  const cloak = () => openCloaked(window.location.href, readLink(), false);
+  if (cloak()) return true;
+  alert(BLOCKED_ALERT);
+  return cloak();
+}
 
 /** The document the browser tab shows: the about:blank wrapper when cloaked. */
 export function tabDocument(): Document {
