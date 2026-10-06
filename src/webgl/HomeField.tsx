@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { AdditiveBlending, BufferGeometry, Float32BufferAttribute, Vector2 } from 'three';
 import type { ShaderMaterial } from 'three';
-import { dprFor, particlesFor, useAdaptiveTier, type Tier } from '../lib/quality';
+import { dprFor, useGraphicsProfile, type Profile } from '../lib/quality';
 
 const vertex =  `
   uniform float uTime;
@@ -41,11 +41,11 @@ const fragment =  `
   }
 `;
 
-function Field({ tier }: { tier: Tier }) {
+function Field({ profile }: { profile: Profile }) {
   const material = useRef<ShaderMaterial>(null);
   const pointer = useRef(new Vector2(0, 0));
   const { viewport } = useThree();
-  const count = particlesFor(tier);
+  const count = profile.particles;
 
   const geometry = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -66,9 +66,9 @@ function Field({ tier }: { tier: Tier }) {
     () => ({
       uTime: { value: 0 },
       uPointer: { value: new Vector2(0, 0) },
-      uSize: { value: tier === 'low' ? 26 : 34 },
+      uSize: { value: profile.particles <= 1200 ? 26 : 34 },
     }),
-    [tier],
+    [profile],
   );
 
   useFrame(({ pointer: p, clock }) => {
@@ -94,16 +94,16 @@ function Field({ tier }: { tier: Tier }) {
 }
 
 export default function HomeField() {
-  const tier = useAdaptiveTier();
+  const profile = useGraphicsProfile();
 
   return (
     <Canvas
       className="home-field"
-      dpr={dprFor(tier)}
+      dpr={dprFor(profile)}
       camera={{ position: [0, 0, 9], fov: 60 }}
-      gl={{ antialias: false, powerPreference: 'high-performance' }}
+      gl={{ antialias: profile.antialias, powerPreference: 'high-performance' }}
     >
-      <Field tier={tier} />
+      <Field profile={profile} />
     </Canvas>
   );
 }

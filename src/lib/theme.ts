@@ -3,13 +3,13 @@ import { K } from './keys.ts';
 export type Theme = 'dark' | 'light' | 'midnight' | 'forest' | 'ember' | 'mono' | 'paper';
 
 export const THEMES: { id: Theme; name: string; swatch: string }[] = [
-  { id: 'dark', name: 'Dark', swatch: '#0c0f16' },
-  { id: 'light', name: 'Light', swatch: '#f6f7fa' },
-  { id: 'midnight', name: 'Midnight', swatch: '#0d1226' },
-  { id: 'forest', name: 'Forest', swatch: '#0c1611' },
-  { id: 'ember', name: 'Ember', swatch: '#170d0a' },
-  { id: 'mono', name: 'Mono', swatch: '#131313' },
-  { id: 'paper', name: 'Paper', swatch: '#fffdf8' },
+  { id: 'dark', name: 'Dark', swatch: '#7cc4ff' },
+  { id: 'light', name: 'Light', swatch: '#1e6fd9' },
+  { id: 'midnight', name: 'Midnight', swatch: '#6f7bff' },
+  { id: 'forest', name: 'Forest', swatch: '#e4b35c' },
+  { id: 'ember', name: 'Ember', swatch: '#ff6a3d' },
+  { id: 'mono', name: 'Mono', swatch: '#fafafa' },
+  { id: 'paper', name: 'Paper', swatch: '#b2502a' },
 ];
 
 const ids = new Set(THEMES.map((theme) => theme.id));

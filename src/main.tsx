@@ -7,6 +7,7 @@ import css from './index.css?inline';
 import { migrateSaveKeys } from './lib/saves';
 import { rescanAll } from './lib/achievements';
 import { readTheme } from './lib/theme';
+import { applyGraphics } from './lib/quality';
 import { applyAppearance, readAppearance } from './lib/appearance';
 import { migrateKeys } from './lib/keys.ts';
 import { applyHead } from './lib/head.ts';
@@ -26,6 +27,7 @@ applyHead();
 
 document.documentElement.dataset.theme = readTheme();
 applyAppearance(readAppearance());
+applyGraphics();
 
 
 migrateSaveKeys();
@@ -52,6 +54,19 @@ shadow.adoptedStyleSheets = [sheet];
 
 const mount = document.createElement('div');
 shadow.append(mount);
+
+// The graphics level lives on <html>, but the app renders inside this closed
+// shadow root, where a :root selector cannot reach. Mirror the attribute onto the
+// mount so the `[data-gfx]` rules match inside the shadow too, and keep it in sync
+// when Settings changes it.
+const mirrorGfx = () => {
+  mount.dataset.gfx = document.documentElement.dataset.gfx ?? '';
+};
+mirrorGfx();
+new MutationObserver(mirrorGfx).observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ['data-gfx'],
+});
 
 createRoot(mount).render(
   <StrictMode>

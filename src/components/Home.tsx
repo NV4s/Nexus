@@ -3,6 +3,7 @@ import { GAMES, bySlug, featuredGames, type Game } from '../data/games';
 import { navigate } from '../lib/router';
 import GameCard from './GameCard';
 import AdSlot from './AdSlot';
+import { graphicsProfile } from '../lib/quality';
 
 const HomeField = lazy(() => import('../webgl/HomeField'));
 
@@ -82,9 +83,11 @@ export default function Home() {
   return (
     <>
       <section className="hero">
-        <Suspense fallback={null}>
-          <HomeField />
-        </Suspense>
+        {graphicsProfile().webgl && (
+          <Suspense fallback={null}>
+            <HomeField />
+          </Suspense>
+        )}
 
         <div className="hero-copy parallax-slow">
           <h1>Nexus</h1>

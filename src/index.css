@@ -65,67 +65,95 @@
  * copy of the whole set. `color-scheme` matters — it is what makes form
  * controls and scrollbars match instead of staying stubbornly light.
  */
+/* Midnight: deep indigo, cold cyan edge, a violet cast in the glass. */
 [data-theme='midnight'] {
-  --bg: #060814;
-  --surface: #0d1226;
-  --surface-2: #161d3a;
-  --accent: #8b8bff;
-  --accent-ink: #080a18;
-  --text: #e7e9ff;
-  --text-dim: #8e93bd;
+  --bg: #05071a;
+  --surface: #0c1030;
+  --surface-2: #161d44;
+  --line: rgb(150 160 255 / 0.14);
+  --line-strong: rgb(150 160 255 / 0.30);
+  --accent: #6f7bff;
+  --accent-ink: #060819;
+  --text: #e8eaff;
+  --text-dim: #8a90c8;
+  --glass-tint: rgb(120 130 255 / 0.10);
+  --glass-edge: rgb(150 160 255 / 0.22);
+  --glass-sheen: rgb(190 200 255 / 0.30);
+  --shadow: 0 18px 44px rgb(10 14 50 / 0.6);
   color-scheme: dark;
 }
 
+/* Forest: near-black green, warm amber accent against it, mossy glass. */
 [data-theme='forest'] {
-  --bg: #050a07;
-  --surface: #0c1611;
-  --surface-2: #14231b;
-  --accent: #5fd08a;
-  --accent-ink: #04140b;
-  --text: #e6f2ea;
-  --text-dim: #86a495;
+  --bg: #04120b;
+  --surface: #0a1d13;
+  --surface-2: #122c1e;
+  --line: rgb(120 220 150 / 0.13);
+  --line-strong: rgb(120 220 150 / 0.28);
+  --accent: #e4b35c;
+  --accent-ink: #1a1203;
+  --text: #e4f3e8;
+  --text-dim: #7fa58c;
+  --glass-tint: rgb(90 200 130 / 0.09);
+  --glass-edge: rgb(120 220 150 / 0.20);
+  --glass-sheen: rgb(200 255 220 / 0.26);
   color-scheme: dark;
 }
 
+/* Ember: charred brown-black, hot orange, a red-lit glass edge. */
 [data-theme='ember'] {
-  --bg: #0b0605;
-  --surface: #170d0a;
-  --surface-2: #241512;
-  --accent: #ff8a5c;
-  --accent-ink: #1a0900;
-  --text: #f6e9e4;
-  --text-dim: #ab8b81;
+  --bg: #120604;
+  --surface: #20100b;
+  --surface-2: #311a13;
+  --line: rgb(255 140 90 / 0.15);
+  --line-strong: rgb(255 140 90 / 0.32);
+  --accent: #ff6a3d;
+  --accent-ink: #1a0600;
+  --text: #f8e7df;
+  --text-dim: #b8897a;
+  --glass-tint: rgb(255 110 60 / 0.10);
+  --glass-edge: rgb(255 140 90 / 0.24);
+  --glass-sheen: rgb(255 200 170 / 0.28);
+  --shadow: 0 18px 44px rgb(50 10 0 / 0.55);
   color-scheme: dark;
 }
 
+/* Mono: true grayscale, hard thin lines, flat glass — the one without a hue. */
 [data-theme='mono'] {
-  --bg: #0a0a0a;
-  --surface: #131313;
-  --surface-2: #1e1e1e;
-  --line: rgb(255 255 255 / 0.11);
-  --line-strong: rgb(255 255 255 / 0.26);
-  --accent: #ededed;
-  --accent-ink: #101010;
-  --text: #f2f2f2;
-  --text-dim: #909090;
+  --bg: #080808;
+  --surface: #141414;
+  --surface-2: #202020;
+  --line: rgb(255 255 255 / 0.14);
+  --line-strong: rgb(255 255 255 / 0.40);
+  --accent: #ffffff;
+  --accent-ink: #000000;
+  --text: #fafafa;
+  --text-dim: #8a8a8a;
+  --radius: 6px;
+  --glass-tint: rgb(255 255 255 / 0.05);
+  --glass-edge: rgb(255 255 255 / 0.22);
+  --glass-sheen: rgb(255 255 255 / 0.14);
+  --shadow: 0 14px 34px rgb(0 0 0 / 0.6);
   color-scheme: dark;
 }
 
+/* Paper: warm off-white, ink-brown text, a drawn square edge and no gloss. */
 [data-theme='paper'] {
-  --bg: #f4f1ea;
-  --surface: #fffdf8;
-  --surface-2: #e9e4d8;
-  --line: rgb(60 50 30 / 0.13);
-  --line-strong: rgb(60 50 30 / 0.28);
-  --text: #211c14;
-  --text-dim: #6b6152;
-  --accent: #9a6b2f;
-  --accent-ink: #fffdf8;
-  --shadow: 0 18px 40px rgb(90 70 40 / 0.14);
-  --glass-tint: rgb(255 255 255 / 0.55);
-  --glass-edge: rgb(60 50 30 / 0.12);
-  --glass-sheen: rgb(255 255 255 / 0.85);
-  --glass-shadow: 0 16px 40px rgb(90 70 40 / 0.14);
+  --bg: #efe9db;
+  --surface: #fbf7ee;
+  --surface-2: #e5dcc7;
+  --line: rgb(70 55 30 / 0.20);
+  --line-strong: rgb(70 55 30 / 0.42);
+  --text: #2a2213;
+  --text-dim: #776b52;
+  --accent: #b2502a;
+  --accent-ink: #fbf7ee;
+  --radius: 4px;
+  --shadow: 0 10px 26px rgb(90 70 40 / 0.16);
+  --glass-tint: rgb(251 247 238 / 0.72);
+  --glass-edge: rgb(70 55 30 / 0.22);
+  --glass-sheen: rgb(255 255 255 / 0.6);
+  --glass-shadow: 0 10px 26px rgb(90 70 40 / 0.16);
   color-scheme: light;
 }
 
@@ -2394,6 +2422,37 @@ select.field {
   justify-content: space-between;
   gap: 1rem;
   width: 100%;
+}
+
+/* ---------- graphics levels ----------
+   Very low drops the blur. Super low is bare bones: flat colours, system fonts, and
+   nothing that moves, blurs, glows or casts a shadow. Background, 3D and cover art
+   are switched off in the components. */
+
+/* Font tokens go on :root so they inherit across the shadow boundary; the
+   element rules use [data-gfx] (no :root) so they match the mirrored attribute on
+   the shadow mount, which a :root selector cannot reach. */
+:root[data-gfx='superlow'] {
+  --font-display: system-ui, sans-serif;
+  --font-body: system-ui, sans-serif;
+}
+
+[data-gfx='verylow'] *,
+[data-gfx='superlow'] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+[data-gfx='superlow'] *,
+[data-gfx='superlow'] *::before,
+[data-gfx='superlow'] *::after {
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  scroll-behavior: auto !important;
 }
 
 /* An explicit motion setting, for people whose OS switch says one thing and

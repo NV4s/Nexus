@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
+import { GRAPHICS, readQualityPreference, writeQualityPreference, type QualityPreference } from '../lib/quality';
 import {
   DEFAULT_LINK,
   comboFrom,
@@ -272,17 +272,19 @@ export default function Settings() {
         <div className="panel">
           <h3>Graphics</h3>
           <p>
-            Auto measures your frame rate and scales the background effects to match. Pick low if
-            the intro or the home page ever stutters.
+            Auto picks a level from your device and drops one if the 3D stutters. Ultra: 3D at full
+            resolution with antialiasing. High and Normal: background video and 3D, less detail on
+            Normal. Low: still background, simpler 3D. Very low: no 3D or blur. Super low: bare
+            bones — no background, cover art, effects or animation.
           </p>
           <div className="row">
-            {(['auto', 'low'] as const).map((option) => (
+            {[{ id: 'auto', name: 'Auto' } as const, ...GRAPHICS].map((option) => (
               <button
-                key={option}
-                className={`button ${quality === option ? '' : 'ghost'}`}
-                onClick={() => setQuality(option)}
+                key={option.id}
+                className={`button ${quality === option.id ? '' : 'ghost'}`}
+                onClick={() => setQuality(option.id)}
               >
-                {option === 'auto' ? 'Auto' : 'Low'}
+                {option.name}
               </button>
             ))}
           </div>

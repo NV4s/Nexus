@@ -1,4 +1,5 @@
 import type { Game } from '../data/games';
+import { graphicsProfile } from '../lib/quality';
 
 
 function hue(slug: string) {
@@ -13,13 +14,19 @@ const fallbackSize = (title: string) =>
 
 export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => void }) {
   const h = hue(game.slug);
+  const profile = graphicsProfile();
+  const thumb = profile.thumbs ? game.thumb : undefined;
+  // Super low is flat: no cover art and no per-card gradient, just a plain tile.
+  const fallbackBg = profile.background === 'none'
+    ? 'var(--surface-2)'
+    : `linear-gradient(140deg, hsl(${h} 45% 22%), hsl(${(h + 40) % 360} 40% 11%))`;
 
   return (
     <button type="button" onClick={onOpen} className="card group" aria-label={`${'Open'} ${game.title}`}>
       <div className="card-art">
-        {game.thumb ? (
+        {thumb ? (
           <img
-            src={game.thumb}
+            src={thumb}
             alt=""
             loading="lazy"
             decoding="async"
@@ -28,10 +35,7 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
         ) : (
           <span
             className="card-fallback"
-            style={{
-              background: `linear-gradient(140deg, hsl(${h} 45% 22%), hsl(${(h + 40) % 360} 40% 11%))`,
-              fontSize: fallbackSize(game.title),
-            }}
+            style={{ background: fallbackBg, fontSize: fallbackSize(game.title) }}
           >
             {game.title}
           </span>
@@ -41,7 +45,7 @@ export default function GameCard({ game, onOpen }: { game: Game; onOpen: () => v
 
       <div className="card-meta">
 
-        <h3 className={game.thumb ? '' : 'visually-hidden'}>{game.title}</h3>
+        <h3 className={thumb ? '' : 'visually-hidden'}>{game.title}</h3>
         <p>
           {[game.developer, game.year].filter(Boolean).join(' · ') ||
             (game.runtime === 'flash' ? 'Classic' : 'Browser')}

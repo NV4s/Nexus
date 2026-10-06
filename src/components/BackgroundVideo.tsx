@@ -1,25 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import { prefersReducedMotion, readQualityPreference } from '../lib/quality';
+import { graphicsProfile, prefersReducedMotion } from '../lib/quality';
 
 /** One file for every device: the full clip at 60 fps. The still is only for
  *  visitors who asked for less motion, or if the video cannot play at all. */
 const VIDEO = '/bg/background.mp4';
 const STILL = '/bg/background.jpg';
 
-const holdStill = () =>
-  document.documentElement.dataset.motion === 'reduced' ||
-  prefersReducedMotion() ||
-  readQualityPreference() === 'low';
+type Mode = 'video' | 'still' | 'none';
+
+const mode = (): Mode => {
+  const { background } = graphicsProfile();
+  if (background !== 'video') return background;
+  const reduced = document.documentElement.dataset.motion === 'reduced' || prefersReducedMotion();
+  return reduced ? 'still' : 'video';
+};
 
 export default function BackgroundVideo() {
-  const [still, setStill] = useState(holdStill);
+  const [current, setCurrent] = useState(mode);
+  const still = current !== 'video';
   const [failed, setFailed] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const update = () => setStill(holdStill());
+    const update = () => setCurrent(mode());
     const observer = new MutationObserver(update);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion', 'data-gfx'] });
     const media = matchMedia('(prefers-reduced-motion: reduce)');
     media.addEventListener('change', update);
     return () => {
@@ -43,6 +48,8 @@ export default function BackgroundVideo() {
       document.removeEventListener('visibilitychange', resume);
     };
   }, [still, failed]);
+
+  if (current === 'none') return null;
 
   return (
     <div className="bg-video" aria-hidden="true">

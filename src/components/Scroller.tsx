@@ -56,6 +56,7 @@ export default function Scroller({
 
     const still =
       document.documentElement.dataset.motion === 'reduced' ||
+      document.documentElement.dataset.gfx === 'superlow' ||
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (still) return;
 

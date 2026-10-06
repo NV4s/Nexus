@@ -8,6 +8,8 @@
 export const TITLE = 'Home';
 export const ICON = '/favicon.svg';
 
+import { resolveGraphics } from './quality';
+
 const FONTS = ['/fonts/unbounded-latin.woff2', '/fonts/inter-latin.woff2'];
 
 const link = (rel: string, href: string, extra: Partial<HTMLLinkElement> = {}) => {
@@ -27,5 +29,7 @@ export function applyHead() {
   colour.content = '#05060a';
   document.head.append(colour);
 
+  // Super low uses system fonts, so fetching these would be wasted.
+  if (resolveGraphics() === 'superlow') return;
   for (const href of FONTS) link('preload', href, { as: 'font', type: 'font/woff2', crossOrigin: '' });
 }

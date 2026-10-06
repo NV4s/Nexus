@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Bloom, ChromaticAberration, EffectComposer } from '@react-three/postprocessing';
 import { Vector2, type ShaderMaterial } from 'three';
-import { dprFor, prefersReducedMotion, useAdaptiveTier } from '../lib/quality';
+import { dprFor, prefersReducedMotion, useGraphicsProfile } from '../lib/quality';
 import { playIntroAudio, preloadIntroAudio } from '../lib/introAudio';
 
 const DURATION = 8.0;
@@ -156,7 +156,7 @@ function VoidSurface({ layers, onDone }: { layers: number; onDone: () => void })
 }
 
 export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
-  const tier = useAdaptiveTier();
+  const profile = useGraphicsProfile();
   const [started, setStarted] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
@@ -177,18 +177,17 @@ export default function VoidIntro({ onComplete }: { onComplete: () => void }) {
     if (prefersReducedMotion()) finish();
   };
 
-  const layers = tier === 'low' ? 2 : tier === 'medium' ? 3 : 5;
 
   return (
     <div className={`intro ${leaving ? 'is-leaving' : ''}`}>
       {started && (
         <Canvas
           flat
-          dpr={dprFor(tier)}
-          gl={{ antialias: false, powerPreference: 'high-performance' }}
+          dpr={dprFor(profile)}
+          gl={{ antialias: profile.antialias, powerPreference: 'high-performance' }}
         >
-          <VoidSurface layers={layers} onDone={finish} />
-          {tier !== 'low' && (
+          <VoidSurface layers={profile.layers} onDone={finish} />
+          {profile.postfx && (
             <EffectComposer>
               <Bloom intensity={0.65} luminanceThreshold={0.55} mipmapBlur />
               <ChromaticAberration offset={new Vector2(0.0005, 0.0005)} />

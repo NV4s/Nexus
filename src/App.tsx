@@ -17,6 +17,7 @@ import { comboFrom, panic, readCombo } from './lib/panic';
 import { startTracking } from './lib/track';
 import { loadSiteConfig, onSiteConfig, siteConfig } from './lib/siteConfig';
 import { K } from './lib/keys.ts';
+import { graphicsProfile } from './lib/quality';
 
 
 
@@ -37,7 +38,10 @@ export default function App() {
   const route = useRoute();
 
   const [showIntro, setShowIntro] = useState(
-    () => !sessionStorage.getItem(K.intro) && (window.location.hash.slice(1) || '/') === '/',
+    () =>
+      graphicsProfile().webgl &&
+      !sessionStorage.getItem(K.intro) &&
+      (window.location.hash.slice(1) || '/') === '/',
   );
 
   const dismissIntro = useCallback(() => {
