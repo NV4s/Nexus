@@ -1,4 +1,4 @@
-export const SWFDUMP_SHA = '3b954d8a7c7d41d1bccbccecff5cb428149ca16f';
+export const SWFDUMP_SHA = '9b202ce5adcd46399b855faee085998c54e33a9f';
 
 export const SWFDUMP_FILES: ReadonlyArray<readonly [string, number]> = [
   ["Achivement_Unlocked/Achievement_Unlocked_2.swf", 3333711],
@@ -116,5 +116,5 @@ export const SWFDUMP_FILES: ReadonlyArray<readonly [string, number]> = [
   ["Steak_and_Jake_Midnight_March.swf", 5153357],
   ["Steak_and_Jake.swf", 4973970],
   ["Unfinished_Sarge_Game_Demo.swf", 777988],
-  ["Warfare_1917.swf", 5683029],
+  ["Warfare_1917.swf", 5679836],
 ];
