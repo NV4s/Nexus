@@ -13,7 +13,9 @@ export type ConsoleId =
   | 'segaCD'
   | 'segaSaturn'
   | 'atari2600'
-  | 'arcade';
+  | 'arcade'
+  | 'doom'
+  | 'doom2';
 
 export type Console = {
   id: ConsoleId;
@@ -115,6 +117,20 @@ export const CONSOLES: Console[] = [
     core: 'arcade',
     extensions: ['zip'],
     note: 'MAME-style arcade ROM sets, which must match the core’s expected version.',
+  },
+  {
+    id: 'doom',
+    title: 'Doom',
+    core: 'prboom',
+    extensions: ['wad', 'zip'],
+    note: 'Your own DOOM.WAD — the original, The Ultimate Doom, or the shareware DOOM1.WAD. Runs on PrBoom.',
+  },
+  {
+    id: 'doom2',
+    title: 'Doom II: Hell on Earth',
+    core: 'prboom',
+    extensions: ['wad', 'zip'],
+    note: 'Your own DOOM2.WAD. Runs on PrBoom.',
   },
 ];
 
