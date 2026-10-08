@@ -146,6 +146,7 @@ const CATEGORIES: Record<string, string> = {
   'steak-and-jake': 'Platformer',
   'steak-and-jake-midnight-march': 'Platformer',
   'warfare-1917': 'Strategy',
+  'warfare-1944': 'Strategy',
 };
 
 const META: Record<string, Partial<Game>> = {
@@ -256,6 +257,7 @@ const META: Record<string, Partial<Game>> = {
     year: '2012',
   },
   'warfare-1917': { developer: 'Con Artist Games', year: '2008' },
+  'warfare-1944': { developer: 'Con Artist Games', year: '2009' },
   'color-switch': { thumb: '/i/35f137a4.png' },
 };
 
