@@ -1,3 +1,5 @@
+import { WAD_SLOTS } from './wads.ts';
+import { wadUrl } from '../lib/wad.ts';
 
 
 export type ConsoleId =
@@ -15,7 +17,9 @@ export type ConsoleId =
   | 'atari2600'
   | 'arcade'
   | 'doom'
-  | 'doom2';
+  | 'doom2'
+  | 'wad1'
+  | 'wad2';
 
 export type Console = {
   id: ConsoleId;
@@ -24,6 +28,8 @@ export type Console = {
   core: string;
   extensions: string[];
   note: string;
+  /** Set for the hosted WAD slots: the file to load instead of asking for one. */
+  hosted?: { url?: string; error?: string };
 };
 
 export const CONSOLES: Console[] = [
@@ -132,6 +138,16 @@ export const CONSOLES: Console[] = [
     extensions: ['wad', 'zip'],
     note: 'Your own DOOM2.WAD. Runs on PrBoom.',
   },
+  // The two hosted slots. Everything about them comes from src/data/wads.ts,
+  // which is the one file to edit when a WAD goes up.
+  ...WAD_SLOTS.map((slot): Console => ({
+    id: slot.id as ConsoleId,
+    title: slot.title,
+    core: 'prboom',
+    extensions: ['wad', 'zip'],
+    note: slot.note ?? 'Runs on PrBoom.',
+    hosted: wadUrl(slot),
+  })),
 ];
 
 export const consoleById = (id: ConsoleId | string) =>

@@ -1,8 +1,10 @@
 import { SWFDUMP_FILES } from './swfdump.ts';
 import { swfChunkBase, swfUrl } from '../lib/cdn.ts';
 import { siteConfig } from '../lib/siteConfig.ts';
+import { WAD_SLOTS, wadGameSlug } from './wads.ts';
+import { wadUrl } from '../lib/wad.ts';
 
-export type Runtime = 'flash' | 'html5';
+export type Runtime = 'flash' | 'html5' | 'wad';
 export type Section = 'arcade' | 'study' | 'courses';
 
 export type Game = {
@@ -286,6 +288,16 @@ function fromSwf(path: string): Game {
     ...META[slug],
   };
 }
+
+const WAD_CARDS: Game[] = WAD_SLOTS.map((slot) => ({
+  slug: wadGameSlug(slot),
+  title: slot.title,
+  section: 'arcade',
+  runtime: 'wad',
+  src: wadUrl(slot).url ?? '',
+  category: 'Shooter',
+  thumb: slot.thumb,
+}));
 
 const EXTRA: Game[] = [
   {
@@ -1035,6 +1047,7 @@ const STUDY: Game[] = [
 ];
 
 export const GAMES: Game[] = [
+  ...WAD_CARDS,
   ...DOODLE_GAMES,
   ...SWFDUMP_FILES.map(([path]) => fromSwf(path)),
   ...EXTRA,

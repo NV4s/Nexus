@@ -21,9 +21,15 @@
     }
   ],
   "rewrites": [
+    { "source": "/w/:owner/:repo/:ref/:path*", "destination": "https://raw.githubusercontent.com/:owner/:repo/:ref/:path*" },
+    { "source": "/wd/:owner/:repo/:tag/:asset*", "destination": "https://github.com/:owner/:repo/releases/download/:tag/:asset*" },
+
     { "source": "/m/:sha/:path*", "destination": "https://cdn.jsdelivr.net/gh/NV4s/swfdump@:sha/:path*" },
     { "source": "/mr/:sha/:path*", "destination": "https://raw.githubusercontent.com/NV4s/swfdump/:sha/:path*" },
     { "source": "/ml/:sha/:path*", "destination": "https://media.githubusercontent.com/media/NV4s/swfdump/:sha/:path*" },
+    { "source": "/e/:version/emulator.min.js", "destination": "https://cdn.emulatorjs.org/:version/data/emulator.min.js" },
+    { "source": "/e/:version/emulator.min.css", "destination": "https://cdn.emulatorjs.org/:version/data/emulator.min.css" },
+    { "source": "/e/:version/cores/:core([a-z0-9_]+)-:rest(.*)", "destination": "https://cdn.jsdelivr.net/npm/@emulatorjs/core-:core@:version/:core-:rest" },
     { "source": "/e/:version/:path*", "destination": "https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@:version/data/:path*" },
 
     { "source": "/p/36d84be5/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" },

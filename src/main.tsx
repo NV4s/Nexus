@@ -12,6 +12,7 @@ import { applyAppearance, readAppearance } from './lib/appearance';
 import { migrateKeys } from './lib/keys.ts';
 import { applyHead } from './lib/head.ts';
 import { cloakOnLoad } from './lib/launch.ts';
+import { setShadowRoot } from './lib/shadow.ts';
 
 
 // Storage names changed, so this has to run before anything reads a setting:
@@ -51,6 +52,7 @@ document.body.append(host);
 
 const shadow = host.attachShadow({ mode: 'closed' });
 shadow.adoptedStyleSheets = [sheet];
+setShadowRoot(shadow);
 
 const mount = document.createElement('div');
 shadow.append(mount);

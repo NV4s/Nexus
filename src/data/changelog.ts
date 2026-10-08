@@ -7,6 +7,15 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v1.15.0',
+    date: '2026-10-07',
+    changes: [
+      'Two slots for hosted Doom WADs, called 1 and 2. Each has a player page under Systems and a card in the Library; both say so until a file is set.',
+      'Systems pages work again. The player reads its container with document.querySelector, which cannot see inside the shadow root the site renders in, so every system had been failing to start since that landed.',
+      'Player cores and the player bundle come from this domain now instead of a third-party CDN.',
+    ],
+  },
+  {
     version: 'v1.14.0',
     date: '2026-10-05',
     changes: [

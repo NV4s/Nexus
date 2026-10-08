@@ -6,6 +6,18 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
+      '/w/': {
+        target: 'https://raw.githubusercontent.com',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/w\//, '/'),
+      },
+      '/wd/': {
+        target: 'https://github.com',
+        changeOrigin: true,
+        followRedirects: true,
+        rewrite: (path: string) =>
+          path.replace(/^\/wd\/([^/]+)\/([^/]+)\/([^/]+)\//, '/$1/$2/releases/download/$3/'),
+      },
       '/m/': {
         target: 'https://cdn.jsdelivr.net',
         changeOrigin: true,
@@ -24,8 +36,15 @@ export default defineConfig({
       '/e/': {
         target: 'https://cdn.jsdelivr.net',
         changeOrigin: true,
-        rewrite: (path: string) =>
-          path.replace(/^\/e\/([^/]+)\//, '/npm/@emulatorjs/emulatorjs@$1/data/'),
+        rewrite: (path: string) => {
+          // Cores ship as their own packages; everything else is the main one.
+          // emulator.min.js is not in the npm package. vercel.json points it at
+          // EmulatorJS's own CDN; in dev it 404s and the loader uses src/ instead.
+          const core = /^\/e\/([^/]+)\/cores\/([a-z0-9_]+)-(.+)$/.exec(path);
+          return core
+            ? `/npm/@emulatorjs/core-${core[2]}@${core[1]}/${core[2]}-${core[3]}`
+            : path.replace(/^\/e\/([^/]+)\//, '/npm/@emulatorjs/emulatorjs@$1/data/');
+        },
       },
       '/p/0756f330': {
         target: 'https://landgreen.github.io',

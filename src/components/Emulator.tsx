@@ -4,59 +4,18 @@ import { CONSOLES, consoleById, type ConsoleId } from '../data/consoles';
 import { useGameSession } from '../lib/achievements';
 import AdSlot from './AdSlot';
 import { railsClass } from '../lib/ads';
-
-
-const EJS_VERSION = '4.2.3';
-const EJS_BASE = `/e/${EJS_VERSION}/`;
-
-declare global {
-  interface Window {
-    EJS_player?: string;
-    EJS_core?: string;
-    EJS_gameUrl?: string;
-    EJS_gameName?: string;
-    EJS_pathtodata?: string;
-    EJS_startOnLoaded?: boolean;
-    EJS_Buttons?: Record<string, boolean>;
-  }
-}
-
+import EjsPlayer from './EjsPlayer';
 
 export default function Emulator({ id }: { id: string }) {
   const console_ = consoleById(id as ConsoleId);
   const [rom, setRom] = useState<{ name: string; url: string } | null>(null);
-  const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
-  const hostRef = useRef<HTMLDivElement>(null);
 
   useGameSession(console_ ? `emu-${console_.id}` : null);
 
-  useEffect(() => {
-    if (!rom || !console_) return;
-
-
-    window.EJS_player = '#emulator-host';
-    window.EJS_core = console_.core;
-    window.EJS_gameUrl = rom.url;
-    window.EJS_gameName = rom.name;
-    window.EJS_pathtodata = EJS_BASE;
-    window.EJS_startOnLoaded = true;
-
-    const script = document.createElement('script');
-    script.src = `${EJS_BASE}loader.js`;
-    script.onerror = () => setError('Could not load the player. A network filter may be blocking the CDN.');
-    document.body.append(script);
-
-    return () => {
-      script.remove();
-
-
-      if (hostRef.current) hostRef.current.replaceChildren();
-    };
-  }, [rom, console_]);
-
   useEffect(() => () => {
-    if (rom) URL.revokeObjectURL(rom.url);
+    // Only the picker's blob needs revoking; a hosted file is an ordinary url.
+    if (rom?.url.startsWith('blob:')) URL.revokeObjectURL(rom.url);
   }, [rom]);
 
   if (!console_) {
@@ -67,19 +26,32 @@ export default function Emulator({ id }: { id: string }) {
     );
   }
 
+  const hosted = console_.hosted;
+  const loaded = hosted?.url ? { name: console_.title, url: hosted.url } : rom;
+
   return (
     <section className="section">
       <header className="section-head">
         <div>
           <h2>{console_.title}</h2>
           <p>
-            Bring your own file — {console_.extensions.join(', ')}. It stays on this device; nothing
-            is uploaded, and no games are hosted here.
+            {hosted
+              ? console_.note
+              : `Bring your own file — ${console_.extensions.join(', ')}. It stays on this device; nothing is uploaded, and no games are hosted here.`}
           </p>
         </div>
       </header>
 
-      {!rom && (
+      {hosted?.error && (
+        <div className="panels">
+          <div className="panel">
+            <h3>No file set yet</h3>
+            <p>{hosted.error}</p>
+          </div>
+        </div>
+      )}
+
+      {!hosted && !rom && (
         <div className="panels">
           <div className="panel">
             <h3>Open a file</h3>
@@ -98,7 +70,6 @@ export default function Emulator({ id }: { id: string }) {
                 const file = event.target.files?.[0];
                 event.target.value = '';
                 if (!file) return;
-                setError('');
                 setRom({ name: file.name, url: URL.createObjectURL(file) });
               }}
             />
@@ -110,19 +81,17 @@ export default function Emulator({ id }: { id: string }) {
         </div>
       )}
 
-      {error && <p className="admin-error">{error}</p>}
-
       <div className={railsClass()}>
         <AdSlot name="rail-left" className="rail" />
 
         <div className="game-frame">
-          <div id="emulator-host" ref={hostRef} className="emulator-host" />
+          {loaded && <EjsPlayer core={console_.core} url={loaded.url} name={loaded.name} />}
         </div>
 
         <AdSlot name="rail-right" className="rail" />
       </div>
 
-      {rom && (
+      {rom && !hosted && (
         <div className="row">
           <span className="player-field">{rom.name}</span>
           <button className="button ghost" onClick={() => setRom(null)}>

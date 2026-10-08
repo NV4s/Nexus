@@ -9,6 +9,7 @@ import GameAchievements from './GameAchievements';
 import AdSlot from './AdSlot';
 import { railsClass, slotShows } from '../lib/ads';
 import { K } from '../lib/keys.ts';
+import EjsPlayer from './EjsPlayer';
 
 
 function Interstitial({ slug }: { slug: string }) {
@@ -106,6 +107,12 @@ export default function GamePage({ slug }: { slug: string }) {
         <div ref={frameRef} className="game-frame">
           {game.runtime === 'flash' ? (
             <RufflePlayer url={url} fallback={fallback} title={game.title} slug={game.slug} />
+          ) : game.runtime === 'wad' ? (
+            game.src ? (
+              <EjsPlayer core="prboom" url={game.src} name={game.title} />
+            ) : (
+              <p className="empty">No file set yet. Slot {game.title} is waiting for a link.</p>
+            )
           ) : (
             <EmbedPlayer url={url} title={game.title} />
           )}
