@@ -126,7 +126,7 @@ export const CONSOLES: Console[] = [
   },
   {
     id: 'doom',
-    title: 'Doom',
+    title: 'Doom I',
     core: 'prboom',
     extensions: ['wad', 'zip'],
     note: 'Your own DOOM.WAD — the original, The Ultimate Doom, or the shareware DOOM1.WAD. Runs on PrBoom.',
