@@ -265,6 +265,23 @@ const META: Record<string, Partial<Game>> = {
   'warfare-1917': { developer: 'Con Artist Games', year: '2008' },
   'warfare-1944': { developer: 'Con Artist Games', year: '2009' },
   'color-switch': { thumb: '/i/35f137a4.png' },
+  'papa-louie': { developer: 'Flipline Studios', thumb: '/i/b2f31e9e.png' },
+  'papa-louie-2': { developer: 'Flipline Studios', thumb: '/i/8800bbab.png' },
+  'papa-louie-3': { developer: 'Flipline Studios', thumb: '/i/604859d6.png' },
+  'papas-pizzeria': { developer: 'Flipline Studios', thumb: '/i/c45af117.png' },
+  'papas-burgeria': { developer: 'Flipline Studios', thumb: '/i/9b4b9e66.png' },
+  'papas-taco-mia': { developer: 'Flipline Studios', thumb: '/i/75e7916a.png' },
+  'papas-freezeria': { developer: 'Flipline Studios', thumb: '/i/8507fda5.png' },
+  'papas-pancakeria': { developer: 'Flipline Studios', thumb: '/i/8d72b34a.png' },
+  'papas-wingeria': { developer: 'Flipline Studios', thumb: '/i/02440691.png' },
+  'papas-hot-doggeria': { developer: 'Flipline Studios', thumb: '/i/8c4c64b8.png' },
+  'papas-cupcakeria': { developer: 'Flipline Studios', thumb: '/i/83df774c.png' },
+  'papas-pastaria': { developer: 'Flipline Studios', thumb: '/i/0662d147.png' },
+  'papas-donuteria': { developer: 'Flipline Studios', thumb: '/i/e7869490.png' },
+  'papas-cheeseria': { developer: 'Flipline Studios', thumb: '/i/6ca63878.png' },
+  'papas-bakeria': { developer: 'Flipline Studios', thumb: '/i/38ad664b.png' },
+  'papas-sushiria': { developer: 'Flipline Studios', thumb: '/i/ce224de3.png' },
+  'papas-scooperia': { developer: 'Flipline Studios', thumb: '/i/5674f807.png' },
 };
 
 const CHUNK_FALLBACK: Record<string, number> = {
