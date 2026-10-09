@@ -100,6 +100,49 @@ export default function GameGrid({
         </div>
       )}
 
+      {/* Its own block so the sticky genre bar stops at the end of the grid. */}
+      <div className="library">
+        <div className="toolbar glass">
+          <div className="chips" role="tablist" aria-label="Categories">
+            {categories.map((name) => (
+              <button
+                key={name}
+                role="tab"
+                aria-selected={category === name}
+                className={`chip ${category === name ? 'is-active' : ''}`}
+                onClick={() => setCategory(name)}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {visible.length === 0 ? (
+          <p className="empty">Nothing matches “{query}”.</p>
+        ) : (
+          <div className="grid" ref={gridRef}>
+            {visible.map((game, index) => (
+              <Fragment key={game.slug}>
+                <div
+                  className="grid-item"
+
+
+                  style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
+                >
+                  <GameCard game={game} onOpen={() => open(game)} />
+                </div>
+
+
+                {perBreak > 0 &&
+                  (index + 1) % perBreak === 0 &&
+                  index + 1 < visible.length && <AdSlot name="grid-inline" className="grid-ad" />}
+              </Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+
       {section === 'arcade' && !query && category === 'All' && (
         <div className="series">
           {SERIES.map((series) => {
@@ -118,46 +161,6 @@ export default function GameGrid({
               </div>
             );
           })}
-        </div>
-      )}
-
-      <div className="toolbar glass">
-        <div className="chips" role="tablist" aria-label="Categories">
-          {categories.map((name) => (
-            <button
-              key={name}
-              role="tab"
-              aria-selected={category === name}
-              className={`chip ${category === name ? 'is-active' : ''}`}
-              onClick={() => setCategory(name)}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {visible.length === 0 ? (
-        <p className="empty">Nothing matches “{query}”.</p>
-      ) : (
-        <div className="grid" ref={gridRef}>
-          {visible.map((game, index) => (
-            <Fragment key={game.slug}>
-              <div
-                className="grid-item"
-
-
-                style={{ animationDelay: `${Math.min(index, 14) * 70}ms` }}
-              >
-                <GameCard game={game} onOpen={() => open(game)} />
-              </div>
-
-
-              {perBreak > 0 &&
-                (index + 1) % perBreak === 0 &&
-                index + 1 < visible.length && <AdSlot name="grid-inline" className="grid-ad" />}
-            </Fragment>
-          ))}
         </div>
       )}
     </section>
