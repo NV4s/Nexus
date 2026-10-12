@@ -153,7 +153,13 @@ const CATEGORIES: Record<string, string> = {
 
 const META: Record<string, Partial<Game>> = {
   'doodle-basketball': { thumb: '/i/19898a83.png', frame: [546, 227] },
-  'doodle-hurdles': { frame: [546, 227] },
+  'doodle-hurdles': { thumb: '/i/1226d42d.png', frame: [546, 227] },
+  'doodle-garden-gnomes': { thumb: '/i/89c0b3e1.png' },
+  'doodle-halloween-2019': { thumb: '/i/ddc98faf.png' },
+  'doodle-halloween-2021': { thumb: '/i/8b51b1b3.png' },
+  'doodle-hip-hop': { thumb: '/i/3ae902b3.png' },
+  'guppy-guard-express': { thumb: '/i/a30ed1cb.png' },
+  hamu: { thumb: '/i/5d9ee027.png' },
   'doodle-soccer': { frame: [546, 227] },
   'achievement-unlocked': {
     developer: 'John Cooney (jmtb02)',
@@ -355,6 +361,7 @@ const EXTRA: Game[] = [
     runtime: 'html5',
     src: 'https://gba.ninja/',
     category: 'Emulator',
+    thumb: '/i/6128bba9.png',
   },
 
   {
