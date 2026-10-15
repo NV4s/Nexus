@@ -355,6 +355,17 @@ const EXTRA: Game[] = [
     developer: 'Ross Landgreen',
   },
   {
+    slug: 'nazi-zombies-portable',
+    title: 'Nazi Zombies: Portable',
+    section: 'arcade',
+    runtime: 'html5',
+
+    src: '/p/494d5d93/',
+    category: 'Shooter',
+    thumb: '/i/494d5d93.png',
+    developer: 'NZ:P Team',
+  },
+  {
     slug: 'gba-emulator',
     title: 'GBA Emulator',
     section: 'arcade',

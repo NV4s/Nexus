@@ -119,6 +119,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/p\/0fa40d32/, '') || '/',
       },
+      '/p/494d5d93': {
+        target: 'https://nzp.gay',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/p\/494d5d93/, '') || '/',
+      },
       '/p/36d84be5/run-3.swf': {
         target: 'https://player03.com',
         changeOrigin: true,

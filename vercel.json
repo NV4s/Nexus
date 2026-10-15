@@ -44,6 +44,9 @@
     { "source": "/p/0fa40d32", "destination": "https://adarkroom.doublespeakgames.com/" },
     { "source": "/p/0fa40d32/", "destination": "https://adarkroom.doublespeakgames.com/" },
     { "source": "/p/0fa40d32/:path*", "destination": "https://adarkroom.doublespeakgames.com/:path*" },
+    { "source": "/p/494d5d93", "destination": "https://nzp.gay/" },
+    { "source": "/p/494d5d93/", "destination": "https://nzp.gay/" },
+    { "source": "/p/494d5d93/:path*", "destination": "https://nzp.gay/:path*" },
 
     { "source": "/logos/:path*", "destination": "https://www.google.com/logos/:path*" },
 
