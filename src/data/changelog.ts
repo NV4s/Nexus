@@ -7,6 +7,13 @@ export type Release = {
 
 export const RELEASES: Release[] = [
   {
+    version: 'v1.15.1',
+    date: '2026-10-16',
+    changes: [
+      'Nazi Zombies: Portable is served from this site instead of being passed through from its own website. The large data file comes from a fixed copy of the NZ:P Team\'s release, and the visitor counter the original page loaded is gone.',
+    ],
+  },
+  {
     version: 'v1.15.0',
     date: '2026-10-07',
     changes: [

@@ -119,10 +119,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/p\/0fa40d32/, '') || '/',
       },
-      '/p/494d5d93': {
-        target: 'https://nzp.gay',
+      '/p/494d5d93/nzp/game.pk3': {
+        target: 'https://raw.githubusercontent.com',
         changeOrigin: true,
-        rewrite: (path: string) => path.replace(/^\/p\/494d5d93/, '') || '/',
+        rewrite: () => '/nzp-team/nzp-team.github.io/7f04e06502422630f69295ecacca75072458ab13/nzp/game.pk3',
       },
     },
   },
