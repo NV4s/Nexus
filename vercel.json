@@ -32,7 +32,6 @@
     { "source": "/e/:version/cores/:core([a-z0-9_]+)-:rest(.*)", "destination": "https://cdn.jsdelivr.net/npm/@emulatorjs/core-:core@:version/:core-:rest" },
     { "source": "/e/:version/:path*", "destination": "https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@:version/data/:path*" },
 
-    { "source": "/p/36d84be5/run-3.swf", "destination": "https://player03.com/run/3/Run3.swf" },
     { "source": "/p/0756f330", "destination": "https://landgreen.github.io/n-gon/" },
     { "source": "/p/0756f330/", "destination": "https://landgreen.github.io/n-gon/" },
     { "source": "/p/0756f330/:path*", "destination": "https://landgreen.github.io/n-gon/:path*" },

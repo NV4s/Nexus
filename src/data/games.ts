@@ -336,13 +336,14 @@ const EXTRA: Game[] = [
     slug: 'run-3',
     title: 'Run 3',
     section: 'arcade',
-    runtime: 'flash',
+    runtime: 'html5',
 
-    src: '/p/36d84be5/run-3.swf',
+    src: 'https://player03.com/run/3/beta/',
     category: 'Platformer',
     thumb: '/i/a0db61b9.jpg',
     developer: 'Player 03',
     year: '2014',
+    newTab: true,
   },
   {
     slug: 'n-gon',
